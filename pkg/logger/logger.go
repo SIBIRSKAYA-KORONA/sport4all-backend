@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -24,24 +23,12 @@ var loggerLevelMap = map[string]zapcore.Level{
 	"fatal":  zapcore.FatalLevel,
 }
 
-func getLoggerLevel() zapcore.Level {
-	level, exist := loggerLevelMap[viper.GetString("logger.level")]
-	if !exist {
-		return zapcore.DebugLevel
-	}
-	return level
-}
-
-func InitLogger() {
+func InitLogger(logFile string, logLevelStr string) {
 	if sugarLogger != nil {
 		return
 	}
 
-	logFile := viper.GetString("logger.logfile")
-	logLevel := getLoggerLevel()
-
 	var logWriter zapcore.WriteSyncer
-
 	if logFile != "stdout" {
 		logWriter = zapcore.AddSync(&lumberjack.Logger{
 			Filename:  logFile,
@@ -53,8 +40,12 @@ func InitLogger() {
 		logWriter = zapcore.AddSync(os.Stdout)
 	}
 
-	var encoder zapcore.EncoderConfig
+	logLevel, exist := loggerLevelMap[logLevelStr]
+	if !exist {
+		logLevel = zapcore.DebugLevel
+	}
 
+	var encoder zapcore.EncoderConfig
 	if logLevel == zapcore.DebugLevel {
 		encoder = zap.NewDevelopmentEncoderConfig()
 		encoder.EncodeLevel = zapcore.CapitalColorLevelEncoder

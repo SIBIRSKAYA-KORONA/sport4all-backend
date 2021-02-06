@@ -1,69 +1,76 @@
 package server
 
 import (
-	"fmt"
-
+	"github.com/gomodule/redigo/redis"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/labstack/echo/v4"
 
-	handlers "github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/handlers/http"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/middleware"
+	httpHandlers "github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/handlers/http"
 	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/models"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/repositories/postgreSQL"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/usecases/impl"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/config"
+	psqlRepos "github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/repositories/psql"
+	redisRepos "github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/repositories/redis"
+	useCases "github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/usecases/impl"
+	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/common"
 	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/logger"
 )
 
 type Server struct {
-	ip             string
-	port           uint
-	configObserver config.Observer
+	settings Settings
 }
 
-func CreateServer() *Server {
-	configObserver_ := config.CreateConfigObserver()
-	return &Server{
-		ip:             configObserver_.GetServerIP(),
-		port:           configObserver_.GetServerPort(),
-		configObserver: configObserver_,
-	}
-}
-
-func (server *Server) GetAddr() string {
-	return fmt.Sprintf("%s:%d", server.ip, server.port)
+func CreateServer(configFilePath string) *Server {
+	settings := InitSettings(configFilePath)
+	logger.InitLogger(settings.LogFile, settings.LogLevel)
+	return &Server{settings: settings}
 }
 
 func (server *Server) Run() {
-	router := echo.New()
-	rootGroup := router.Group(server.configObserver.GetBaseURL())
-	postgresClient, err := gorm.Open(server.configObserver.GetDBMS(), server.configObserver.GetDBConnection())
+	/* REPOS */
+	redisPool := &redis.Pool{
+		Dial: func() (redis.Conn, error) {
+			conn, err := redis.Dial(server.settings.RedisProtocol, server.settings.RedisAddress)
+			if err != nil {
+				logger.Error(err.Error())
+			}
+			return conn, err
+		},
+	}
+	defer common.Close(redisPool.Close)
+
+	sessionRepo := redisRepos.CreateSessionRepository(redisPool, server.settings.RedisExpiresKeySec)
+
+	postgresClient, err := gorm.Open(server.settings.PsqlName, server.settings.PsqlData)
 	if err != nil {
 		logger.Fatal(err)
 	}
-	defer postgresClient.Close()
-	logger.Info(server.configObserver.GetDBMS() + " initialized ✓")
+	defer common.Close(postgresClient.Close)
 
+	// postgresClient.DropTableIfExists(&models.User{})
 	postgresClient.AutoMigrate(&models.User{})
 
-	usrRepo := postgreSQL.CreateUserRepository(postgresClient)
-	logger.Info("entities repositories initialized ✓")
+	usrRepo := psqlRepos.CreateUserRepository(postgresClient)
 
-	usrUseCase := impl.CreateUserUseCase(usrRepo)
-	logger.Info("entities usecases initialized ✓")
+	/* USE CASES */
+	sesUseCase := useCases.CreateSessionUseCase(sessionRepo, usrRepo)
+	usrUseCase := useCases.CreateUserUseCase(sessionRepo, usrRepo)
 
-	mw := middleware.CreateMiddleware()
+	/* HANDLERS */
+	mw := httpHandlers.CreateMiddleware(sesUseCase)
+	router := echo.New()
 	router.Use(mw.ProcessPanic)
 	router.Use(mw.LogRequest)
 	//router.Use(mw.CORS)
-	logger.Info("middlewares initialized ✓")
+	router.Use(mw.Sanitize)
+	rootGroup := router.Group(server.settings.BaseURL)
 
-	handlers.CreateUserHandler(rootGroup, server.configObserver.GetSettingsURL(), usrUseCase, mw)
-	logger.Info("entities handlers initialized ✓")
+	httpHandlers.CreateSessionHandler(server.settings.SessionsURL, rootGroup, sesUseCase, mw)
+	httpHandlers.CreateUserHandler(server.settings.SettingsURL, server.settings.ProfileURL, rootGroup, usrUseCase, mw)
 
-	err = router.Start(server.GetAddr())
-	if err != nil {
+	logger.Error("start server on address: ", server.settings.ServerAddress,
+		", log file: ", server.settings.LogFile, ", log level: ", server.settings.LogLevel)
+
+	if err = router.Start(server.settings.ServerAddress); err != nil {
 		logger.Fatal(err)
 	}
 }

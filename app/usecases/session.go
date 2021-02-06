@@ -4,8 +4,8 @@ import (
 	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/models"
 )
 
-type UserUseCase interface {
+type SessionUseCase interface {
 	Create(user *models.User) (*models.Session, error)
-	GetByID(uid uint) (*models.User, error)
-	GetByNickname(nickname string) (*models.User, error)
+	GetByID(sid string) (uint, error)
+	Delete(sid string) error
 }
