@@ -13,7 +13,6 @@ const (
 	UserNotFound  = "user not exist"
 	WrongPassword = "wrong password"
 
-	NoCookie        = "not found cookie header"
 	SessionNotFound = "cookie invalid, session not exist"
 )
 
@@ -28,21 +27,8 @@ var (
 	ErrWrongPassword = errors.New(WrongPassword)
 
 	// ошибки, связанные с сессией
-	ErrNoCookie        = errors.New(NoCookie)
 	ErrSessionNotFound = errors.New(SessionNotFound)
 )
-
-//var messToError = map[string]error{
-//	Internal:     ErrInternal,
-//	Conflict:     ErrConflict,
-//	NoPermission: ErrNoPermission,
-//
-//	UserNotFound:  ErrUserNotFound,
-//	WrongPassword: ErrWrongPassword,
-//
-//	NoCookie:        ErrNoCookie,
-//	SessionNotFound: ErrSessionNotFound,
-//}
 
 var errorToCodeMap = map[error]int{
 	// общие
@@ -55,8 +41,7 @@ var errorToCodeMap = map[error]int{
 	ErrWrongPassword: http.StatusPreconditionFailed,
 
 	// ошибки, связанные с сессией
-	ErrNoCookie:        http.StatusForbidden,
-	ErrSessionNotFound: http.StatusNotFound,
+	ErrSessionNotFound: http.StatusForbidden,
 }
 
 func ResolveErrorToCode(err error) (code int) {
@@ -66,11 +51,3 @@ func ResolveErrorToCode(err error) (code int) {
 	}
 	return code
 }
-
-//func ResolveFromRPC(err error) error {
-//	err, has := messToError[status.Convert(err).Message()]
-//	if !has {
-//		return ErrInternal
-//	}
-//	return err
-//}

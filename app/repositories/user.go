@@ -6,5 +6,7 @@ import (
 
 type UserRepository interface {
 	Create(user *models.User) error
+	GetByID(uid uint) (*models.User, error)
 	GetByNickname(nickname string) (*models.User, error)
+	IsValidPassword(password string, hashPassword []byte) bool
 }

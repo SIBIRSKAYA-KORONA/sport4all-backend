@@ -1,19 +1,20 @@
-server: {
-  ip: localhost,
-  port: 8080,
-}
-
-api: {
-  baseUrl: /api,
-  settingsURL: /settings,
-}
-
 logger: {
   logfile: stdout,
   level: debug,
 }
 
-database: {
+api: {
+  baseUrl: /api,
+  settingsURL: /settings,
+  profileURL: /profile,
+  sessionsUrl: /sessions
+}
+
+server: {
+  address: localhost:8080,
+}
+
+psql: {
   dbms: postgres,
   host: localhost,
   user: sport4all_user,
@@ -22,3 +23,8 @@ database: {
   sslmode: disable
 }
 
+redis: {
+  address: localhost:6379,
+  protocol: tcp,
+  expiresKeySec: 120,
+}
