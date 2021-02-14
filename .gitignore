@@ -17,3 +17,8 @@
 *.idea*
 *.vscode*
 swagger.yaml
+
+# Persistency folder for our postgres, redis, grafana and othres containers
+postgres-data
+redis-data
+grafana-storage

@@ -61,7 +61,7 @@ func (mw *MiddlewareImpl) ProcessPanic(next echo.HandlerFunc) echo.HandlerFunc {
 
 func (mw *MiddlewareImpl) Sanitize(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		if ctx.Request().Method != echo.PUT || ctx.Request().Method != echo.POST {
+		if ctx.Request().Method != echo.PUT && ctx.Request().Method != echo.POST {
 			return next(ctx)
 		}
 		body, err := ioutil.ReadAll(ctx.Request().Body)
