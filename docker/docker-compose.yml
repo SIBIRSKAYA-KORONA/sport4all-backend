@@ -89,6 +89,6 @@ services:
     ports:
       - "5757:8080"
     volumes:
-      - .$PWD/docs/swagger.yaml:/swagger.yaml
+      - $PWD/docs/swagger.yaml:/swagger.yaml
     environment:
-      SWAGGER_JSON: /swagger.json
+      SWAGGER_JSON: /swagger.yaml

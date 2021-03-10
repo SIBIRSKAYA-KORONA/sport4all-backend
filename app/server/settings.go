@@ -17,6 +17,8 @@ type Settings struct {
 
 	ServerAddress string
 
+	Origins []string
+
 	PsqlName string
 	PsqlData string
 
@@ -47,6 +49,8 @@ func InitSettings(configFilePath string) Settings {
 		SessionsURL: viper.GetString("api.sessionsUrl"),
 
 		ServerAddress: viper.GetString("server.address"),
+
+		Origins: viper.GetStringSlice("cors.allowed_origins"),
 
 		PsqlName: viper.GetString("psql.dbms"),
 		PsqlData: fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=%s", dbHost, dbUser, dbPass, dbName, dbMode),

@@ -56,11 +56,17 @@ func (server *Server) Run() {
 	usrUseCase := useCases.CreateUserUseCase(sessionRepo, usrRepo)
 
 	/* HANDLERS */
-	mw := httpHandlers.CreateMiddleware(sesUseCase)
+
+	origins := make(map[string]struct{})
+	for _, key := range server.settings.Origins {
+		origins[key] = struct{}{}
+	}
+
+	mw := httpHandlers.CreateMiddleware(sesUseCase, origins)
 	router := echo.New()
 	router.Use(mw.ProcessPanic)
 	router.Use(mw.LogRequest)
-	//router.Use(mw.CORS)
+	router.Use(mw.CORS)
 	router.Use(mw.Sanitize)
 	rootGroup := router.Group(server.settings.BaseURL)
 

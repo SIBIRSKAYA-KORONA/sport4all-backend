@@ -18,17 +18,17 @@ type Middleware interface {
 	LogRequest(echo.HandlerFunc) echo.HandlerFunc
 	ProcessPanic(echo.HandlerFunc) echo.HandlerFunc
 	Sanitize(echo.HandlerFunc) echo.HandlerFunc
-	//CORS(next echo.HandlerFunc) echo.HandlerFunс
+	CORS(echo.HandlerFunc) echo.HandlerFunc
 	CheckAuth(echo.HandlerFunc) echo.HandlerFunc
 }
 
 type MiddlewareImpl struct {
 	sessionUseCase useCases.SessionUseCase
-	//origins    map[string]struct{}
+	origins        map[string]struct{}
 }
 
-func CreateMiddleware(sessionUseCase useCases.SessionUseCase) Middleware {
-	return &MiddlewareImpl{sessionUseCase: sessionUseCase}
+func CreateMiddleware(sessionUseCase useCases.SessionUseCase, origins map[string]struct{}) Middleware {
+	return &MiddlewareImpl{sessionUseCase: sessionUseCase, origins: origins}
 }
 
 func (mw *MiddlewareImpl) LogRequest(next echo.HandlerFunc) echo.HandlerFunc {
@@ -75,6 +75,23 @@ func (mw *MiddlewareImpl) Sanitize(next echo.HandlerFunc) echo.HandlerFunc {
 			return ctx.NoContent(http.StatusBadRequest)
 		}
 		ctx.Set("body", sanBody)
+		return next(ctx)
+	}
+}
+
+func (mw *MiddlewareImpl) CORS(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		origin := ctx.Request().Header.Get("Origin")
+		if _, exist := mw.origins[origin]; !exist {
+			return ctx.NoContent(http.StatusForbidden)
+		}
+		ctx.Response().Header().Set("Access-Control-Allow-Origin", origin)
+		ctx.Response().Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		ctx.Response().Header().Set("Access-Control-Allow-Credentials", "true")
+		ctx.Response().Header().Set("Access-Control-Allow-Headers", "Content-Type, X-Csrf-Token")
+		if ctx.Request().Method == "OPTIONS" {
+			return ctx.NoContent(http.StatusOK)
+		}
 		return next(ctx)
 	}
 }
