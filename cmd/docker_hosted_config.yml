@@ -1,0 +1,38 @@
+logger: {
+  logfile: stdout,
+  level: debug,
+}
+
+api: {
+  baseUrl: /api,
+  settingsURL: /settings,
+  profileURL: /profile,
+  sessionsUrl: /sessions,
+  teamsURL: /teams
+}
+
+server: {
+  address: 0.0.0.0:8080,
+}
+
+cors: {
+  allowed_origins: [
+      https://sport4all.tech,
+      http://localhost:8001
+  ]
+}
+
+psql: {
+  dbms: postgres,
+  host: postgres,
+  user: sport4all_user,
+  password: sport4all,
+  name: sport4all_db,
+  sslmode: disable
+}
+
+redis: {
+  address: redis:6379,
+  protocol: tcp,
+  expiresKeySec: 3600,
+}

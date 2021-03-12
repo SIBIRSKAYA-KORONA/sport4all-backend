@@ -7,11 +7,18 @@ api: {
   baseUrl: /api,
   settingsURL: /settings,
   profileURL: /profile,
-  sessionsUrl: /sessions
+  sessionsUrl: /sessions,
+  teamsURL: /teams
 }
 
 server: {
   address: localhost:8080,
+}
+
+cors: {
+  allowed_origins: [
+      http://localhost:8080
+  ]
 }
 
 psql: {
@@ -26,5 +33,5 @@ psql: {
 redis: {
   address: localhost:6379,
   protocol: tcp,
-  expiresKeySec: 120,
+  expiresKeySec: 7200,
 }

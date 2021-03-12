@@ -14,8 +14,11 @@ type Settings struct {
 	SettingsURL string
 	ProfileURL  string
 	SessionsURL string
+	TeamsURL    string
 
 	ServerAddress string
+
+	Origins []string
 
 	PsqlName string
 	PsqlData string
@@ -45,8 +48,11 @@ func InitSettings(configFilePath string) Settings {
 		SettingsURL: viper.GetString("api.settingsURL"),
 		ProfileURL:  viper.GetString("api.profileURL"),
 		SessionsURL: viper.GetString("api.sessionsUrl"),
+		TeamsURL:    viper.GetString("api.teamsURL"),
 
 		ServerAddress: viper.GetString("server.address"),
+
+		Origins: viper.GetStringSlice("cors.allowed_origins"),
 
 		PsqlName: viper.GetString("psql.dbms"),
 		PsqlData: fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=%s", dbHost, dbUser, dbPass, dbName, dbMode),
