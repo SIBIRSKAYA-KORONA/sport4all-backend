@@ -3,13 +3,12 @@ package psql
 import (
 	"time"
 
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/usecases"
-
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
 	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/models"
 	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/repositories"
+	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/usecases"
 	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/errors"
 	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/logger"
 )
@@ -39,6 +38,13 @@ func (teamStore *TeamStore) GetByID(tid uint) (*models.Team, error) {
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
 	}
+
+	err := teamStore.DB.Model(team).Related(&team.Players, "Players").Order("id").Error
+	if err != nil {
+		logger.Error(err)
+		return nil, errors.ErrInternal
+	}
+
 	return team, nil
 }
 
@@ -70,4 +76,31 @@ func (teamStore *TeamStore) InviteMember(tid uint, user *models.User, role useca
 		return errors.ErrInternal
 	}
 	return nil
+}
+
+func (teamStore *TeamStore) GetUsersForInvite(tid uint, nicknamePart string, limit uint) (models.Users, error) {
+	var users []models.User
+	team, err := teamStore.GetByID(tid)
+	if err != nil {
+		logger.Error(err)
+		return nil, errors.ErrTeamNotFound
+	}
+	var teamOwnerAndPlayersIDs []uint
+	teamOwnerAndPlayersIDs = append(teamOwnerAndPlayersIDs, team.OwnerId)
+
+	for _, player := range team.Players {
+		teamOwnerAndPlayersIDs = append(teamOwnerAndPlayersIDs, player.ID)
+	}
+
+	err = teamStore.DB.Select("id, name, surname, nickname, link_on_avatar").
+		Limit(limit).
+		Where("nickname LIKE ?", nicknamePart+"%").
+		Not("id", teamOwnerAndPlayersIDs).
+		Find(&users).Error
+	if err != nil {
+		logger.Error(err)
+		return nil, errors.ErrUserNotFound
+	}
+
+	return users, nil
 }

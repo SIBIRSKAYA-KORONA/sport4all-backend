@@ -21,4 +21,5 @@ type TeamUseCase interface {
 	GetByID(tid uint) (*models.Team, error)
 	GetTeamsByNamePart(namePart string, limit uint) (models.Teams, error)
 	InviteMember(tid uint, uid uint, role Role) error
+	GetUsersForInvite(tid uint, nicknamePart string, limit uint) (models.Users, error)
 }

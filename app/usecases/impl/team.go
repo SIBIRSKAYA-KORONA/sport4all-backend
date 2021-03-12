@@ -34,16 +34,26 @@ func (teamUseCase *TeamUseCaseImpl) Create(ownerId uint, team *models.Team) erro
 }
 
 func (teamUseCase *TeamUseCaseImpl) GetByID(tid uint) (*models.Team, error) {
-	usr, err := teamUseCase.teamRepo.GetByID(tid)
+	team, err := teamUseCase.teamRepo.GetByID(tid)
 	if err != nil {
 		logger.Error(err)
 		return nil, err
 	}
-	return usr, nil
+
+	return team, nil
 }
 
 func (teamUseCase *TeamUseCaseImpl) GetTeamsByNamePart(namePart string, limit uint) (models.Teams, error) {
 	users, err := teamUseCase.teamRepo.GetTeamsByNamePart(namePart, limit)
+	if err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+	return users, nil
+}
+
+func (teamUseCase *TeamUseCaseImpl) GetUsersForInvite(tid uint, nicknamePart string, limit uint) (models.Users, error) {
+	users, err := teamUseCase.teamRepo.GetUsersForInvite(tid, nicknamePart, limit)
 	if err != nil {
 		logger.Error(err)
 		return nil, err
