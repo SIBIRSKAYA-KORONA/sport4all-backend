@@ -14,6 +14,8 @@ const (
 	WrongPassword = "wrong password"
 
 	SessionNotFound = "cookie invalid, session not exist"
+
+	TeamNotFound = "team not exist"
 )
 
 var (
@@ -28,6 +30,9 @@ var (
 
 	// ошибки, связанные с сессией
 	ErrSessionNotFound = errors.New(SessionNotFound)
+
+	// ошибки, связанные с командой
+	ErrTeamNotFound = errors.New(TeamNotFound)
 )
 
 var errorToCodeMap = map[error]int{
@@ -42,6 +47,9 @@ var errorToCodeMap = map[error]int{
 
 	// ошибки, связанные с сессией
 	ErrSessionNotFound: http.StatusForbidden,
+
+	// ошибки, связанные с командой
+	ErrTeamNotFound: http.StatusNotFound,
 }
 
 func ResolveErrorToCode(err error) (code int) {
