@@ -10,6 +10,8 @@ type Team struct {
 
 	Players []User `json:"players,omitempty" gorm:"many2many:team_players;" faker:"-"`
 
+	Meetings []Meeting `json:"meetings,omitempty" gorm:"many2many:team_meetings;" faker:"-"`
+
 	// example: ЦСКА
 	Name string `json:"name" gorm:"unique;index" faker:"name"`
 

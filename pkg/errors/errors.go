@@ -16,6 +16,8 @@ const (
 	SessionNotFound = "cookie invalid, session not exist"
 
 	TeamNotFound = "team not exist"
+
+	MeetingNotFound = "meeting not exist"
 )
 
 var (
@@ -33,6 +35,9 @@ var (
 
 	// ошибки, связанные с командой
 	ErrTeamNotFound = errors.New(TeamNotFound)
+
+	// ошибки, связанные со встречей
+	ErrMeetingNotFound = errors.New(MeetingNotFound)
 )
 
 var errorToCodeMap = map[error]int{
@@ -50,6 +55,9 @@ var errorToCodeMap = map[error]int{
 
 	// ошибки, связанные с командой
 	ErrTeamNotFound: http.StatusNotFound,
+
+	// ошибки, связанные со встречей
+	ErrMeetingNotFound: http.StatusNotFound,
 }
 
 func ResolveErrorToCode(err error) (code int) {
