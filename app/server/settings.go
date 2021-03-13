@@ -10,11 +10,12 @@ type Settings struct {
 	LogFile  string
 	LogLevel string
 
-	BaseURL     string
-	SettingsURL string
-	ProfileURL  string
-	SessionsURL string
-	TeamsURL    string
+	BaseURL        string
+	SettingsURL    string
+	ProfileURL     string
+	SessionsURL    string
+	TeamsURL       string
+	TournamentsURL string
 
 	ServerAddress string
 
@@ -44,11 +45,12 @@ func InitSettings(configFilePath string) Settings {
 		LogFile:  viper.GetString("logger.logfile"),
 		LogLevel: viper.GetString("logger.level"),
 
-		BaseURL:     viper.GetString("api.baseURL"),
-		SettingsURL: viper.GetString("api.settingsURL"),
-		ProfileURL:  viper.GetString("api.profileURL"),
-		SessionsURL: viper.GetString("api.sessionsUrl"),
-		TeamsURL:    viper.GetString("api.teamsURL"),
+		BaseURL:        viper.GetString("api.baseURL"),
+		SettingsURL:    viper.GetString("api.settingsURL"),
+		ProfileURL:     viper.GetString("api.profileURL"),
+		SessionsURL:    viper.GetString("api.sessionsUrl"),
+		TeamsURL:       viper.GetString("api.teamsURL"),
+		TournamentsURL: viper.GetString("api.tournamentsURL"),
 
 		ServerAddress: viper.GetString("server.address"),
 

@@ -49,6 +49,8 @@ type User struct {
 	HashPassword []byte `json:"-"`
 
 	Owner []Team `json:"-" gorm:"foreignKey:ownerId" faker:"-"`
+
+	Player []Team `json:"-" gorm:"many2many:team_players;" faker:"-"`
 }
 
 // swagger:model Users

@@ -43,6 +43,16 @@ func (teamUseCase *TeamUseCaseImpl) GetByID(tid uint) (*models.Team, error) {
 	return team, nil
 }
 
+func (teamUseCase *TeamUseCaseImpl) GetTeamsByUser(uid uint, role usecases.Role) (models.Teams, error) {
+	teams, err := teamUseCase.teamRepo.GetTeamsByUser(uid, role)
+	if err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+
+	return teams, nil
+}
+
 func (teamUseCase *TeamUseCaseImpl) GetTeamsByNamePart(namePart string, limit uint) (models.Teams, error) {
 	users, err := teamUseCase.teamRepo.GetTeamsByNamePart(namePart, limit)
 	if err != nil {

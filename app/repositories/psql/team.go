@@ -48,6 +48,30 @@ func (teamStore *TeamStore) GetByID(tid uint) (*models.Team, error) {
 	return team, nil
 }
 
+func (teamStore *TeamStore) GetTeamsByUser(uid uint, role usecases.Role) (models.Teams, error) {
+	var userTeams []models.Team
+	usr := &models.User{ID: uid}
+
+	if role == usecases.Player {
+		err := teamStore.DB.Model(usr).Preload("Players").Related(&userTeams, "Player").Error
+		if err != nil {
+			logger.Error(err)
+			return nil, errors.ErrTeamNotFound
+		}
+	} else if role == usecases.Owner {
+		err := teamStore.DB.Model(&models.User{ID: uid}).Related(&userTeams, "owner_id").Error
+		if err != nil {
+			logger.Error(err)
+			return nil, errors.ErrTeamNotFound
+		}
+	}
+
+	for i := range userTeams {
+		userTeams[i].Players = nil
+	}
+	return userTeams, nil
+}
+
 func (teamStore *TeamStore) GetTeamsByNamePart(namePart string, limit uint) (models.Teams, error) {
 	var teams []models.Team
 	err := teamStore.DB.Limit(limit).Where("name LIKE ?", namePart+"%").Find(&teams).Error

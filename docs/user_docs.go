@@ -14,7 +14,7 @@ import (
 // swagger:response PostApiSettings200Response
 type PostApiSettings200Response struct {
 	// in:body
-	Body models.Users
+	Body models.User
 }
 
 // 404, такого нет, у тебя проблемы

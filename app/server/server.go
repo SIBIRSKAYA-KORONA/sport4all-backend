@@ -47,15 +47,17 @@ func (server *Server) Run() {
 	defer common.Close(postgresClient.Close)
 
 	// postgresClient.DropTableIfExists(&models.User{})
-	postgresClient.AutoMigrate(&models.User{}, &models.Team{})
+	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Tournament{})
 
 	usrRepo := psqlRepos.CreateUserRepository(postgresClient)
 	teamRepo := psqlRepos.CreateTeamRepository(postgresClient)
+	tournamentRepo := psqlRepos.CreateTournamentRepository(postgresClient)
 
 	/* USE CASES */
 	sesUseCase := useCases.CreateSessionUseCase(sessionRepo, usrRepo)
 	usrUseCase := useCases.CreateUserUseCase(sessionRepo, usrRepo)
 	teamUseCase := useCases.CreateTeamUseCase(teamRepo, usrRepo)
+	tournamentUseCase := useCases.CreateTournamentUseCase(usrRepo, tournamentRepo)
 
 	/* HANDLERS */
 
@@ -75,6 +77,7 @@ func (server *Server) Run() {
 	httpHandlers.CreateSessionHandler(server.settings.SessionsURL, rootGroup, sesUseCase, mw)
 	httpHandlers.CreateUserHandler(server.settings.SettingsURL, server.settings.ProfileURL, rootGroup, usrUseCase, mw)
 	httpHandlers.CreateTeamHandler(server.settings.TeamsURL, rootGroup, teamUseCase, mw)
+	httpHandlers.CreateTournamentHandler(server.settings.TournamentsURL, rootGroup, tournamentUseCase, mw)
 
 	logger.Error("start server on address: ", server.settings.ServerAddress,
 		", log file: ", server.settings.LogFile, ", log level: ", server.settings.LogLevel)
