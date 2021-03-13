@@ -31,6 +31,16 @@ func (tournamentStore *TournamentStore) Create(tournament *models.Tournament) er
 	return nil
 }
 
+func (tournamentStore *TournamentStore) GetByID(tid uint) (*models.Tournament, error) {
+	tournament := new(models.Tournament)
+	if err := tournamentStore.DB.Where("id = ?", tid).First(&tournament).Error; err != nil {
+		logger.Error(err)
+		return nil, errors.ErrTournamentNotFound
+	}
+
+	return tournament, nil
+}
+
 func (tournamentStore *TournamentStore) AddTeam(tournamentId uint, teamId uint) error {
 	team := new(models.Team)
 	if err := tournamentStore.DB.First(team, teamId).Error; err != nil {

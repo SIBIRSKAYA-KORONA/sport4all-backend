@@ -39,6 +39,16 @@ func (tournamentUseCase *TournamentUseCaseImpl) Create(ownerId uint, tournament 
 	return nil
 }
 
+func (tournamentUseCase *TournamentUseCaseImpl) GetByID(tid uint) (*models.Tournament, error) {
+	team, err := tournamentUseCase.tournamentRepo.GetByID(tid)
+	if err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+
+	return team, nil
+}
+
 func (tournamentUseCase *TournamentUseCaseImpl) AddTeam(tournamentId uint, teamId uint) error {
 	err := tournamentUseCase.tournamentRepo.AddTeam(tournamentId, teamId)
 	if err != nil {

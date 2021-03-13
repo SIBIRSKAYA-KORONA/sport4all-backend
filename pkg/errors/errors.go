@@ -18,6 +18,8 @@ const (
 	TeamNotFound = "team not exist"
 
 	MeetingNotFound = "meeting not exist"
+
+	TournamentNotFound = "tournament not found"
 )
 
 var (
@@ -38,6 +40,9 @@ var (
 
 	// ошибки, связанные со встречей
 	ErrMeetingNotFound = errors.New(MeetingNotFound)
+
+	// ошибки, связанные с турнирами
+	ErrTournamentNotFound = errors.New(TournamentNotFound)
 )
 
 var errorToCodeMap = map[error]int{
@@ -58,6 +63,9 @@ var errorToCodeMap = map[error]int{
 
 	// ошибки, связанные со встречей
 	ErrMeetingNotFound: http.StatusNotFound,
+
+	// ошибки, связанные с турнирами
+	ErrTournamentNotFound: http.StatusNotFound,
 }
 
 func ResolveErrorToCode(err error) (code int) {
