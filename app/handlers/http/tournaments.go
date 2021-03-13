@@ -2,6 +2,7 @@ package http
 
 //
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -27,6 +28,7 @@ func CreateTournamentHandler(tournamentsURL string, router *echo.Group, useCase 
 	tournaments := router.Group(handler.TournamentsURL)
 	tournaments.POST("", handler.Create, mw.CheckAuth)
 	tournaments.PUT("/:tournamentId/teams/:tid", handler.AddTeam, mw.CheckAuth)
+	tournaments.GET("/:tournamentId", handler.GetByID, mw.CheckAuth)
 	tournaments.GET("/:tournamentId/teams", handler.GetAllTeams)
 }
 
@@ -55,7 +57,44 @@ func (tournamentHandler *TournamentHandler) Create(ctx echo.Context) error {
 }
 
 func (tournamentHandler *TournamentHandler) AddTeam(ctx echo.Context) error {
+	var teamId uint
+	_, err := fmt.Sscan(ctx.Param("tid"), &teamId)
+	if err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	var tournamentId uint
+	_, err = fmt.Sscan(ctx.Param("tournamentId"), &tournamentId)
+	if err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	err = tournamentHandler.UseCase.AddTeam(tournamentId, teamId)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
 	return nil
+}
+
+func (tournamentHandler *TournamentHandler) GetByID(ctx echo.Context) error {
+	var tournamentId uint
+	_, err := fmt.Sscan(ctx.Param("tournamentId"), &tournamentId)
+	if err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	tournament, err := tournamentHandler.UseCase.GetByID(tournamentId)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+	resp, err := serializer.JSON().Marshal(&tournament)
+	if err != nil {
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
 }
 
 func (tournamentHandler *TournamentHandler) GetAllTeams(ctx echo.Context) error {
