@@ -71,7 +71,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) GetAllTeams(tournamentId uint) (
 func (tournamentUseCase *TournamentUseCaseImpl) GenerateMeetings(tournamentId uint, genType uint) error {
 	switch genType {
 	case usecases.Olympic:
-		return tournamentUseCase.generateCircularMeetings(tournamentId)
+		return tournamentUseCase.generateOlympicMeetings(tournamentId)
 	case usecases.Circular:
 		return tournamentUseCase.generateCircularMeetings(tournamentId)
 	default:
