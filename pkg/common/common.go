@@ -21,6 +21,8 @@ func SetCookie(ctx echo.Context, sid string, expires time.Time) {
 		Value:    sid,
 		Path:     "/",
 		Expires:  expires,
+		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
 		HttpOnly: true,
 	})
 }

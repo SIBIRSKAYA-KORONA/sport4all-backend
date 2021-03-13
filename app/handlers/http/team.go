@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/labstack/echo/v4"
+
 	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/models"
+	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/usecases"
 	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/errors"
 	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/logger"
 	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/serializer"
-
-	"github.com/labstack/echo/v4"
-
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/usecases"
 )
 
 type TeamHandler struct {
@@ -27,6 +26,7 @@ func CreateTeamHandler(teamsURL string, router *echo.Group, useCase usecases.Tea
 
 	teams := router.Group(handler.TeamsURL)
 	teams.POST("", handler.Create, mw.CheckAuth)
+	teams.GET("", handler.GetTeamsByUser, mw.CheckAuth)
 	teams.GET("/:tid", handler.GetByID, mw.CheckAuth)
 
 	teams.GET("/search", handler.GetTeamsByNamePart, mw.CheckAuth)
@@ -54,6 +54,27 @@ func (teamHandler *TeamHandler) Create(ctx echo.Context) error {
 	resp, err := serializer.JSON().Marshal(&team)
 	if err != nil {
 		logger.Error(err)
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
+}
+
+func (teamHandler *TeamHandler) GetTeamsByUser(ctx echo.Context) error {
+	uid := ctx.Get("uid").(uint)
+
+	roleParam := ctx.QueryParam("role")
+	role, exist := usecases.StringToRole[roleParam]
+	if !exist {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	teams, err := teamHandler.UseCase.GetTeamsByUser(uid, role)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+	resp, err := serializer.JSON().Marshal(&teams)
+	if err != nil {
 		return ctx.NoContent(http.StatusInternalServerError)
 	}
 	return ctx.String(http.StatusOK, string(resp))

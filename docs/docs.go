@@ -5,7 +5,7 @@
 //     Schemes: http
 //     BasePath: /
 //     Version: 1.0.0
-//     Host: потом добавим
+//     Host: https://sport4all.tech
 //
 //     Consumes:
 //     - application/json

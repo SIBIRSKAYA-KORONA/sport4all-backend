@@ -1,0 +1,53 @@
+package http
+
+//
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+
+	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/models"
+	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/usecases"
+	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/errors"
+	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/logger"
+	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/serializer"
+)
+
+type TournamentHandler struct {
+	UseCase        usecases.TournamentUseCase
+	TournamentsURL string
+}
+
+func CreateTournamentHandler(tournamentsURL string, router *echo.Group, useCase usecases.TournamentUseCase, mw Middleware) {
+	handler := &TournamentHandler{
+		UseCase:        useCase,
+		TournamentsURL: tournamentsURL,
+	}
+
+	tournaments := router.Group(handler.TournamentsURL)
+	tournaments.POST("", handler.Create, mw.CheckAuth)
+}
+
+func (tournamentHandler *TournamentHandler) Create(ctx echo.Context) error {
+	body := ctx.Get("body").([]byte)
+	var tournament models.Tournament
+	err := serializer.JSON().Unmarshal(body, &tournament)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(http.StatusInternalServerError, err.Error())
+	}
+
+	ownerId := ctx.Get("uid").(uint)
+	err = tournamentHandler.UseCase.Create(ownerId, &tournament)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	resp, err := serializer.JSON().Marshal(&tournament)
+	if err != nil {
+		logger.Error(err)
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
+}

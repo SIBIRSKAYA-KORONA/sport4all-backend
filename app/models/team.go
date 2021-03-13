@@ -6,7 +6,7 @@ type Team struct {
 	ID uint `json:"id" gorm:"primary_key"`
 
 	// example: 4
-	OwnerId uint `json:"owner_id" gorm:"not null"`
+	OwnerId uint `json:"ownerId" gorm:"not null"`
 
 	Players []User `json:"players,omitempty" gorm:"many2many:team_players;" faker:"-"`
 
@@ -17,7 +17,7 @@ type Team struct {
 	Location string `json:"location" gorm:"index"`
 
 	// example: super_ava.jpg
-	LinkOnAvatar string `json:"link_on_avatar"`
+	LinkOnAvatar string `json:"linkOnAvatar"`
 
 	// example: 1234
 	Created int64 `json:"created" gorm:"autoCreateTime"`
@@ -28,6 +28,16 @@ type Team struct {
 
 // swagger:model Teams
 type Teams []Team
+
+// swagger:model OwnedTeams
+type OwnedTeams struct {
+	Owned Teams `json:"owned"`
+}
+
+// swagger:model PlayingTeams
+type PlayingTeams struct {
+	Owned Teams `json:"playing"`
+}
 
 func (team *Team) TableName() string {
 	return "teams"

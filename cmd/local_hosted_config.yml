@@ -8,7 +8,8 @@ api: {
   settingsURL: /settings,
   profileURL: /profile,
   sessionsUrl: /sessions,
-  teamsURL: /teams
+  teamsURL: /teams,
+  tournamentsURL: /tournaments
 }
 
 server: {

@@ -18,7 +18,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - $PWD/postgres-data:/data/postgres
+      - ~/postgres-data:/data/postgres
     healthcheck:
       test: [ "CMD", "pg_isready", "--dbname", "sport4all_db", "--host", "postgres", "--port", "5432", "--username", "sport4all_user" ]
       timeout: 2s
@@ -35,7 +35,7 @@ services:
       - "6379:6379"
 
     volumes:
-      - $PWD/redis-data:/var/lib/redis
+      - ~/redis-data:/var/lib/redis
       #  - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
 
     #environment:
@@ -78,7 +78,7 @@ services:
     image: grafana/grafana
     user: "472"
     volumes:
-      - $PWD/grafana-storage:/var/lib/grafana
+      - ~/grafana-storage:/var/lib/grafana
       - $PWD/conf/custom.ini:/etc/grafana/grafana.ini
     ports:
       - '3000:3000'
