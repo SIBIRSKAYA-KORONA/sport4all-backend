@@ -14,6 +14,12 @@ type Tournament struct {
 	// example: Moscow
 	Location string `json:"location" gorm:"index"`
 
+	// example: Teams
+	Teams []Teams `json:"teams,omitempty" gorm:"many2many:team_tournament;" faker:"-"`
+
+	// example: Meetings
+	Meetings []Meeting `json:"meetings,omitempty" gorm:"foreignKey:tournamentId" faker:"-"`
+
 	// example: 1234
 	Created int64 `json:"created" gorm:"autoCreateTime"`
 }

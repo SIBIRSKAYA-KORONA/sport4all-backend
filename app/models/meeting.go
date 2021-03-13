@@ -1,7 +1,7 @@
 package models
 
 const (
-	Unknown = iota
+	Unknown uint = iota
 	New
 	Progress
 	Finished
@@ -12,9 +12,11 @@ type Meeting struct {
 	// example: 101
 	ID uint `json:"id" gorm:"primary_key"`
 
-	Status int `json:"status"`
+	Status uint `json:"status"`
 
 	Stats string `json:"stats"` // TODO: move to table (Anton)
+
+	TournamentId uint `json:"tournamentId"`
 
 	PrevGame *Meeting `json:"prevGame,omitempty" faker:"-"`
 
