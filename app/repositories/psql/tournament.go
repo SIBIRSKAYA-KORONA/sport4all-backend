@@ -32,10 +32,24 @@ func (tournamentStore *TournamentStore) Create(tournament *models.Tournament) er
 }
 
 func (tournamentStore *TournamentStore) AddTeam(tournamentId uint, teamId uint) error {
+	team := new(models.Team)
+	err := tournamentStore.DB.First(team, teamId).Error
+	if err != nil {
+		logger.Error(err)
+		return errors.ErrTeamNotFound
+	}
+
+	err = tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).Association("Teams").Append(team).Error
+	if err != nil {
+		logger.Error(err)
+		return errors.ErrInternal
+	}
+
 	return nil
 }
 
 func (tournamentStore *TournamentStore) GetAllTeams(tournamentId uint) (*models.Teams, error) {
+
 	return nil, nil
 }
 

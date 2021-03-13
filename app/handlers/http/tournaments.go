@@ -2,6 +2,7 @@ package http
 
 //
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -55,6 +56,24 @@ func (tournamentHandler *TournamentHandler) Create(ctx echo.Context) error {
 }
 
 func (tournamentHandler *TournamentHandler) AddTeam(ctx echo.Context) error {
+	var teamId uint
+	_, err := fmt.Sscan(ctx.Param("tid"), &teamId)
+	if err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	var tournamentId uint
+	_, err = fmt.Sscan(ctx.Param("tournamentId"), &tournamentId)
+	if err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	err = tournamentHandler.UseCase.AddTeam(tournamentId, teamId)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
 	return nil
 }
 
