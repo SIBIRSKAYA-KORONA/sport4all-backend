@@ -2,6 +2,7 @@ package http
 
 //
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -28,6 +29,8 @@ func CreateTournamentHandler(tournamentsURL string, router *echo.Group, useCase 
 	tournaments.POST("", handler.Create, mw.CheckAuth)
 	tournaments.PUT("/:tournamentId/teams/:tid", handler.AddTeam, mw.CheckAuth)
 	tournaments.GET("/:tournamentId/teams", handler.GetAllTeams)
+	tournaments.PUT("/:tournamentId/meetings", handler.GenerateMeetings, mw.CheckAuth)
+	tournaments.GET("/:tournamentId/meetings", handler.GetAllMeetings)
 }
 
 func (tournamentHandler *TournamentHandler) Create(ctx echo.Context) error {
@@ -59,13 +62,56 @@ func (tournamentHandler *TournamentHandler) AddTeam(ctx echo.Context) error {
 }
 
 func (tournamentHandler *TournamentHandler) GetAllTeams(ctx echo.Context) error {
-	return nil
+	var tid uint
+	if _, err := fmt.Sscan(ctx.Param("tid"), &tid); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	teams, err := tournamentHandler.UseCase.GetAllTeams(tid)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	resp, err := serializer.JSON().Marshal(&teams)
+	if err != nil {
+		logger.Error(err)
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
 }
 
 func (tournamentHandler *TournamentHandler) GenerateMeetings(ctx echo.Context) error {
-	return nil
+	var tid uint
+	if _, err := fmt.Sscan(ctx.Param("tid"), &tid); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	// TODO: add system from query path
+	if err := tournamentHandler.UseCase.GenerateMeetings(tid, usecases.Olympic); err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	return ctx.NoContent(http.StatusOK)
 }
 
 func (tournamentHandler *TournamentHandler) GetAllMeetings(ctx echo.Context) error {
-	return nil
+	var tid uint
+	if _, err := fmt.Sscan(ctx.Param("tid"), &tid); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	meetings, err := tournamentHandler.UseCase.GetAllMeetings(tid)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	resp, err := serializer.JSON().Marshal(&meetings)
+	if err != nil {
+		logger.Error(err)
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
 }
