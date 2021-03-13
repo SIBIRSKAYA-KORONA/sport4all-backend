@@ -59,19 +59,16 @@ func (tournamentHandler *TournamentHandler) Create(ctx echo.Context) error {
 
 func (tournamentHandler *TournamentHandler) AddTeam(ctx echo.Context) error {
 	var teamId uint
-	_, err := fmt.Sscan(ctx.Param("tid"), &teamId)
-	if err != nil {
+	if _, err := fmt.Sscan(ctx.Param("tid"), &teamId); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
 	var tournamentId uint
-	_, err = fmt.Sscan(ctx.Param("tournamentId"), &tournamentId)
-	if err != nil {
+	if _, err := fmt.Sscan(ctx.Param("tournamentId"), &tournamentId); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	err = tournamentHandler.UseCase.AddTeam(tournamentId, teamId)
-	if err != nil {
+	if err := tournamentHandler.UseCase.AddTeam(tournamentId, teamId); err != nil {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
@@ -101,7 +98,7 @@ func (tournamentHandler *TournamentHandler) GetAllTeams(ctx echo.Context) error 
 
 func (tournamentHandler *TournamentHandler) GenerateMeetings(ctx echo.Context) error {
 	var tid uint
-	if _, err := fmt.Sscan(ctx.Param("tid"), &tid); err != nil {
+	if _, err := fmt.Sscan(ctx.Param("tournamentId"), &tid); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
@@ -116,7 +113,7 @@ func (tournamentHandler *TournamentHandler) GenerateMeetings(ctx echo.Context) e
 
 func (tournamentHandler *TournamentHandler) GetAllMeetings(ctx echo.Context) error {
 	var tid uint
-	if _, err := fmt.Sscan(ctx.Param("tid"), &tid); err != nil {
+	if _, err := fmt.Sscan(ctx.Param("tournamentId"), &tid); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 

@@ -84,7 +84,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) generateOlympicMeetings(tourname
 	for i := 0; i < len(*teams); i += 2 {
 		err = tournamentUseCase.meetingRepo.Create(
 			&models.Meeting{
-				Status:       models.New,
+				Status:       usecases.New,
 				TournamentId: tournamentId,
 				Teams:        []models.Team{(*teams)[i], (*teams)[i+1]},
 			})

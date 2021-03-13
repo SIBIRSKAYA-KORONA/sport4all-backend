@@ -90,10 +90,7 @@ func (teamStore *TeamStore) InviteMember(tid uint, user *models.User, role useca
 		return errors.ErrTeamNotFound
 	}
 
-	//
-	// обработать значение role
-	//
-
+	// TODO: обработать значение role
 	err = teamStore.DB.Model(&team).Association("Players").Append(user).Error
 	if err != nil {
 		logger.Error(err)

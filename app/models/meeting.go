@@ -1,12 +1,5 @@
 package models
 
-const (
-	Unknown uint = iota
-	New
-	Progress
-	Finished
-)
-
 // swagger:model Game
 type Meeting struct {
 	// example: 101
