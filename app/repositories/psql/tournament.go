@@ -59,20 +59,20 @@ func (tournamentStore *TournamentStore) AddTeam(tournamentId uint, teamId uint) 
 
 func (tournamentStore *TournamentStore) GetAllTeams(tournamentId uint) (*models.Teams, error) {
 	var tournamentTeams models.Teams
-	if 	err := tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).
+	if err := tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).
 		Related(&tournamentTeams, "Teams").Error; err != nil {
 		logger.Error(err)
-		return nil, errors.ErrTeamNotFound // TODO: error
+		return nil, errors.ErrTournamentNotFound
 	}
 	return &tournamentTeams, nil
 }
 
 func (tournamentStore *TournamentStore) GetAllMeetings(tournamentId uint) (*models.Meetings, error) {
 	var tournamentMeetings models.Meetings
-	if 	err := tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).
+	if err := tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).
 		Related(&tournamentMeetings, "Meetings").Error; err != nil {
 		logger.Error(err)
-		return nil, errors.ErrTeamNotFound // TODO: error
+		return nil, errors.ErrTournamentNotFound
 	}
 	return &tournamentMeetings, nil
 }

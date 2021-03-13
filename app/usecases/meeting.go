@@ -4,8 +4,7 @@ import (
 	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/models"
 )
 
-
-// TODO: move it for use cases
+// TODO: move it for all use cases
 const (
 	Unknown uint = iota
 	New

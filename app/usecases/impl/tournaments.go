@@ -40,13 +40,13 @@ func (tournamentUseCase *TournamentUseCaseImpl) Create(ownerId uint, tournament 
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) GetByID(tid uint) (*models.Tournament, error) {
-	team, err := tournamentUseCase.tournamentRepo.GetByID(tid)
+	tournament, err := tournamentUseCase.tournamentRepo.GetByID(tid)
 	if err != nil {
 		logger.Error(err)
 		return nil, err
 	}
 
-	return team, nil
+	return tournament, nil
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) AddTeam(tournamentId uint, teamId uint) error {
