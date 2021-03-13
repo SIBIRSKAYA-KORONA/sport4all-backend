@@ -47,7 +47,7 @@ func (server *Server) Run() {
 	defer common.Close(postgresClient.Close)
 
 	// postgresClient.DropTableIfExists(&models.User{})
-	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Tournament{})
+	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{})
 
 	usrRepo := psqlRepos.CreateUserRepository(postgresClient)
 	teamRepo := psqlRepos.CreateTeamRepository(postgresClient)

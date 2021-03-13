@@ -43,14 +43,13 @@ func (tournamentStore *TournamentStore) GetByID(tid uint) (*models.Tournament, e
 
 func (tournamentStore *TournamentStore) AddTeam(tournamentId uint, teamId uint) error {
 	team := new(models.Team)
-	err := tournamentStore.DB.First(team, teamId).Error
-	if err != nil {
+	if err := tournamentStore.DB.First(team, teamId).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrTeamNotFound
 	}
 
-	err = tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).Association("Teams").Append(team).Error
-	if err != nil {
+	if err := tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).
+		Association("Teams").Append(team).Error; err != nil { // TODO: mey be Append(&models.Team{ID: teamId})
 		logger.Error(err)
 		return errors.ErrInternal
 	}
@@ -59,10 +58,21 @@ func (tournamentStore *TournamentStore) AddTeam(tournamentId uint, teamId uint) 
 }
 
 func (tournamentStore *TournamentStore) GetAllTeams(tournamentId uint) (*models.Teams, error) {
-
-	return nil, nil
+	var tournamentTeams models.Teams
+	if err := tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).
+		Related(&tournamentTeams, "Teams").Error; err != nil {
+		logger.Error(err)
+		return nil, errors.ErrTournamentNotFound
+	}
+	return &tournamentTeams, nil
 }
 
 func (tournamentStore *TournamentStore) GetAllMeetings(tournamentId uint) (*models.Meetings, error) {
-	return nil, nil
+	var tournamentMeetings models.Meetings
+	if err := tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).
+		Related(&tournamentMeetings, "Meetings").Error; err != nil {
+		logger.Error(err)
+		return nil, errors.ErrTournamentNotFound
+	}
+	return &tournamentMeetings, nil
 }

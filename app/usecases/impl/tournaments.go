@@ -40,13 +40,13 @@ func (tournamentUseCase *TournamentUseCaseImpl) Create(ownerId uint, tournament 
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) GetByID(tid uint) (*models.Tournament, error) {
-	team, err := tournamentUseCase.tournamentRepo.GetByID(tid)
+	tournament, err := tournamentUseCase.tournamentRepo.GetByID(tid)
 	if err != nil {
 		logger.Error(err)
 		return nil, err
 	}
 
-	return team, nil
+	return tournament, nil
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) AddTeam(tournamentId uint, teamId uint) error {
@@ -94,7 +94,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) generateOlympicMeetings(tourname
 	for i := 0; i < len(*teams); i += 2 {
 		err = tournamentUseCase.meetingRepo.Create(
 			&models.Meeting{
-				Status:       models.New,
+				Status:       usecases.New,
 				TournamentId: tournamentId,
 				Teams:        []models.Team{(*teams)[i], (*teams)[i+1]},
 			})

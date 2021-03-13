@@ -3,6 +3,7 @@ package psql
 import (
 	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/models"
 	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/repositories"
+	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/usecases"
 	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/errors"
 	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/logger"
 
@@ -43,7 +44,7 @@ func (meetingStore *MeetingStore) Update(meeting *models.Meeting) error {
 		return err
 	}
 
-	if meeting.Status != models.Unknown {
+	if meeting.Status != usecases.Unknown {
 		oldMeeting.Status = meeting.Status
 	}
 	if meeting.PrevGame != nil {
