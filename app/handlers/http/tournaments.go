@@ -97,7 +97,7 @@ func (tournamentHandler *TournamentHandler) AddTeam(ctx echo.Context) error {
 
 func (tournamentHandler *TournamentHandler) GetAllTeams(ctx echo.Context) error {
 	var tid uint
-	if _, err := fmt.Sscan(ctx.Param("tid"), &tid); err != nil {
+	if _, err := fmt.Sscan(ctx.Param("tournamentId"), &tid); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
