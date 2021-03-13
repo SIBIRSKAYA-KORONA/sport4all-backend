@@ -26,6 +26,8 @@ func CreateTournamentHandler(tournamentsURL string, router *echo.Group, useCase 
 
 	tournaments := router.Group(handler.TournamentsURL)
 	tournaments.POST("", handler.Create, mw.CheckAuth)
+	tournaments.PUT("/:tournamentId/teams/:tid", handler.AddTeam, mw.CheckAuth)
+	tournaments.GET("/:tournamentId/teams", handler.GetAllTeams)
 }
 
 func (tournamentHandler *TournamentHandler) Create(ctx echo.Context) error {
@@ -50,4 +52,20 @@ func (tournamentHandler *TournamentHandler) Create(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusInternalServerError)
 	}
 	return ctx.String(http.StatusOK, string(resp))
+}
+
+func (tournamentHandler *TournamentHandler) AddTeam(ctx echo.Context) error {
+	return nil
+}
+
+func (tournamentHandler *TournamentHandler) GetAllTeams(ctx echo.Context) error {
+	return nil
+}
+
+func (tournamentHandler *TournamentHandler) GenerateMeetings(ctx echo.Context) error {
+	return nil
+}
+
+func (tournamentHandler *TournamentHandler) GetAllMeetings(ctx echo.Context) error {
+	return nil
 }

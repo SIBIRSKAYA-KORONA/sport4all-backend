@@ -10,6 +10,8 @@ type Team struct {
 
 	Players []User `json:"players,omitempty" gorm:"many2many:team_players;" faker:"-"`
 
+	Tournaments []Tournament `json:"tournaments,omitempty" gorm:"many2many:team_tournament;" faker:"-"`
+
 	Meetings []Meeting `json:"meetings,omitempty" gorm:"many2many:team_meetings;" faker:"-"`
 
 	// example: ЦСКА

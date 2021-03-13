@@ -54,12 +54,11 @@ func (server *Server) Run() {
 	tournamentRepo := psqlRepos.CreateTournamentRepository(postgresClient)
 	meetingRepo := psqlRepos.CreateMeetingRepository(postgresClient)
 
-
 	/* USE CASES */
 	sesUseCase := useCases.CreateSessionUseCase(sessionRepo, usrRepo)
 	usrUseCase := useCases.CreateUserUseCase(sessionRepo, usrRepo)
 	teamUseCase := useCases.CreateTeamUseCase(teamRepo, usrRepo)
-	tournamentUseCase := useCases.CreateTournamentUseCase(usrRepo, tournamentRepo)
+	tournamentUseCase := useCases.CreateTournamentUseCase(usrRepo, tournamentRepo, meetingRepo)
 	meetingUseCase := useCases.CreateMeetingUseCase(meetingRepo)
 
 	/* HANDLERS */

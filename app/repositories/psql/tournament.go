@@ -30,3 +30,15 @@ func (tournamentStore *TournamentStore) Create(tournament *models.Tournament) er
 
 	return nil
 }
+
+func (tournamentStore *TournamentStore) AddTeam(tournamentId uint, teamId uint) error {
+	return nil
+}
+
+func (tournamentStore *TournamentStore) GetAllTeams(tournamentId uint) (*models.Teams, error) {
+	return nil, nil
+}
+
+func (tournamentStore *TournamentStore) GetAllMeetings(tournamentId uint) (*models.Meetings, error) {
+	return nil, nil
+}
