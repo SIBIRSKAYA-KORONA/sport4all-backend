@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -20,15 +21,22 @@ type Middleware interface {
 	Sanitize(echo.HandlerFunc) echo.HandlerFunc
 	CORS(echo.HandlerFunc) echo.HandlerFunc
 	CheckAuth(echo.HandlerFunc) echo.HandlerFunc
+	CheckMeeting(echo.HandlerFunc) echo.HandlerFunc
 }
 
 type MiddlewareImpl struct {
 	sessionUseCase useCases.SessionUseCase
+	meetingUseCase useCases.MeetingUseCase
 	origins        map[string]struct{}
 }
 
-func CreateMiddleware(sessionUseCase useCases.SessionUseCase, origins map[string]struct{}) Middleware {
-	return &MiddlewareImpl{sessionUseCase: sessionUseCase, origins: origins}
+func CreateMiddleware(sessionUseCase useCases.SessionUseCase,
+	meetingUseCase useCases.MeetingUseCase,
+	origins map[string]struct{}) Middleware {
+	return &MiddlewareImpl{sessionUseCase: sessionUseCase,
+		meetingUseCase: meetingUseCase,
+
+		origins: origins}
 }
 
 func (mw *MiddlewareImpl) LogRequest(next echo.HandlerFunc) echo.HandlerFunc {
@@ -112,6 +120,21 @@ func (mw *MiddlewareImpl) CheckAuth(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		ctx.Set("uid", uid)
 		ctx.Set("sid", sid)
+		return next(ctx)
+	}
+}
+
+func (mw *MiddlewareImpl) CheckMeeting(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		var meetingID uint
+		if _, err := fmt.Sscan(ctx.Param("mid"), &meetingID); err != nil {
+			return ctx.NoContent(http.StatusBadRequest)
+		}
+		if _, err := mw.meetingUseCase.GetByID(meetingID); err != nil {
+			logger.Error(err)
+			return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+		}
+		ctx.Set("meetingID", meetingID)
 		return next(ctx)
 	}
 }

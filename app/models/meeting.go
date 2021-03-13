@@ -14,8 +14,6 @@ type Meeting struct {
 
 	Status int `json:"status"`
 
-	Stats string `json:"stats"` // TODO: move to table (Anton)
-
 	PrevGame *Meeting `json:"prevGame,omitempty" faker:"-"`
 
 	NextGame *Meeting `json:"nextGame,omitempty" faker:"-"`

@@ -10,7 +10,8 @@ api: {
   sessionsUrl: /sessions,
   teamsURL: /teams,
   tournamentsURL: /tournaments,
-  meetingsURL: /meetings
+  meetingsURL: /meetings,
+  meetingsStatURL: /stat
 }
 
 server: {

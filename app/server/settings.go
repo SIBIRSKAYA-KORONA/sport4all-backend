@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+
 	"github.com/spf13/viper"
 )
 
@@ -15,7 +16,8 @@ type Settings struct {
 	SessionsURL    string
 	TeamsURL       string
 	TournamentsURL string
-	MeetingsURL string
+	MeetingsURL    string
+	StatsURL       string
 
 	ServerAddress string
 
@@ -51,7 +53,8 @@ func InitSettings(configFilePath string) Settings {
 		SessionsURL:    viper.GetString("api.sessionsUrl"),
 		TeamsURL:       viper.GetString("api.teamsURL"),
 		TournamentsURL: viper.GetString("api.tournamentsURL"),
-		MeetingsURL: viper.GetString("api.meetingsURL"),
+		MeetingsURL:    viper.GetString("api.meetingsURL"),
+		StatsURL:       viper.GetString("api.meetingsStatURL"),
 
 		ServerAddress: viper.GetString("server.address"),
 

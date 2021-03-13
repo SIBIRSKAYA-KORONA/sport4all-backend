@@ -47,13 +47,13 @@ func (server *Server) Run() {
 	defer common.Close(postgresClient.Close)
 
 	// postgresClient.DropTableIfExists(&models.User{})
-	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Tournament{})
+	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{}, &models.MeetingStat{})
 
 	usrRepo := psqlRepos.CreateUserRepository(postgresClient)
 	teamRepo := psqlRepos.CreateTeamRepository(postgresClient)
 	tournamentRepo := psqlRepos.CreateTournamentRepository(postgresClient)
 	meetingRepo := psqlRepos.CreateMeetingRepository(postgresClient)
-
+	meetingStatRepo := psqlRepos.CreateMeetingStatRepository(postgresClient)
 
 	/* USE CASES */
 	sesUseCase := useCases.CreateSessionUseCase(sessionRepo, usrRepo)
@@ -61,6 +61,7 @@ func (server *Server) Run() {
 	teamUseCase := useCases.CreateTeamUseCase(teamRepo, usrRepo)
 	tournamentUseCase := useCases.CreateTournamentUseCase(usrRepo, tournamentRepo)
 	meetingUseCase := useCases.CreateMeetingUseCase(meetingRepo)
+	meetingStatUseCase := useCases.CreateMeetingStatUseCase(meetingStatRepo)
 
 	/* HANDLERS */
 
@@ -69,7 +70,7 @@ func (server *Server) Run() {
 		origins[key] = struct{}{}
 	}
 
-	mw := httpHandlers.CreateMiddleware(sesUseCase, origins)
+	mw := httpHandlers.CreateMiddleware(sesUseCase, meetingUseCase, origins)
 	router := echo.New()
 	router.Use(mw.ProcessPanic)
 	router.Use(mw.LogRequest)
@@ -82,6 +83,7 @@ func (server *Server) Run() {
 	httpHandlers.CreateTeamHandler(server.settings.TeamsURL, rootGroup, teamUseCase, mw)
 	httpHandlers.CreateTournamentHandler(server.settings.TournamentsURL, rootGroup, tournamentUseCase, mw)
 	httpHandlers.CreateMeetingsHandler(server.settings.MeetingsURL, rootGroup, meetingUseCase, mw)
+	httpHandlers.CreateMeetingStatHandler(server.settings.MeetingsURL, server.settings.StatsURL, rootGroup, meetingStatUseCase, mw)
 
 	logger.Error("start server on address: ", server.settings.ServerAddress,
 		", log file: ", server.settings.LogFile, ", log level: ", server.settings.LogLevel)
