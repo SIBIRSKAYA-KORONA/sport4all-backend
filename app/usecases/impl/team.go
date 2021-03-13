@@ -17,7 +17,7 @@ func CreateTeamUseCase(teamRepo repositories.TeamRepository, userRepo repositori
 }
 
 func (teamUseCase *TeamUseCaseImpl) Create(ownerId uint, team *models.Team) error {
-	_, err := teamUseCase.userRepo.GetByID(ownerId)
+	_, err := teamUseCase.userRepo.GetByID(ownerId) // TODO: кажется этот запрос не нужен или его надо вынести в mv
 	if err != nil {
 		logger.Error(err)
 		return err
