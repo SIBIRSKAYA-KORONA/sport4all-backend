@@ -41,14 +41,8 @@ func (tournamentStore *TournamentStore) GetByID(tid uint) (*models.Tournament, e
 }
 
 func (tournamentStore *TournamentStore) AddTeam(tournamentId uint, teamId uint) error {
-	team := new(models.Team)
-	if err := tournamentStore.DB.First(team, teamId).Error; err != nil {
-		logger.Error(err)
-		return errors.ErrTeamNotFound
-	}
-
 	if err := tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).
-		Association("Teams").Append(team).Error; err != nil { // TODO: mey be Append(&models.Team{ID: teamId})
+		Association("Teams").Append(&models.Team{ID: teamId}).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrInternal
 	}

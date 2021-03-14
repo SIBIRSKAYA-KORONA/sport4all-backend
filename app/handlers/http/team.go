@@ -38,15 +38,13 @@ func CreateTeamHandler(teamsURL string, router *echo.Group, useCase usecases.Tea
 func (teamHandler *TeamHandler) Create(ctx echo.Context) error {
 	body := ctx.Get("body").([]byte)
 	var team models.Team
-	err := serializer.JSON().Unmarshal(body, &team)
-	if err != nil {
+	if err := serializer.JSON().Unmarshal(body, &team); err != nil {
 		logger.Error(err)
 		return ctx.String(http.StatusInternalServerError, err.Error())
 	}
 
 	ownerId := ctx.Get("uid").(uint)
-	err = teamHandler.UseCase.Create(ownerId, &team)
-	if err != nil {
+	if err := teamHandler.UseCase.Create(ownerId, &team); err != nil {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
@@ -132,14 +130,12 @@ func (teamHandler *TeamHandler) GetUsersForInvite(ctx echo.Context) error {
 
 func (teamHandler *TeamHandler) InviteMember(ctx echo.Context) error {
 	var tid uint
-	_, err := fmt.Sscan(ctx.Param("tid"), &tid)
-	if err != nil {
+	if _, err := fmt.Sscan(ctx.Param("tid"), &tid); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
 	var uid uint
-	_, err = fmt.Sscan(ctx.Param("uid"), &uid)
-	if err != nil {
+	if _, err := fmt.Sscan(ctx.Param("uid"), &uid); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
@@ -149,8 +145,7 @@ func (teamHandler *TeamHandler) InviteMember(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	err = teamHandler.UseCase.InviteMember(tid, uid, role)
-	if err != nil {
+	if err := teamHandler.UseCase.InviteMember(tid, uid, role); err != nil {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
@@ -162,9 +157,9 @@ func (teamHandler *TeamHandler) GetTeamsByNamePart(ctx echo.Context) error {
 	if namePart == "" {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
+
 	var limit uint
-	_, err := fmt.Sscan(ctx.QueryParam("limit"), &limit)
-	if err != nil {
+	if _, err := fmt.Sscan(ctx.QueryParam("limit"), &limit); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 

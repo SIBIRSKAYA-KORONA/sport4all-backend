@@ -77,8 +77,8 @@ func (teamUseCase *TeamUseCaseImpl) InviteMember(tid uint, uid uint, role usecas
 		logger.Error(err)
 		return err
 	}
-	err = teamUseCase.teamRepo.InviteMember(tid, user, role)
-	if err != nil {
+
+	if err = teamUseCase.teamRepo.InviteMember(tid, user, role); err != nil {
 		logger.Error(err)
 		return err
 	}

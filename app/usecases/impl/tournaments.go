@@ -24,13 +24,12 @@ func CreateTournamentUseCase(userRepo repositories.UserRepository, tournamentRep
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) Create(ownerId uint, tournament *models.Tournament) error {
-
 	if _, err := tournamentUseCase.userRepo.GetByID(ownerId); err != nil { // TODO: move it to mv
 		logger.Error(err)
 		return err
 	}
 
-	tournament.OwnerId = ownerId
+	tournament.OwnerId = ownerId // TODO: init in handler
 	if err := tournamentUseCase.tournamentRepo.Create(tournament); err != nil {
 		logger.Error(err)
 		return err
@@ -50,11 +49,11 @@ func (tournamentUseCase *TournamentUseCaseImpl) GetByID(tid uint) (*models.Tourn
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) AddTeam(tournamentId uint, teamId uint) error {
-	err := tournamentUseCase.tournamentRepo.AddTeam(tournamentId, teamId)
-	if err != nil {
+	if err := tournamentUseCase.tournamentRepo.AddTeam(tournamentId, teamId); err != nil {
 		logger.Error(err)
 		return err
 	}
+
 	return nil
 }
 

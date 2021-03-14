@@ -34,14 +34,12 @@ func CreateMeetingsHandler(meetingsURL string, router *echo.Group, useCase useca
 func (meetingHandler *MeetingHandler) Create(ctx echo.Context) error {
 	body := ctx.Get("body").([]byte)
 	var meeting models.Meeting
-	err := serializer.JSON().Unmarshal(body, &meeting)
-	if err != nil {
+	if err := serializer.JSON().Unmarshal(body, &meeting); err != nil {
 		logger.Error(err)
 		return ctx.String(http.StatusInternalServerError, err.Error())
 	}
 
-	err = meetingHandler.UseCase.Create(&meeting)
-	if err != nil {
+	if err := meetingHandler.UseCase.Create(&meeting); err != nil {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
