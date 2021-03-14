@@ -35,5 +35,11 @@ func (meetingUseCase *MeetingUseCaseImpl) GetByID(mid uint) (*models.Meeting, er
 }
 
 func (meetingUseCase *MeetingUseCaseImpl) Update(meeting *models.Meeting) error {
+	// TODO: валидация состояния турнира
+	if err := meetingUseCase.meetingRepo.Update(meeting); err != nil {
+		logger.Error(err)
+		return err
+	}
+
 	return nil
 }

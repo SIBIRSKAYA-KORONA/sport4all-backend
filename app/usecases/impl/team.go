@@ -43,7 +43,7 @@ func (teamUseCase *TeamUseCaseImpl) GetByID(tid uint) (*models.Team, error) {
 	return team, nil
 }
 
-func (teamUseCase *TeamUseCaseImpl) GetTeamsByUser(uid uint, role models.Role) (models.Teams, error) {
+func (teamUseCase *TeamUseCaseImpl) GetTeamsByUser(uid uint, role models.Role) (*models.Teams, error) {
 	teams, err := teamUseCase.teamRepo.GetTeamsByUser(uid, role)
 	if err != nil {
 		logger.Error(err)
@@ -53,7 +53,17 @@ func (teamUseCase *TeamUseCaseImpl) GetTeamsByUser(uid uint, role models.Role) (
 	return teams, nil
 }
 
-func (teamUseCase *TeamUseCaseImpl) GetTeamsByNamePart(namePart string, limit uint) (models.Teams, error) {
+func (teamUseCase *TeamUseCaseImpl) GetAllTournaments(tid uint) (*models.Tournaments, error) {
+	tournaments, err := teamUseCase.teamRepo.GetAllTournaments(tid)
+	if err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+
+	return tournaments, nil
+}
+
+func (teamUseCase *TeamUseCaseImpl) GetTeamsByNamePart(namePart string, limit uint) (*models.Teams, error) {
 	users, err := teamUseCase.teamRepo.GetTeamsByNamePart(namePart, limit)
 	if err != nil {
 		logger.Error(err)
@@ -62,7 +72,7 @@ func (teamUseCase *TeamUseCaseImpl) GetTeamsByNamePart(namePart string, limit ui
 	return users, nil
 }
 
-func (teamUseCase *TeamUseCaseImpl) GetUsersForInvite(tid uint, nicknamePart string, limit uint) (models.Users, error) {
+func (teamUseCase *TeamUseCaseImpl) GetUsersForInvite(tid uint, nicknamePart string, limit uint) (*models.Users, error) {
 	users, err := teamUseCase.teamRepo.GetUsersForInvite(tid, nicknamePart, limit)
 	if err != nil {
 		logger.Error(err)

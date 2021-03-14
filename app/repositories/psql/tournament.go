@@ -40,6 +40,48 @@ func (tournamentStore *TournamentStore) GetByID(tid uint) (*models.Tournament, e
 	return tournament, nil
 }
 
+func (tournamentStore *TournamentStore) GetTournamentByUser(uid uint) (*models.Tournaments, error) {
+	ownerTournaments := new(models.Tournaments)
+	if err := tournamentStore.DB.Model(&models.User{ID: uid}).
+		Related(&ownerTournaments, "owner_id").Error; err != nil {
+		logger.Error(err)
+		return nil, errors.ErrTournamentNotFound
+	}
+
+	return ownerTournaments, nil
+}
+
+func (tournamentStore *TournamentStore) Update(tournament *models.Tournament) error {
+	oldTournament, err := tournamentStore.GetByID(tournament.ID)
+	if err != nil {
+		logger.Error(err)
+		return err
+	}
+
+	if tournament.Name != "" {
+		oldTournament.Name = tournament.Name
+	}
+	if tournament.Location != "" {
+		oldTournament.Location = tournament.Location
+	}
+	if tournament.Status != models.UnknownEvent {
+		oldTournament.Status = tournament.Status
+	}
+	if tournament.System != models.UnknownSystem {
+		oldTournament.System = tournament.System
+	}
+	if tournament.About != "" {
+		oldTournament.About = tournament.About
+	}
+
+	if err = tournamentStore.DB.Save(oldTournament).Error; err != nil {
+		logger.Error(err)
+		return errors.ErrInternal
+	}
+
+	return nil
+}
+
 func (tournamentStore *TournamentStore) AddTeam(tournamentId uint, teamId uint) error {
 	if err := tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).
 		Association("Teams").Append(&models.Team{ID: teamId}).Error; err != nil {

@@ -5,10 +5,11 @@ import (
 )
 
 type TournamentUseCase interface {
-	Create(ownerId uint, tournament *models.Tournament) error
+	Create(tournament *models.Tournament) error
 	GetByID(tournamentId uint) (*models.Tournament, error)
+	GetTournamentByUser(uid uint) (*models.UserTournament, error)
+	Update(meeting *models.Tournament) error
 	AddTeam(tournamentId uint, teamId uint) error
 	GetAllTeams(tournamentId uint) (*models.Teams, error)
-	GenerateMeetings(tournamentId uint, genType models.TournamentSystem) error
 	GetAllMeetings(tournamentId uint) (*models.Meetings, error)
 }

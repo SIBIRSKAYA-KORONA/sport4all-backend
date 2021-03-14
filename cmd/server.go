@@ -58,11 +58,10 @@ func (server *Server) Run() {
 	sesUseCase := useCases.CreateSessionUseCase(sessionRepo, usrRepo)
 	usrUseCase := useCases.CreateUserUseCase(sessionRepo, usrRepo)
 	teamUseCase := useCases.CreateTeamUseCase(teamRepo, usrRepo)
-	tournamentUseCase := useCases.CreateTournamentUseCase(usrRepo, tournamentRepo, meetingRepo)
+	tournamentUseCase := useCases.CreateTournamentUseCase(usrRepo, tournamentRepo, teamRepo, meetingRepo)
 	meetingUseCase := useCases.CreateMeetingUseCase(meetingRepo)
 
 	/* HANDLERS */
-
 	origins := make(map[string]struct{})
 	for _, key := range server.settings.Origins {
 		origins[key] = struct{}{}

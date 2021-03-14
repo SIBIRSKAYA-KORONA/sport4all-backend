@@ -26,25 +26,24 @@ func CreateTournamentHandler(tournamentsURL string, router *echo.Group, useCase 
 
 	tournaments := router.Group(handler.TournamentsURL)
 	tournaments.POST("", handler.Create, mw.CheckAuth)
-	tournaments.GET("/:tournamentId", handler.GetByID, mw.CheckAuth)
+	tournaments.GET("", handler.GetTournamentByUser)
+	tournaments.GET("/:tournamentId", handler.GetByID)
+	tournaments.PUT("/:tournamentId", handler.Update, mw.CheckAuth)
 	tournaments.PUT("/:tournamentId/teams/:tid", handler.AddTeam, mw.CheckAuth)
 	tournaments.GET("/:tournamentId/teams", handler.GetAllTeams)
-	tournaments.PUT("/:tournamentId/meetings", handler.GenerateMeetings, mw.CheckAuth)
 	tournaments.GET("/:tournamentId/meetings", handler.GetAllMeetings)
 }
 
 func (tournamentHandler *TournamentHandler) Create(ctx echo.Context) error {
 	body := ctx.Get("body").([]byte)
 	var tournament models.Tournament
-	err := serializer.JSON().Unmarshal(body, &tournament)
-	if err != nil {
+	if err := serializer.JSON().Unmarshal(body, &tournament); err != nil {
 		logger.Error(err)
 		return ctx.String(http.StatusInternalServerError, err.Error())
 	}
+	tournament.OwnerId = ctx.Get("uid").(uint)
 
-	ownerId := ctx.Get("uid").(uint)
-	err = tournamentHandler.UseCase.Create(ownerId, &tournament)
-	if err != nil {
+	if err := tournamentHandler.UseCase.Create(&tournament); err != nil {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
@@ -52,6 +51,24 @@ func (tournamentHandler *TournamentHandler) Create(ctx echo.Context) error {
 	resp, err := serializer.JSON().Marshal(&tournament)
 	if err != nil {
 		logger.Error(err)
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
+}
+
+func (tournamentHandler *TournamentHandler) GetTournamentByUser(ctx echo.Context) error {
+	var userId uint
+	if _, err := fmt.Sscan(ctx.QueryParam("userId"), &userId); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	userTournament, err := tournamentHandler.UseCase.GetTournamentByUser(userId)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+	resp, err := serializer.JSON().Marshal(&userTournament)
+	if err != nil {
 		return ctx.NoContent(http.StatusInternalServerError)
 	}
 	return ctx.String(http.StatusOK, string(resp))
@@ -73,6 +90,25 @@ func (tournamentHandler *TournamentHandler) GetByID(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusInternalServerError)
 	}
 	return ctx.String(http.StatusOK, string(resp))
+}
+
+func (tournamentHandler *TournamentHandler) Update(ctx echo.Context) error {
+	body := ctx.Get("body").([]byte)
+	var tournament models.Tournament
+	if err := serializer.JSON().Unmarshal(body, &tournament); err != nil {
+		logger.Error(err)
+		return ctx.String(http.StatusInternalServerError, err.Error())
+	}
+	if _, err := fmt.Sscan(ctx.Param("tournamentId"), &tournament.ID); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	if err := tournamentHandler.UseCase.Update(&tournament); err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	return ctx.NoContent(http.StatusOK)
 }
 
 func (tournamentHandler *TournamentHandler) AddTeam(ctx echo.Context) error {
@@ -112,21 +148,6 @@ func (tournamentHandler *TournamentHandler) GetAllTeams(ctx echo.Context) error 
 		return ctx.NoContent(http.StatusInternalServerError)
 	}
 	return ctx.String(http.StatusOK, string(resp))
-}
-
-func (tournamentHandler *TournamentHandler) GenerateMeetings(ctx echo.Context) error {
-	var tid uint
-	if _, err := fmt.Sscan(ctx.Param("tournamentId"), &tid); err != nil {
-		return ctx.NoContent(http.StatusBadRequest)
-	}
-
-	// TODO: add system from query path
-	if err := tournamentHandler.UseCase.GenerateMeetings(tid, models.Olympic); err != nil {
-		logger.Error(err)
-		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
-	}
-
-	return ctx.NoContent(http.StatusOK)
 }
 
 func (tournamentHandler *TournamentHandler) GetAllMeetings(ctx echo.Context) error {

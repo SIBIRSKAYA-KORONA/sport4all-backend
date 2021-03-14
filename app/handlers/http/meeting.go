@@ -54,7 +54,7 @@ func (meetingHandler *MeetingHandler) Create(ctx echo.Context) error {
 
 func (meetingHandler *MeetingHandler) GetByID(ctx echo.Context) error {
 	var mid uint
-	if _, err := fmt.Sscan(ctx.Param("tid"), &mid); err != nil {
+	if _, err := fmt.Sscan(ctx.Param("mid"), &mid); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
@@ -63,6 +63,7 @@ func (meetingHandler *MeetingHandler) GetByID(ctx echo.Context) error {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
+
 	resp, err := serializer.JSON().Marshal(&meeting)
 	if err != nil {
 		return ctx.NoContent(http.StatusInternalServerError)
@@ -71,5 +72,20 @@ func (meetingHandler *MeetingHandler) GetByID(ctx echo.Context) error {
 }
 
 func (meetingHandler *MeetingHandler) Update(ctx echo.Context) error {
-	return ctx.String(http.StatusOK, "")
+	body := ctx.Get("body").([]byte)
+	var meeting models.Meeting
+	if err := serializer.JSON().Unmarshal(body, &meeting); err != nil {
+		logger.Error(err)
+		return ctx.String(http.StatusInternalServerError, err.Error())
+	}
+	if _, err := fmt.Sscan(ctx.Param("mid"), &meeting.ID); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	if err := meetingHandler.UseCase.Update(&meeting); err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	return ctx.NoContent(http.StatusOK)
 }

@@ -43,14 +43,26 @@ func (meetingStore *MeetingStore) Update(meeting *models.Meeting) error {
 		return err
 	}
 
-	if meeting.Status != models.Unknown {
+	if meeting.Status != models.UnknownEvent {
 		oldMeeting.Status = meeting.Status
 	}
-	if meeting.PrevGame != nil {
-		oldMeeting.PrevGame = meeting.PrevGame
+	if meeting.Round != 0 {
+		oldMeeting.Round = meeting.Round
 	}
-	if meeting.NextGame != nil {
-		oldMeeting.NextGame = meeting.NextGame
+	if meeting.Group != 0 {
+		oldMeeting.Group = meeting.Group
+	}
+	if meeting.TournamentId != 0 {
+		oldMeeting.TournamentId = meeting.TournamentId
+	}
+	if meeting.Stats != "" {
+		oldMeeting.Stats = meeting.Stats
+	}
+	if meeting.PrevMeetings != nil && len(meeting.PrevMeetings) != 0 {
+		oldMeeting.PrevMeetings = meeting.PrevMeetings
+	}
+	if meeting.NextMeeting != nil {
+		oldMeeting.NextMeeting = meeting.NextMeeting
 	}
 
 	if err = meetingStore.DB.Save(oldMeeting).Error; err != nil {
