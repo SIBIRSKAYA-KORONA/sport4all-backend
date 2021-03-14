@@ -76,7 +76,7 @@ services:
   grafana:
     container_name: grafana_container
     image: grafana/grafana
-    user: "472"
+    user: "$UID:$GID"
     volumes:
       - ~/grafana-storage:/var/lib/grafana
       - $PWD/conf/custom.ini:/etc/grafana/grafana.ini
