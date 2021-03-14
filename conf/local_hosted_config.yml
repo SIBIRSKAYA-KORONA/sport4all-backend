@@ -1,0 +1,39 @@
+logger: {
+  logfile: stdout,
+  level: debug,
+}
+
+api: {
+  baseUrl: /api,
+  settingsURL: /settings,
+  profileURL: /profile,
+  sessionsUrl: /sessions,
+  teamsURL: /teams,
+  tournamentsURL: /tournaments,
+  meetingsURL: /meetings
+}
+
+server: {
+  address: localhost:8080,
+}
+
+cors: {
+  allowed_origins: [
+      http://localhost:8080
+  ]
+}
+
+psql: {
+  dbms: postgres,
+  host: localhost,
+  user: sport4all_user,
+  password: sport4all,
+  name: sport4all_db,
+  sslmode: disable
+}
+
+redis: {
+  address: localhost:6379,
+  protocol: tcp,
+  expiresKeySec: 7200,
+}

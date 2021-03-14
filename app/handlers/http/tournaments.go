@@ -1,17 +1,16 @@
 package http
 
-//
 import (
 	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/models"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/usecases"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/errors"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/logger"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/serializer"
+	"sport4all/app/models"
+	"sport4all/app/usecases"
+	"sport4all/pkg/errors"
+	"sport4all/pkg/logger"
+	"sport4all/pkg/serializer"
 )
 
 type TournamentHandler struct {

@@ -16,10 +16,10 @@ generate:
 
 # application
 build-server:
-	go build -o ${SERVER_BINARY} cmd/main.go
+	go build -o ${SERVER_BINARY} cmd/*.go
 
 run:
-	go run cmd/main.go -c cmd/config.yml
+	go run cmd/main.go -c conf/config.yml
 
 # docs
 generate-swagger:

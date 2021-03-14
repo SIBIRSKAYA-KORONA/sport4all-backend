@@ -4,13 +4,12 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/models"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/repositories"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/errors"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/hasher"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/logger"
+	"sport4all/app/models"
+	"sport4all/app/repositories"
+	"sport4all/pkg/errors"
+	"sport4all/pkg/hasher"
+	"sport4all/pkg/logger"
 )
 
 type UserStore struct {
