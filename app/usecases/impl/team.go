@@ -43,7 +43,7 @@ func (teamUseCase *TeamUseCaseImpl) GetByID(tid uint) (*models.Team, error) {
 	return team, nil
 }
 
-func (teamUseCase *TeamUseCaseImpl) GetTeamsByUser(uid uint, role usecases.Role) (models.Teams, error) {
+func (teamUseCase *TeamUseCaseImpl) GetTeamsByUser(uid uint, role models.Role) (models.Teams, error) {
 	teams, err := teamUseCase.teamRepo.GetTeamsByUser(uid, role)
 	if err != nil {
 		logger.Error(err)
@@ -71,7 +71,7 @@ func (teamUseCase *TeamUseCaseImpl) GetUsersForInvite(tid uint, nicknamePart str
 	return users, nil
 }
 
-func (teamUseCase *TeamUseCaseImpl) InviteMember(tid uint, uid uint, role usecases.Role) error {
+func (teamUseCase *TeamUseCaseImpl) InviteMember(tid uint, uid uint, role models.Role) error {
 	user, err := teamUseCase.userRepo.GetByID(uid)
 	if err != nil {
 		logger.Error(err)

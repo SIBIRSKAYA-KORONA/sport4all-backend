@@ -61,7 +61,7 @@ func (teamHandler *TeamHandler) GetTeamsByUser(ctx echo.Context) error {
 	uid := ctx.Get("uid").(uint)
 
 	roleParam := ctx.QueryParam("role")
-	role, exist := usecases.StringToRole[roleParam]
+	role, exist := models.StringToRole[roleParam]
 	if !exist {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
@@ -140,7 +140,7 @@ func (teamHandler *TeamHandler) InviteMember(ctx echo.Context) error {
 	}
 
 	roleParam := ctx.QueryParam("role")
-	role, exist := usecases.StringToRole[roleParam]
+	role, exist := models.StringToRole[roleParam]
 	if !exist {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
