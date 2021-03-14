@@ -1,6 +1,8 @@
 package docs
 
-import "github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/models"
+import (
+	"sport4all/app/models"
+)
 
 // swagger:route POST /api/teams Teams PostApiTeamsRequest
 // Создаем команду

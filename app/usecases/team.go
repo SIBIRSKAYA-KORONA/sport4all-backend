@@ -1,7 +1,7 @@
 package usecases
 
 import (
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/models"
+	"sport4all/app/models"
 )
 
 type Role uint8

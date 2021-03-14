@@ -5,7 +5,7 @@ import (
 
 	"github.com/microcosm-cc/bluemonday"
 
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/serializer"
+	"sport4all/pkg/serializer"
 )
 
 var sanitizer *bluemonday.Policy

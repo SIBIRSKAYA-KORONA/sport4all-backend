@@ -4,11 +4,11 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
 
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/models"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/repositories"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/common"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/errors"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/logger"
+	"sport4all/app/models"
+	"sport4all/app/repositories"
+	"sport4all/pkg/common"
+	"sport4all/pkg/errors"
+	"sport4all/pkg/logger"
 )
 
 type SessionStore struct {

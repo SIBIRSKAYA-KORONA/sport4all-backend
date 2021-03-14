@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/logger"
+	"sport4all/pkg/logger"
 )
 
 func Close(closeFunc func() error) {

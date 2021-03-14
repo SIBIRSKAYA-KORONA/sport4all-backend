@@ -7,11 +7,11 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	useCases "github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/usecases"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/common"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/errors"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/logger"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/sanitize"
+	useCases "sport4all/app/usecases"
+	"sport4all/pkg/common"
+	"sport4all/pkg/errors"
+	"sport4all/pkg/logger"
+	"sport4all/pkg/sanitize"
 )
 
 type Middleware interface {

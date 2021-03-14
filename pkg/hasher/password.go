@@ -6,7 +6,7 @@ import (
 
 	"golang.org/x/crypto/argon2"
 
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/logger"
+	"sport4all/pkg/logger"
 )
 
 const (

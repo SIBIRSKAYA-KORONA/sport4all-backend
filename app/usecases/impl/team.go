@@ -1,10 +1,10 @@
 package impl
 
 import (
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/models"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/repositories"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/usecases"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/pkg/logger"
+	"sport4all/app/models"
+	"sport4all/app/repositories"
+	"sport4all/app/usecases"
+	"sport4all/pkg/logger"
 )
 
 type TeamUseCaseImpl struct {

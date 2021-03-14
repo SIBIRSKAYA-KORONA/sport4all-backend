@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/models"
-	"github.com/SIBIRSKAYA-KORONA/sport4all-backend/app/usecases"
+	"sport4all/app/models"
+	"sport4all/app/usecases"
 )
 
 type TeamRepository interface {
