@@ -68,11 +68,11 @@ func (tournamentUseCase *TournamentUseCaseImpl) GetAllTeams(tournamentId uint) (
 	return teams, nil
 }
 
-func (tournamentUseCase *TournamentUseCaseImpl) GenerateMeetings(tournamentId uint, genType uint) error {
+func (tournamentUseCase *TournamentUseCaseImpl) GenerateMeetings(tournamentId uint, genType models.TournamentSystem) error {
 	switch genType {
-	case usecases.Olympic:
+	case models.Olympic:
 		return tournamentUseCase.generateOlympicMeetings(tournamentId)
-	case usecases.Circular:
+	case models.Circular:
 		return tournamentUseCase.generateCircularMeetings(tournamentId)
 	default:
 		return errors.ErrInternal // TODO create error for this event
@@ -94,7 +94,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) generateOlympicMeetings(tourname
 	for i := 0; i < len(*teams); i += 2 {
 		err = tournamentUseCase.meetingRepo.Create(
 			&models.Meeting{
-				Status:       usecases.New,
+				Status:       models.New,
 				TournamentId: tournamentId,
 				Teams:        []models.Team{(*teams)[i], (*teams)[i+1]},
 			})

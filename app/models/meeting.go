@@ -1,11 +1,20 @@
 package models
 
+type MeetingStatus uint
+
+const (
+	Unknown MeetingStatus = iota
+	New
+	Progress
+	Finished
+)
+
 // swagger:model Game
 type Meeting struct {
 	// example: 101
 	ID uint `json:"id" gorm:"primary_key"`
 
-	Status uint `json:"status"`
+	Status MeetingStatus `json:"status"`
 
 	Stats string `json:"stats"` // TODO: move to table (Anton)
 

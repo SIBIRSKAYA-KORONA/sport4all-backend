@@ -5,7 +5,6 @@ import (
 
 	"sport4all/app/models"
 	"sport4all/app/repositories"
-	"sport4all/app/usecases"
 	"sport4all/pkg/errors"
 	"sport4all/pkg/logger"
 )
@@ -44,7 +43,7 @@ func (meetingStore *MeetingStore) Update(meeting *models.Meeting) error {
 		return err
 	}
 
-	if meeting.Status != usecases.Unknown {
+	if meeting.Status != models.Unknown {
 		oldMeeting.Status = meeting.Status
 	}
 	if meeting.PrevGame != nil {
