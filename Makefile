@@ -19,7 +19,7 @@ build-server:
 	go build -o ${SERVER_BINARY} cmd/*.go
 
 run:
-	go run cmd/main.go -c conf/config.yml
+	go run cmd/*.go -c conf/config.yml
 
 # docs
 generate-swagger:

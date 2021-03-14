@@ -13,6 +13,6 @@ RUN apk update && apk upgrade && \
 WORKDIR /app
 
 COPY --from=sport-builder:latest /application/${EXECUTABLE} /app
-COPY --from=sport-builder:latest /application/cmd/${CONFIG} /app
+COPY --from=sport-builder:latest /application/conf/${CONFIG} /app
 
 CMD /app/${EXECUTABLE} -c ${CONFIG}

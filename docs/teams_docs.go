@@ -82,7 +82,7 @@ type GetApiTeamsRequest struct {
 	ExampleQueryParameter string `json:"role"`
 }
 
-// swagger:route GET /api/teams/{tid}/search Teams GetTeamsInviteListRequest
+// swagger:route GET /api/teams/{tid}/members/search Teams GetTeamsInviteListRequest
 // Получаем список пользователей для приглашения в команду
 // responses:
 //   200: GetTeamsInviteList200Response
