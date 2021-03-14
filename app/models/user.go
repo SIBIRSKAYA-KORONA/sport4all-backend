@@ -1,5 +1,17 @@
 package models
 
+type Role uint
+
+const (
+	Player Role = iota
+	Owner
+)
+
+var StringToRole = map[string]Role{
+	"player": Player,
+	"owner":  Owner,
+}
+
 // swagger:model User
 type User struct {
 

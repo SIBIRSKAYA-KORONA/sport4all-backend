@@ -1,5 +1,12 @@
 package models
 
+type TournamentSystem uint
+
+const (
+	Olympic TournamentSystem = iota
+	Circular
+)
+
 // swagger:model Tournament
 type Tournament struct {
 	// example: 10

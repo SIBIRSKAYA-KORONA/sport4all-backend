@@ -7,7 +7,6 @@ import (
 
 	"sport4all/app/models"
 	"sport4all/app/repositories"
-	"sport4all/app/usecases"
 	"sport4all/pkg/errors"
 	"sport4all/pkg/logger"
 )
@@ -47,17 +46,17 @@ func (teamStore *TeamStore) GetByID(tid uint) (*models.Team, error) {
 	return team, nil
 }
 
-func (teamStore *TeamStore) GetTeamsByUser(uid uint, role usecases.Role) (models.Teams, error) {
+func (teamStore *TeamStore) GetTeamsByUser(uid uint, role models.Role) (models.Teams, error) {
 	var userTeams []models.Team
 	usr := &models.User{ID: uid}
 
-	if role == usecases.Player {
+	if role == models.Player {
 		err := teamStore.DB.Model(usr).Preload("Players").Related(&userTeams, "Player").Error
 		if err != nil {
 			logger.Error(err)
 			return nil, errors.ErrTeamNotFound
 		}
-	} else if role == usecases.Owner {
+	} else if role == models.Owner {
 		err := teamStore.DB.Model(&models.User{ID: uid}).Related(&userTeams, "owner_id").Error
 		if err != nil {
 			logger.Error(err)
@@ -81,7 +80,7 @@ func (teamStore *TeamStore) GetTeamsByNamePart(namePart string, limit uint) (mod
 	return teams, nil
 }
 
-func (teamStore *TeamStore) InviteMember(tid uint, user *models.User, role usecases.Role) error {
+func (teamStore *TeamStore) InviteMember(tid uint, user *models.User, role models.Role) error {
 	team := new(models.Team)
 	err := teamStore.DB.First(team, tid).Error
 	if err != nil {

@@ -121,7 +121,7 @@ func (tournamentHandler *TournamentHandler) GenerateMeetings(ctx echo.Context) e
 	}
 
 	// TODO: add system from query path
-	if err := tournamentHandler.UseCase.GenerateMeetings(tid, usecases.Olympic); err != nil {
+	if err := tournamentHandler.UseCase.GenerateMeetings(tid, models.Olympic); err != nil {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
