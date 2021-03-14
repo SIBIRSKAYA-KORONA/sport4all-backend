@@ -34,11 +34,11 @@ func CreateSessionHandler(sessionURL string, router *echo.Group, useCase usecase
 func (sessionHandler *SessionHandler) Create(ctx echo.Context) error {
 	body := ctx.Get("body").([]byte)
 	var usr models.User
-	err := serializer.JSON().Unmarshal(body, &usr)
-	if err != nil {
+	if err := serializer.JSON().Unmarshal(body, &usr); err != nil {
 		logger.Error(err)
 		return ctx.String(http.StatusInternalServerError, err.Error())
 	}
+
 	session, err := sessionHandler.UseCase.Create(&usr)
 	if err != nil {
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())

@@ -53,8 +53,7 @@ func (userHandler *UserHandler) GetByNickname(ctx echo.Context) error {
 func (userHandler *UserHandler) Create(ctx echo.Context) error {
 	body := ctx.Get("body").([]byte)
 	var usr models.User
-	err := serializer.JSON().Unmarshal(body, &usr)
-	if err != nil {
+	if err := serializer.JSON().Unmarshal(body, &usr); err != nil {
 		logger.Error(err)
 		return ctx.String(http.StatusInternalServerError, err.Error())
 	}

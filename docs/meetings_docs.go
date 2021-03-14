@@ -8,7 +8,7 @@ package docs
 
 // 200, успешно сгенерировали встречи
 // swagger:response GenerateMeetings200
-type GenerateMeetings200 struct {}
+type GenerateMeetings200 struct{}
 
 // 401, проблемы с авторизацией
 // swagger:response GenerateMeetings401
@@ -24,7 +24,5 @@ type GenerateMeetings401 struct {
 	}
 }
 
-
 // swagger:parameters GenerateMeetingsRequest
-type GenerateMeetingsRequest struct {}
-
+type GenerateMeetingsRequest struct{}

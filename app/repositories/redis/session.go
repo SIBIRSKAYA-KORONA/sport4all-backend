@@ -26,8 +26,7 @@ func (sessionStore *SessionStore) Create(session *models.Session) error {
 
 	session.SID = uuid.New().String()
 	session.ExpiresSec = sessionStore.ExpiresKeySec
-	_, err := conn.Do("SETEX", session.SID, session.ExpiresSec, session.ID)
-	if err != nil {
+	if _, err := conn.Do("SETEX", session.SID, session.ExpiresSec, session.ID); err != nil {
 		logger.Error(err)
 		return errors.ErrSessionNotFound
 	}
