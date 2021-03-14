@@ -22,3 +22,6 @@ swagger.yaml
 postgres-data
 redis-data
 grafana-storage
+
+# sport4all binary
+sport4all
