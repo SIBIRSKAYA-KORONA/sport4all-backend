@@ -15,7 +15,7 @@ type Team struct {
 	Meetings []Meeting `json:"meetings,omitempty" gorm:"many2many:team_meetings;" faker:"-"`
 
 	// example: ЦСКА
-	Name string `json:"name" gorm:"unique;index" faker:"name"`
+	Name string `json:"name" gorm:"index" faker:"name"`
 
 	// example: Moscow
 	Location string `json:"location" gorm:"index"`

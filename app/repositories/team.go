@@ -7,8 +7,9 @@ import (
 type TeamRepository interface {
 	Create(team *models.Team) error
 	GetByID(tid uint) (*models.Team, error)
-	GetTeamsByUser(uid uint, role models.Role) (models.Teams, error)
-	GetTeamsByNamePart(namePart string, limit uint) (models.Teams, error)
+	GetTeamsByUser(uid uint, role models.Role) (*models.Teams, error)
+	GetAllTournaments(tid uint) (*models.Tournaments, error)
+	GetTeamsByNamePart(namePart string, limit uint) (*models.Teams, error)
 	InviteMember(tid uint, user *models.User, role models.Role) error
-	GetUsersForInvite(tid uint, nicknamePart string, limit uint) (models.Users, error)
+	GetUsersForInvite(tid uint, nicknamePart string, limit uint) (*models.Users, error)
 }

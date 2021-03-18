@@ -43,6 +43,7 @@ func (userHandler *UserHandler) GetByNickname(ctx echo.Context) error {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
+
 	resp, err := serializer.JSON().Marshal(&usr)
 	if err != nil {
 		return ctx.NoContent(http.StatusInternalServerError)
@@ -74,6 +75,7 @@ func (userHandler *UserHandler) GetByID(ctx echo.Context) error {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
+
 	resp, err := serializer.JSON().Marshal(&usr)
 	if err != nil {
 		return ctx.NoContent(http.StatusInternalServerError)

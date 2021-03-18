@@ -45,13 +45,12 @@ func (teamStore *TeamStore) GetByID(tid uint) (*models.Team, error) {
 	return team, nil
 }
 
-func (teamStore *TeamStore) GetTeamsByUser(uid uint, role models.Role) (models.Teams, error) {
-	var userTeams []models.Team
+func (teamStore *TeamStore) GetTeamsByUser(uid uint, role models.Role) (*models.Teams, error) {
+	userTeams := new(models.Teams)
 	usr := &models.User{ID: uid}
 
 	if role == models.Player {
-		if err := teamStore.DB.Model(usr).Preload("Players").
-			Related(&userTeams, "Player").Error; err != nil {
+		if err := teamStore.DB.Model(usr).Related(&userTeams, "TeamPlayer").Error; err != nil {
 			logger.Error(err)
 			return nil, errors.ErrTeamNotFound
 		}
@@ -63,14 +62,24 @@ func (teamStore *TeamStore) GetTeamsByUser(uid uint, role models.Role) (models.T
 		}
 	}
 
-	for i := range userTeams {
-		userTeams[i].Players = nil
+	for i := range *userTeams {
+		(*userTeams)[i].Players = nil
 	}
 	return userTeams, nil
 }
 
-func (teamStore *TeamStore) GetTeamsByNamePart(namePart string, limit uint) (models.Teams, error) {
-	var teams []models.Team
+func (teamStore *TeamStore) GetAllTournaments(tid uint) (*models.Tournaments, error) {
+	var tournamentTeams models.Tournaments
+	if err := teamStore.DB.Model(&models.Team{ID: tid}).
+		Related(&tournamentTeams, "Tournaments").Error; err != nil {
+		logger.Error(err)
+		return nil, errors.ErrTeamNotFound
+	}
+	return &tournamentTeams, nil
+}
+
+func (teamStore *TeamStore) GetTeamsByNamePart(namePart string, limit uint) (*models.Teams, error) {
+	teams := new(models.Teams)
 	if err := teamStore.DB.Limit(limit).Where("name LIKE ?", namePart+"%").Find(&teams).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
@@ -93,8 +102,8 @@ func (teamStore *TeamStore) InviteMember(tid uint, user *models.User, role model
 	return nil
 }
 
-func (teamStore *TeamStore) GetUsersForInvite(tid uint, nicknamePart string, limit uint) (models.Users, error) {
-	var users []models.User
+func (teamStore *TeamStore) GetUsersForInvite(tid uint, nicknamePart string, limit uint) (*models.Users, error) {
+	users := new(models.Users)
 	team, err := teamStore.GetByID(tid)
 	if err != nil {
 		logger.Error(err)

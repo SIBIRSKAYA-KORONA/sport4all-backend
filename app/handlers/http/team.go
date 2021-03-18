@@ -27,11 +27,10 @@ func CreateTeamHandler(teamsURL string, router *echo.Group, useCase usecases.Tea
 	teams := router.Group(handler.TeamsURL)
 	teams.POST("", handler.Create, mw.CheckAuth)
 	teams.GET("", handler.GetTeamsByUser, mw.CheckAuth)
-	teams.GET("/:tid", handler.GetByID, mw.CheckAuth)
-
-	teams.GET("/search", handler.GetTeamsByNamePart, mw.CheckAuth)
-
-	teams.GET("/:tid/members/search", handler.GetUsersForInvite, mw.CheckAuth)
+	teams.GET("/:tid", handler.GetByID)
+	teams.GET("/:tid/tournaments", handler.GetAllTournaments)
+	teams.GET("/search", handler.GetTeamsByNamePart)
+	teams.GET("/:tid/members/search", handler.GetUsersForInvite)
 	teams.POST("/:tid/members/:uid", handler.InviteMember, mw.CheckAuth)
 }
 
@@ -59,9 +58,7 @@ func (teamHandler *TeamHandler) Create(ctx echo.Context) error {
 
 func (teamHandler *TeamHandler) GetTeamsByUser(ctx echo.Context) error {
 	uid := ctx.Get("uid").(uint)
-
-	roleParam := ctx.QueryParam("role")
-	role, exist := models.StringToRole[roleParam]
+	role, exist := models.StringToRole[ctx.QueryParam("role")]
 	if !exist {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
@@ -71,6 +68,7 @@ func (teamHandler *TeamHandler) GetTeamsByUser(ctx echo.Context) error {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
+
 	resp, err := serializer.JSON().Marshal(&teams)
 	if err != nil {
 		return ctx.NoContent(http.StatusInternalServerError)
@@ -80,8 +78,7 @@ func (teamHandler *TeamHandler) GetTeamsByUser(ctx echo.Context) error {
 
 func (teamHandler *TeamHandler) GetByID(ctx echo.Context) error {
 	var tid uint
-	_, err := fmt.Sscan(ctx.Param("tid"), &tid)
-	if err != nil {
+	if _, err := fmt.Sscan(ctx.Param("tid"), &tid); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
@@ -90,8 +87,29 @@ func (teamHandler *TeamHandler) GetByID(ctx echo.Context) error {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
+
 	resp, err := serializer.JSON().Marshal(&team)
 	if err != nil {
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
+}
+
+func (teamHandler *TeamHandler) GetAllTournaments(ctx echo.Context) error {
+	var tid uint
+	if _, err := fmt.Sscan(ctx.Param("tid"), &tid); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	tournaments, err := teamHandler.UseCase.GetAllTournaments(tid)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	resp, err := serializer.JSON().Marshal(&tournaments)
+	if err != nil {
+		logger.Error(err)
 		return ctx.NoContent(http.StatusInternalServerError)
 	}
 	return ctx.String(http.StatusOK, string(resp))
@@ -103,17 +121,13 @@ func (teamHandler *TeamHandler) GetUsersForInvite(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	//bid := ctx.Get("bid").(uint)
-
 	var tid uint
-	_, err := fmt.Sscan(ctx.Param("tid"), &tid)
-	if err != nil {
+	if _, err := fmt.Sscan(ctx.Param("tid"), &tid); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
 	var limit uint
-	_, err = fmt.Sscan(ctx.QueryParam("limit"), &limit)
-	if err != nil {
+	if _, err := fmt.Sscan(ctx.QueryParam("limit"), &limit); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 	users, err := teamHandler.UseCase.GetUsersForInvite(tid, nicknamePart, limit)
@@ -121,6 +135,7 @@ func (teamHandler *TeamHandler) GetUsersForInvite(ctx echo.Context) error {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
+
 	resp, err := serializer.JSON().Marshal(&users)
 	if err != nil {
 		return ctx.NoContent(http.StatusInternalServerError)

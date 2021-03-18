@@ -3,8 +3,9 @@ package models
 type TournamentSystem uint
 
 const (
-	Olympic TournamentSystem = iota
-	Circular
+	UnknownSystem TournamentSystem = iota
+	OlympicSystem
+	CircularSystem
 )
 
 // swagger:model Tournament
@@ -16,15 +17,24 @@ type Tournament struct {
 	OwnerId uint `json:"ownerId" gorm:"not null"`
 
 	// example: Чемпионат мира
-	Name string `json:"name" gorm:"unique;index" faker:"name"`
+	Name string `json:"name" gorm:"index" faker:"name"`
 
 	// example: Moscow
 	Location string `json:"location" gorm:"index"`
 
-	// example: Teams
+	// example: 2
+	System TournamentSystem `json:"system"`
+
+	// example: 3
+	Status EventStatus `json:"status"`
+
+	// example: турнир по игре с котиками
+	About string `json:"about"`
+
+	// example: ЦСКА, Зенит
 	Teams []Teams `json:"teams,omitempty" gorm:"many2many:team_tournament;" faker:"-"`
 
-	// example: Meetings
+	// example: игра1, игра2
 	Meetings []Meeting `json:"meetings,omitempty" gorm:"foreignKey:tournamentId" faker:"-"`
 
 	// example: 1234
@@ -33,6 +43,12 @@ type Tournament struct {
 
 // swagger:model Teams
 type Tournaments []Tournament
+
+type UserTournament struct {
+	Owner      Tournaments `json:"owner"`
+	TeamMember Tournaments `json:"teamMember"`
+	TeamOwner  Tournaments `json:"teamOwner"`
+}
 
 func (tournament *Tournament) TableName() string {
 	return "tournaments"

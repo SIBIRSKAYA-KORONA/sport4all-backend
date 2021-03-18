@@ -1,12 +1,13 @@
 package models
 
-type MeetingStatus uint
+type EventStatus uint
 
 const (
-	Unknown MeetingStatus = iota
-	New
-	Progress
-	Finished
+	UnknownEvent EventStatus = iota
+	NotStartedEvent
+	RegistrationEvent
+	InProgressEvent
+	FinishedEvent
 )
 
 // swagger:model Game
@@ -14,15 +15,19 @@ type Meeting struct {
 	// example: 101
 	ID uint `json:"id" gorm:"primary_key"`
 
-	Status MeetingStatus `json:"status"`
+	Status EventStatus `json:"status"`
 
-	Stats string `json:"stats"` // TODO: move to table (Anton)
+	Round uint `json:"round"`
+
+	Group uint `json:"group"`
 
 	TournamentId uint `json:"tournamentId"`
 
-	PrevGame *Meeting `json:"prevGame,omitempty" faker:"-"`
+	Stats string `json:"stats"` // TODO: move to table (Anton)
 
-	NextGame *Meeting `json:"nextGame,omitempty" faker:"-"`
+	PrevMeetings []Meeting `json:"prevMeetings,omitempty" faker:"-"`
+
+	NextMeeting *Meeting `json:"nextMeeting,omitempty" faker:"-"`
 
 	Teams []Team `json:"teams,omitempty" gorm:"many2many:team_meetings;" faker:"-"`
 }
