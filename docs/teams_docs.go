@@ -4,37 +4,32 @@ import (
 	"sport4all/app/models"
 )
 
-// swagger:route POST /api/teams Teams PostApiTeamsRequest
+// ------------------------------------------------ СОЗДАНИЕ КОМАНДЫ ---------------------------------------------------
+
+// swagger:route POST /api/teams Teams CreateTeamRequest
+//
 // Создаем команду
+//
+// Передаем в теле json с нужными полями
+//
 // responses:
-//   200: PostApiTeams200Response
-//   401: PostApiTeams401Response
+//   200: CreateTeam200Response
+//   401: General401Response
+//   500: General500Response
 
 // 200, успешно создали команду
-// swagger:response PostApiTeams200Response
-type PostApiTeams200Response struct {
+// swagger:response CreateTeam200Response
+type CreateTeam200Response struct {
 }
 
-// 401, проблемы с авторизацией
-// swagger:response PostApiTeams401Response
-type PostApiTeams401Response struct {
-	// Описание
-	// in: body
-	Body struct {
-		// The validation message
-
-		// Required: true
-		// Example: Отсутствует кука
-		Message string
-	}
-}
-
-// swagger:parameters PostApiTeamsRequest
-type PostApiTeamsRequest struct {
+// swagger:parameters CreateTeamRequest
+type CreateTeamRequest struct {
 	// Описание реквеста
 	// in:body
 	Body TeamsRequestBody
 }
+
+// ------------------------------------------------ СОЗДАНИЕ КОМАНДЫ ---------------------------------------------------
 
 type TeamsRequestBody struct {
 	// example: ЦСКА
@@ -47,70 +42,96 @@ type TeamsRequestBody struct {
 	About string `json:"about"`
 }
 
-// swagger:route GET /api/teams Teams GetApiTeamsRequest
-// Получаем список команд
-// responses:
-//   200: GetApiTeams200Response
-//   401: GetApiTeams401Response
+// -------------------------------------------- ПОИСК КОМАНД ПО НАЗВАНИЮ -----------------------------------------------
 
-// 200, успешно получили список команд
-// swagger:response GetApiTeams200Response
-type GetApiTeams200Response struct {
+// swagger:route GET /api/teams/search Teams SearchTeamsByNameRequest
+//
+// Ищем команды по части названия
+//
+// Передаем строчку и лимит
+//
+// responses:
+//   200: SearchTeamsByName200Response
+//   401: General401Response
+//   500: General500Response
+
+// 200, возвращаем список подходящих команд
+// swagger:response SearchTeamsByName200Response
+type SearchTeamsByName200Response struct {
 	// in:body
 	Body models.Teams
 }
 
-// 401, проблемы с авторизацией
-// swagger:response GetApiTeams401Response
-type GetApiTeams401Response struct {
-	// Описание
-	// in: body
-	Body struct {
-		// The validation message
+// swagger:parameters SearchTeamsByNameRequest ываываываыва
+type SearchTeamsByNameRequest struct {
+	// ываыва
 
-		// Required: true
-		// Example: Отсутствует кука
-		Message string
-	}
+	// Часть названия команды
+	// in: query
+	// example: ЦСК
+	NamePart string `json:"namePart"`
+
+	// Лимит
+	// in: query
+	// example: 5
+	Limit string `json:"limit"`
 }
 
-// swagger:parameters GetApiTeamsRequest
-type GetApiTeamsRequest struct {
+// -------------------------------------------- ПОИСК КОМАНД ПО НАЗВАНИЮ -----------------------------------------------
+
+
+// --------------------------------------- ПОЛУЧЕНИЕ СПИСКА КОМАНД ПОЛЬЗОВАТЕЛЯ ----------------------------------------
+
+// swagger:route GET /api/teams Teams GetTeamsRequest
+//
+// Получаем список команд пользователя
+//
+// Нужно передать параметр роли
+//
+// responses:
+//   200: GetTeams200Response
+//   401: General401Response
+//   500: General500Response
+
+// 200, успешно получили список команд
+// swagger:response GetTeams200Response
+type GetTeams200Response struct {
+	// in:body
+	Body models.Teams
+}
+
+// swagger:parameters GetTeamsRequest
+type GetTeamsRequest struct {
 	// Роль
 	// in: query
 	// example: player/owner
 	ExampleQueryParameter string `json:"role"`
 }
 
-// swagger:route GET /api/teams/{tid}/members/search Teams GetTeamsInviteListRequest
+// --------------------------------------- ПОЛУЧЕНИЕ СПИСКА КОМАНД ПОЛЬЗОВАТЕЛЯ ----------------------------------------
+
+// ------------------------------------ ПОИСК ПОЛЬЗОВАТЕЛЕЙ ДЛЯ ДОБАВЛЕНИЯ В КОМАНДУ -----------------------------------
+
+// swagger:route GET /api/teams/{tid}/members/search Teams FindUsersForInviteRequest
+//
 // Получаем список пользователей для приглашения в команду
+//
+// Передаем часть никнейма и лимит
+//
 // responses:
-//   200: GetTeamsInviteList200Response
-//   401: GetTeamsInviteList401Response
+//   200: FindUsersForInvite200Response
+//   401: General401Response
+//   500: General500Response
 
 // 200, успешно получили список пользователей для приглашения
-// swagger:response GetTeamsInviteList200Response
-type GetTeamsInviteList200Response struct {
+// swagger:response FindUsersForInvite200Response
+type FindUsersForInvite200Response struct {
 	// in:body
 	Body models.Users
 }
 
-// 401, проблемы с авторизацией
-// swagger:response GetTeamsInviteList401Response
-type GetTeamsInviteList401Response struct {
-	// Описание
-	// in: body
-	Body struct {
-		// The validation message
-
-		// Required: true
-		// Example: Отсутствует кука
-		Message string
-	}
-}
-
-// swagger:parameters GetTeamsInviteListRequest
-type GetTeamsInviteListRequest struct {
+// swagger:parameters FindUsersForInviteRequest
+type FindUsersForInviteRequest struct {
 	// Часть ника
 	// in: query
 	// example: nickna
@@ -122,33 +143,29 @@ type GetTeamsInviteListRequest struct {
 	Limit string `json:"limit"`
 }
 
-// swagger:route POST /api/teams/{tid}/members/{uid} Teams PostTeamsInviteRequest
+// ------------------------------------ ПОИСК ПОЛЬЗОВАТЕЛЕЙ ДЛЯ ДОБАВЛЕНИЯ В КОМАНДУ -----------------------------------
+
+// -------------------------------- ПРИГЛАШЕНИЕ ПОЛЬЗОВАТЕЛЯ В КОМАНДУ В КАЧЕСТВЕ ИГРОКА -------------------------------
+
+// swagger:route POST /api/teams/{tid}/members/{uid} Teams InvitePlayerRequest
+//
 // Приглашаем пользователя в команду в качестве игрока
+//
+// Обязательно нужно быть владельцем команды
+//
 // responses:
-//   200: PostTeamsInvite200Response
-//   401: PostTeamsInvite401Response
+//   200: InvitePlayer200Response
+//   401: General401Response
+//   403: General403Response
+//   500: General500Response
 
 // 200, успешно пригласили пользователя
-// swagger:response PostTeamsInvite200Response
-type PostTeamsInvite200Response struct {
+// swagger:response InvitePlayer200Response
+type InvitePlayer200Response struct {
 }
 
-// 401, проблемы с авторизацией
-// swagger:response PostTeamsInvite401Response
-type PostTeamsInvite401Response struct {
-	// Описание
-	// in: body
-	Body struct {
-		// The validation message
-
-		// Required: true
-		// Example: Отсутствует кука
-		Message string
-	}
-}
-
-// swagger:parameters PostTeamsInviteRequest
-type PostTeamsInviteRequest struct {
+// swagger:parameters InvitePlayerRequest
+type InvitePlayerRequest struct {
 	// ID команды
 	// in: path
 	// example: 1
@@ -159,3 +176,39 @@ type PostTeamsInviteRequest struct {
 	// example: 10
 	Uid string `json:"uid"`
 }
+
+// -------------------------------- ПРИГЛАШЕНИЕ ПОЛЬЗОВАТЕЛЯ В КОМАНДУ В КАЧЕСТВЕ ИГРОКА -------------------------------
+
+// --------------------------------------- ИСКЛЮЧЕНИЕ ПОЛЬЗОВАТЕЛЯ ИЗ КОМАНДЫ ------------------------------------------
+
+// swagger:route DELETE /api/teams/{tid}/members/{uid} Teams DeletePlayerRequest
+//
+// Исключаем пользователя из команды
+//
+// Обязательно нужно быть владельцем команды
+//
+// responses:
+//   200: DeletePlayer200Response
+//   401: General401Response
+//   403: General403Response
+//   500: General500Response
+
+// 200, успешно исключили пользователя
+// swagger:response DeletePlayer200Response
+type DeletePlayer200Response struct {
+}
+
+// swagger:parameters DeletePlayerRequest
+type DeletePlayerRequest struct {
+	// ID команды
+	// in: path
+	// example: 1
+	Tid string `json:"tid"`
+
+	// ID игрока
+	// in: path
+	// example: 10
+	Uid string `json:"uid"`
+}
+
+// --------------------------------------- ИСКЛЮЧЕНИЕ ПОЛЬЗОВАТЕЛЯ ИЗ КОМАНДЫ ------------------------------------------

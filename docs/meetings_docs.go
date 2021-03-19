@@ -4,25 +4,12 @@ package docs
 // Генерация встреч
 // responses:
 //   200: GenerateMeetings200
-//   401: GenerateMeetings401
+//   401: General401Response
+//   500: General500Response
 
 // 200, успешно сгенерировали встречи
 // swagger:response GenerateMeetings200
 type GenerateMeetings200 struct{}
 
-// 401, проблемы с авторизацией
-// swagger:response GenerateMeetings401
-type GenerateMeetings401 struct {
-	// Описание
-	// in: body
-	Body struct {
-		// The validation message
-
-		// Required: true
-		// Example: Отсутствует кука
-		Message string
-	}
-}
-
 // swagger:parameters GenerateMeetingsRequest
-type GenerateMeetingsRequest struct{}
+type GenerateMeetingsRequest struct {}

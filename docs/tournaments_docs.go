@@ -4,25 +4,12 @@ package docs
 // Создаем турнир
 // responses:
 //   200: PostApiTournaments200Response
-//   401: PostApiTournaments401Response
+//   401: General401Response
+//   500: General500Response
 
 // 200, успешно создали турнир
 // swagger:response PostApiTournaments200Response
 type PostApiTournaments200Response struct {
-}
-
-// 401, проблемы с авторизацией
-// swagger:response PostApiTournaments401Response
-type PostApiTournaments401Response struct {
-	// Описание
-	// in: body
-	Body struct {
-		// The validation message
-
-		// Required: true
-		// Example: Отсутствует кука
-		Message string
-	}
 }
 
 // swagger:parameters PostApiTournamentsRequest

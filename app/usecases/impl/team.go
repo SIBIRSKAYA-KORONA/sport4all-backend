@@ -43,6 +43,17 @@ func (teamUseCase *TeamUseCaseImpl) GetByID(tid uint) (*models.Team, error) {
 	return team, nil
 }
 
+func (teamUseCase *TeamUseCaseImpl) CheckUserForRole(teamID uint, userID uint, role models.Role) (bool, error) {
+	switch role {
+	case models.Owner:
+		return teamUseCase.teamRepo.IsTeamOwner(teamID, userID)
+	case models.Player:
+		return teamUseCase.teamRepo.IsTeamPlayer(teamID, userID)
+	default:
+		return false, nil
+	}
+}
+
 func (teamUseCase *TeamUseCaseImpl) GetTeamsByUser(uid uint, role models.Role) (*models.Teams, error) {
 	teams, err := teamUseCase.teamRepo.GetTeamsByUser(uid, role)
 	if err != nil {
@@ -92,5 +103,20 @@ func (teamUseCase *TeamUseCaseImpl) InviteMember(tid uint, uid uint, role models
 		logger.Error(err)
 		return err
 	}
+	return nil
+}
+
+func (teamUseCase *TeamUseCaseImpl) DeleteMember(tid uint, uid uint) error {
+	_, err := teamUseCase.userRepo.GetByID(uid)
+	if err != nil {
+		logger.Error(err)
+		return err
+	}
+
+	if err := teamUseCase.teamRepo.DeleteMember(tid, uid); err != nil {
+		logger.Error(err)
+		return err
+	}
+
 	return nil
 }

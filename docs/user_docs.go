@@ -8,7 +8,9 @@ import (
 // Регистрируем пользователя
 // responses:
 //   200: PostApiSettings200Response
+//   401: General401Response
 //   404: PostApiSettings404Response
+//   500: General500Response
 
 // 200, всё ок
 // swagger:response PostApiSettings200Response
