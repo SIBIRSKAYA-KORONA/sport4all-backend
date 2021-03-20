@@ -35,5 +35,5 @@ psql: {
 redis: {
   address: localhost:6379,
   protocol: tcp,
-  expiresKeySec: 7200,
+  expiresKeySec: 7200,  # 2 hours
 }

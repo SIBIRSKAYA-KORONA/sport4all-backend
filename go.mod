@@ -1,6 +1,6 @@
 module sport4all
 
-go 1.15
+go 1.16
 
 require (
 	github.com/gomodule/redigo v1.8.3

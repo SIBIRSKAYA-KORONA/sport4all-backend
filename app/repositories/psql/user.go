@@ -27,6 +27,7 @@ func (userStore *UserStore) Create(usr *models.User) error {
 		logger.Error(err)
 		return errors.ErrConflict
 	}
+
 	return nil
 }
 
@@ -36,6 +37,7 @@ func (userStore *UserStore) GetByID(uid uint) (*models.User, error) {
 		logger.Error(err)
 		return nil, errors.ErrUserNotFound
 	}
+
 	return usr, nil
 }
 
@@ -45,6 +47,7 @@ func (userStore *UserStore) GetByNickname(nickname string) (*models.User, error)
 		logger.Error(err)
 		return nil, errors.ErrUserNotFound
 	}
+
 	return usr, nil
 }
 
