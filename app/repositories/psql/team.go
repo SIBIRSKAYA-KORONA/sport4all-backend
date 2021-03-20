@@ -74,24 +74,26 @@ func (teamStore *TeamStore) IsTeamPlayer(teamID uint, userID uint) (bool, error)
 
 func (teamStore *TeamStore) GetTeamsByUser(uid uint, role models.Role) (*models.Teams, error) {
 	userTeams := new(models.Teams)
-	usr := &models.User{ID: uid}
 
-	if role == models.Player {
-		if err := teamStore.DB.Model(usr).Related(&userTeams, "TeamPlayer").Error; err != nil {
-			logger.Error(err)
-			return nil, errors.ErrTeamNotFound
-		}
-	} else if role == models.Owner {
-		if err := teamStore.DB.Model(&models.User{ID: uid}).
-			Related(&userTeams, "owner_id").Error; err != nil {
-			logger.Error(err)
-			return nil, errors.ErrTeamNotFound
-		}
+	foreignKey := ""
+	switch role {
+	case models.Player:
+		foreignKey = "TeamPlayer"
+	case models.Owner:
+		foreignKey = "owner_id"
+	default:
+		return nil, errors.ErrInternal
+	}
+
+	if err := teamStore.DB.Model(&models.User{ID: uid}).Related(&userTeams, foreignKey).Error; err != nil {
+		logger.Error(err)
+		return nil, errors.ErrTeamNotFound
 	}
 
 	for i := range *userTeams {
 		(*userTeams)[i].Players = nil
 	}
+
 	return userTeams, nil
 }
 
@@ -102,6 +104,7 @@ func (teamStore *TeamStore) GetAllTournaments(tid uint) (*models.Tournaments, er
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
 	}
+
 	return &tournamentTeams, nil
 }
 
@@ -111,6 +114,7 @@ func (teamStore *TeamStore) GetTeamsByNamePart(namePart string, limit uint) (*mo
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
 	}
+
 	return teams, nil
 }
 
@@ -121,11 +125,12 @@ func (teamStore *TeamStore) InviteMember(tid uint, user *models.User, role model
 		return errors.ErrTeamNotFound
 	}
 
-	// TODO: обработать значение role
+	// TODO: обработать значение role (Антон)
 	if err := teamStore.DB.Model(&team).Association("Players").Append(user).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrInternal
 	}
+
 	return nil
 }
 
@@ -160,9 +165,8 @@ func (teamStore *TeamStore) GetUsersForInvite(tid uint, nicknamePart string, lim
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
 	}
-	var teamOwnerAndPlayersIDs []uint
-	teamOwnerAndPlayersIDs = append(teamOwnerAndPlayersIDs, team.OwnerId)
 
+	teamOwnerAndPlayersIDs := []uint{team.OwnerId}
 	for _, player := range team.Players {
 		teamOwnerAndPlayersIDs = append(teamOwnerAndPlayersIDs, player.ID)
 	}

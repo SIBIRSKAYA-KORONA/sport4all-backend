@@ -9,23 +9,36 @@ import (
 )
 
 type TournamentUseCaseImpl struct {
-	userRepo       repositories.UserRepository
-	tournamentRepo repositories.TournamentRepository
-	teamRepo       repositories.TeamRepository
-	meetingRepo    repositories.MeetingRepository
+	userRepo          repositories.UserRepository
+	tournamentRepo    repositories.TournamentRepository
+	teamRepo          repositories.TeamRepository
+	meetingRepo       repositories.MeetingRepository
+	tournamentSystems map[string]func(uint) error
 }
 
 func CreateTournamentUseCase(userRepo repositories.UserRepository, tournamentRepo repositories.TournamentRepository,
 	teamRepo repositories.TeamRepository, meetingRepo repositories.MeetingRepository) usecases.TournamentUseCase {
-	return &TournamentUseCaseImpl{
+
+	impl := &TournamentUseCaseImpl{
 		userRepo:       userRepo,
 		tournamentRepo: tournamentRepo,
 		teamRepo:       teamRepo,
 		meetingRepo:    meetingRepo,
 	}
+
+	impl.tournamentSystems = map[string]func(uint) error{
+		"olympic":  impl.generateOlympicMesh,
+		"circular": impl.generateCircularMesh,
+	}
+
+	return impl
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) Create(tournament *models.Tournament) error {
+	if _, ok := tournamentUseCase.tournamentSystems[tournament.System]; !ok {
+		return errors.ErrTournamentSystemNotAcceptable
+	}
+
 	if _, err := tournamentUseCase.userRepo.GetByID(tournament.OwnerId); err != nil { // TODO: move it to mv
 		logger.Error(err)
 		return err
@@ -87,20 +100,55 @@ func (tournamentUseCase *TournamentUseCaseImpl) GetTournamentByUser(uid uint) (*
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) Update(tournament *models.Tournament) error {
-	// TODO: validate tournament.Status
-	if tournament.Status == models.InProgressEvent {
-		// TODO: may be sent tournament system from front
-		oldTournament, err := tournamentUseCase.GetByID(tournament.ID)
-		if err != nil {
-			return err
-		}
-		if err = tournamentUseCase.generateMesh(oldTournament.ID, oldTournament.System); err != nil {
+	// TODO: move it to mv (Антон)
+	oldTournament, err := tournamentUseCase.GetByID(tournament.ID)
+	if err != nil {
+		return err
+	}
+	if oldTournament.Status > models.NotStartedEvent && tournament.Status < oldTournament.Status {
+		return errors.ErrTournamentStatusNotAcceptable
+	}
+
+	switch tournament.Status {
+	case models.UnknownEvent, models.NotStartedEvent:
+		if err = tournamentUseCase.tournamentRepo.Update(tournament); err != nil {
 			logger.Error(err)
 			return err
 		}
+	case models.InProgressEvent:
+		generateMesh, ok := tournamentUseCase.tournamentSystems[oldTournament.System]
+		if !ok {
+			return errors.ErrTournamentSystemNotAcceptable
+		}
+
+		if err = generateMesh(oldTournament.ID); err != nil {
+			return err
+		}
+		fallthrough
+	case models.RegistrationEvent, models.FinishedEvent:
+		if err = tournamentUseCase.tournamentRepo.
+			Update(&models.Tournament{ID: tournament.ID, Status: tournament.Status}); err != nil {
+			logger.Error(err)
+			return err
+		}
+	default:
+		return errors.ErrTournamentStatusNotAcceptable
 	}
 
-	if err := tournamentUseCase.tournamentRepo.Update(tournament); err != nil {
+	return nil
+}
+
+func (tournamentUseCase *TournamentUseCaseImpl) AddTeam(tournamentId uint, teamId uint) error {
+	// TODO: move it to mv (Антон)
+	tournament, err := tournamentUseCase.GetByID(tournamentId)
+	if err != nil {
+		return err
+	}
+	if tournament.Status != models.RegistrationEvent {
+		return errors.ErrTournamentStatusNotAcceptable
+	}
+
+	if err = tournamentUseCase.tournamentRepo.AddTeam(tournamentId, teamId); err != nil {
 		logger.Error(err)
 		return err
 	}
@@ -108,16 +156,17 @@ func (tournamentUseCase *TournamentUseCaseImpl) Update(tournament *models.Tourna
 	return nil
 }
 
-func (tournamentUseCase *TournamentUseCaseImpl) AddTeam(tournamentId uint, teamId uint) error {
+func (tournamentUseCase *TournamentUseCaseImpl) RemoveTeam(tournamentId uint, teamId uint) error {
+	// TODO: move it to mv (Антон)
 	tournament, err := tournamentUseCase.GetByID(tournamentId)
 	if err != nil {
 		return err
 	}
-	if tournament.Status > models.RegistrationEvent {
-		return errors.ErrInternal // TODO: create error for this event
+	if tournament.Status != models.RegistrationEvent {
+		return errors.ErrTournamentStatusNotAcceptable
 	}
 
-	if err = tournamentUseCase.tournamentRepo.AddTeam(tournamentId, teamId); err != nil {
+	if err = tournamentUseCase.tournamentRepo.RemoveTeam(tournamentId, teamId); err != nil {
 		logger.Error(err)
 		return err
 	}
@@ -145,14 +194,21 @@ func (tournamentUseCase *TournamentUseCaseImpl) GetAllMeetings(tournamentId uint
 	return meetings, nil
 }
 
-func (tournamentUseCase *TournamentUseCaseImpl) generateMesh(tournamentId uint, genType models.TournamentSystem) error {
-	switch genType {
-	case models.OlympicSystem:
-		return tournamentUseCase.generateOlympicMesh(tournamentId)
-	case models.CircularSystem:
-		return tournamentUseCase.generateCircularMesh(tournamentId)
-	default:
-		return errors.ErrInternal // TODO create error for this event
+func generateOlympicMeshImpl(root *models.Meeting, deep int) {
+	root.Status = models.NotStartedEvent
+	root.Round = uint(deep)
+	root.Group = 0
+
+	deep--
+	if deep <= 0 {
+		return
+	}
+
+	root.PrevMeetings = make([]models.Meeting, 2)
+	for idx := range root.PrevMeetings {
+		root.PrevMeetings[idx].NextMeetingID = &root.ID
+		root.PrevMeetings[idx].TournamentId = root.TournamentId
+		generateOlympicMeshImpl(&root.PrevMeetings[idx], deep)
 	}
 }
 
@@ -163,24 +219,21 @@ func (tournamentUseCase *TournamentUseCaseImpl) generateOlympicMesh(tournamentId
 		return err
 	}
 
-	size := len(*teams) / 2
-	for i := 0; i < size; i++ {
-		// TODO: make save batch
-		// TODO: create balanced bin tree
-		meeting := &models.Meeting{
-			Status:       models.NotStartedEvent,
-			Round:        0,
-			Group:        0,
-			TournamentId: tournamentId,
-		}
-		if err = tournamentUseCase.meetingRepo.Create(meeting); err != nil {
-			logger.Error(err)
-		}
+	root := &models.Meeting{TournamentId: tournamentId /*, NextMeeting: nil*/}
+	numTeams := len(*teams)
+	if numTeams%2 != 0 {
+		numTeams++
+	}
+	generateOlympicMeshImpl(root, numTeams/2)
+
+	if err = tournamentUseCase.meetingRepo.Create(root); err != nil {
+		return err
 	}
 
 	return nil
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) generateCircularMesh(tournamentId uint) error {
+	// TODO: напиши меня (Тим)
 	panic("not implement method generateCircularMesh")
 }

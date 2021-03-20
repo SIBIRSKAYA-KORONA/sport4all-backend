@@ -21,6 +21,7 @@ func CreateTournamentRepository(db *gorm.DB) repositories.TournamentRepository {
 
 func (tournamentStore *TournamentStore) Create(tournament *models.Tournament) error {
 	tournament.Created = time.Now().Unix()
+	tournament.Status = models.NotStartedEvent
 
 	if err := tournamentStore.DB.Create(tournament).Error; err != nil {
 		logger.Error(err)
@@ -38,6 +39,14 @@ func (tournamentStore *TournamentStore) GetByID(tid uint) (*models.Tournament, e
 	}
 
 	return tournament, nil
+}
+
+func (tournamentStore *TournamentStore) GetTournamentStatus(tournamentId uint, status models.EventStatus) (models.EventStatus, error) {
+	return 0, nil
+}
+
+func (tournamentStore *TournamentStore) UpdateTournamentStatus(tournamentId uint, status models.EventStatus) error {
+	return nil
 }
 
 func (tournamentStore *TournamentStore) GetTournamentByUser(uid uint) (*models.Tournaments, error) {
@@ -67,7 +76,7 @@ func (tournamentStore *TournamentStore) Update(tournament *models.Tournament) er
 	if tournament.Status != models.UnknownEvent {
 		oldTournament.Status = tournament.Status
 	}
-	if tournament.System != models.UnknownSystem {
+	if tournament.System != "" {
 		oldTournament.System = tournament.System
 	}
 	if tournament.About != "" {
@@ -86,7 +95,17 @@ func (tournamentStore *TournamentStore) AddTeam(tournamentId uint, teamId uint) 
 	if err := tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).
 		Association("Teams").Append(&models.Team{ID: teamId}).Error; err != nil {
 		logger.Error(err)
-		return errors.ErrInternal
+		return errors.ErrTournamentNotFound
+	}
+
+	return nil
+}
+
+func (tournamentStore *TournamentStore) RemoveTeam(tournamentId uint, teamId uint) error {
+	if err := tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).
+		Association("Teams").Delete(&models.Team{ID: teamId}).Error; err != nil {
+		logger.Error(err)
+		return errors.ErrTournamentNotFound
 	}
 
 	return nil
@@ -104,10 +123,11 @@ func (tournamentStore *TournamentStore) GetAllTeams(tournamentId uint) (*models.
 
 func (tournamentStore *TournamentStore) GetAllMeetings(tournamentId uint) (*models.Meetings, error) {
 	var tournamentMeetings models.Meetings
-	if err := tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).
-		Related(&tournamentMeetings, "Meetings").Error; err != nil {
+	if err := tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).Where("next_meeting_id is null").
+		Preload("PrevMeetings").Related(&tournamentMeetings, "tournamentId").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTournamentNotFound
 	}
+
 	return &tournamentMeetings, nil
 }

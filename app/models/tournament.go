@@ -1,13 +1,5 @@
 package models
 
-type TournamentSystem uint
-
-const (
-	UnknownSystem TournamentSystem = iota
-	OlympicSystem
-	CircularSystem
-)
-
 // swagger:model Tournament
 type Tournament struct {
 	// example: 10
@@ -22,8 +14,8 @@ type Tournament struct {
 	// example: Moscow
 	Location string `json:"location" gorm:"index"`
 
-	// example: 2
-	System TournamentSystem `json:"system"`
+	// example: Olympic
+	System string `json:"system"`
 
 	// example: 3
 	Status EventStatus `json:"status"`

@@ -36,5 +36,5 @@ psql: {
 redis: {
   address: redis:6379,
   protocol: tcp,
-  expiresKeySec: 3600,
+  expiresKeySec: 31536000, # 1 year
 }

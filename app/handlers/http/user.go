@@ -84,9 +84,11 @@ func (userHandler *UserHandler) GetByID(ctx echo.Context) error {
 }
 
 func (userHandler *UserHandler) Update(ctx echo.Context) error {
+	// TODO:
 	return ctx.NoContent(http.StatusOK)
 }
 
 func (userHandler *UserHandler) Delete(ctx echo.Context) error {
+	// TODO:
 	return ctx.NoContent(http.StatusOK)
 }
