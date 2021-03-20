@@ -36,13 +36,40 @@ func (teamStore *TeamStore) GetByID(tid uint) (*models.Team, error) {
 		return nil, errors.ErrTeamNotFound
 	}
 
-	if err := teamStore.DB.Model(team).Related(&team.Players, "Players").
+	if err := teamStore.DB.Model(team).Select("id, name, surname, nickname, link_on_avatar").
+		Related(&team.Players, "Players").
 		Order("id").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrInternal
 	}
 
 	return team, nil
+}
+
+func (teamStore *TeamStore) IsTeamOwner(teamID uint, userID uint) (bool, error) {
+	team := new(models.Team)
+	if err := teamStore.DB.Where("id = ?", teamID).First(&team).Error; err != nil {
+		logger.Error(err)
+		return false, errors.ErrTeamNotFound
+	}
+
+	return team.OwnerId == userID, nil
+}
+
+func (teamStore *TeamStore) IsTeamPlayer(teamID uint, userID uint) (bool, error) {
+	players := new(models.Users)
+
+	if err := teamStore.DB.Model(models.Team{ID: teamID}).Select("id").Related(&players, "players"); err != nil {
+		return false, errors.ErrInternal
+	}
+
+	for _, player := range *players {
+		if player.ID == userID {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func (teamStore *TeamStore) GetTeamsByUser(uid uint, role models.Role) (*models.Teams, error) {
@@ -99,6 +126,30 @@ func (teamStore *TeamStore) InviteMember(tid uint, user *models.User, role model
 		logger.Error(err)
 		return errors.ErrInternal
 	}
+	return nil
+}
+
+func (teamStore *TeamStore) DeleteMember(tid uint, uid uint) error {
+	team := new(models.Team)
+	if err := teamStore.DB.First(team, tid).Error; err != nil {
+		logger.Error(err)
+		return errors.ErrTeamNotFound
+	}
+
+	check, err := teamStore.IsTeamOwner(tid, uid)
+	if err != nil {
+		logger.Error(err)
+		return err
+	}
+	if check {
+		return errors.ErrNoPermission
+	}
+
+	if err := teamStore.DB.Model(&team).Association("Players").Delete(models.User{ID: uid}).Error; err != nil {
+		logger.Error(err)
+		return errors.ErrInternal
+	}
+
 	return nil
 }
 

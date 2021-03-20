@@ -11,5 +11,7 @@ type TeamUseCase interface {
 	GetAllTournaments(tid uint) (*models.Tournaments, error)
 	GetTeamsByNamePart(namePart string, limit uint) (*models.Teams, error)
 	InviteMember(tid uint, uid uint, role models.Role) error
+	DeleteMember(tid uint, uid uint) error
 	GetUsersForInvite(tid uint, nicknamePart string, limit uint) (*models.Users, error)
+	CheckUserForRole(tid uint, uid uint, role models.Role) (bool, error)
 }

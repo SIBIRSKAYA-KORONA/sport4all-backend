@@ -1,12 +1,14 @@
 package http
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
 
+	"sport4all/app/models"
 	useCases "sport4all/app/usecases"
 	"sport4all/pkg/common"
 	"sport4all/pkg/errors"
@@ -20,15 +22,23 @@ type Middleware interface {
 	Sanitize(echo.HandlerFunc) echo.HandlerFunc
 	CORS(echo.HandlerFunc) echo.HandlerFunc
 	CheckAuth(echo.HandlerFunc) echo.HandlerFunc
+	CheckTeamPermission(role models.Role) echo.MiddlewareFunc
 }
 
 type MiddlewareImpl struct {
 	sessionUseCase useCases.SessionUseCase
+	teamUseCase    useCases.TeamUseCase
 	origins        map[string]struct{}
 }
 
-func CreateMiddleware(sessionUseCase useCases.SessionUseCase, origins map[string]struct{}) Middleware {
-	return &MiddlewareImpl{sessionUseCase: sessionUseCase, origins: origins}
+func CreateMiddleware(sessionUseCase useCases.SessionUseCase,
+	teamUseCase useCases.TeamUseCase,
+	origins map[string]struct{}) Middleware {
+	return &MiddlewareImpl{
+		sessionUseCase: sessionUseCase,
+		teamUseCase:    teamUseCase,
+		origins:        origins,
+	}
 }
 
 func (mw *MiddlewareImpl) LogRequest(next echo.HandlerFunc) echo.HandlerFunc {
@@ -113,5 +123,32 @@ func (mw *MiddlewareImpl) CheckAuth(next echo.HandlerFunc) echo.HandlerFunc {
 		ctx.Set("uid", uid)
 		ctx.Set("sid", sid)
 		return next(ctx)
+	}
+}
+
+func (mw *MiddlewareImpl) CheckTeamPermission(role models.Role) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return mw.CheckAuth( func(ctx echo.Context) error {
+			var teamID uint
+			_, err := fmt.Sscan(ctx.Param("tid"), &teamID)
+			if err != nil {
+				return ctx.NoContent(http.StatusBadRequest)
+			}
+			userID := ctx.Get("uid").(uint)
+
+			ok, err := mw.teamUseCase.CheckUserForRole(teamID, userID, role)
+			if err != nil {
+				logger.Error(err)
+				return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+			}
+
+			if ok {
+				ctx.Set("tid", teamID)
+				return next(ctx)
+			} else {
+				error := errors.ErrNoPermission
+				return ctx.String(errors.ResolveErrorToCode(error), error.Error())
+			}
+		})
 	}
 }

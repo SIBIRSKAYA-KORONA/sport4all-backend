@@ -30,8 +30,9 @@ func CreateTeamHandler(teamsURL string, router *echo.Group, useCase usecases.Tea
 	teams.GET("/:tid", handler.GetByID)
 	teams.GET("/:tid/tournaments", handler.GetAllTournaments)
 	teams.GET("/search", handler.GetTeamsByNamePart)
-	teams.GET("/:tid/members/search", handler.GetUsersForInvite)
-	teams.POST("/:tid/members/:uid", handler.InviteMember, mw.CheckAuth)
+	teams.GET("/:tid/members/search", handler.GetUsersForInvite, mw.CheckTeamPermission(models.Owner))
+	teams.POST("/:tid/members/:uid", handler.InviteMember, mw.CheckTeamPermission(models.Owner))
+	teams.DELETE("/:tid/members/:uid", handler.DeleteMember, mw.CheckTeamPermission(models.Owner))
 }
 
 func (teamHandler *TeamHandler) Create(ctx echo.Context) error {
@@ -121,10 +122,7 @@ func (teamHandler *TeamHandler) GetUsersForInvite(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	var tid uint
-	if _, err := fmt.Sscan(ctx.Param("tid"), &tid); err != nil {
-		return ctx.NoContent(http.StatusBadRequest)
-	}
+	tid := ctx.Get("tid").(uint)
 
 	var limit uint
 	if _, err := fmt.Sscan(ctx.QueryParam("limit"), &limit); err != nil {
@@ -144,10 +142,7 @@ func (teamHandler *TeamHandler) GetUsersForInvite(ctx echo.Context) error {
 }
 
 func (teamHandler *TeamHandler) InviteMember(ctx echo.Context) error {
-	var tid uint
-	if _, err := fmt.Sscan(ctx.Param("tid"), &tid); err != nil {
-		return ctx.NoContent(http.StatusBadRequest)
-	}
+	tid := ctx.Get("tid").(uint)
 
 	var uid uint
 	if _, err := fmt.Sscan(ctx.Param("uid"), &uid); err != nil {
@@ -164,6 +159,23 @@ func (teamHandler *TeamHandler) InviteMember(ctx echo.Context) error {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
+	return ctx.NoContent(http.StatusOK)
+}
+
+func (teamHandler *TeamHandler) DeleteMember(ctx echo.Context) error {
+	tid := ctx.Get("tid").(uint)
+
+	var uid uint
+	if _, err := fmt.Sscan(ctx.Param("uid"), &uid); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	if err := teamHandler.UseCase.DeleteMember(tid, uid); err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+
+	}
+
 	return ctx.NoContent(http.StatusOK)
 }
 
