@@ -41,14 +41,6 @@ func (tournamentStore *TournamentStore) GetByID(tid uint) (*models.Tournament, e
 	return tournament, nil
 }
 
-func (tournamentStore *TournamentStore) GetTournamentStatus(tournamentId uint, status models.EventStatus) (models.EventStatus, error) {
-	return 0, nil
-}
-
-func (tournamentStore *TournamentStore) UpdateTournamentStatus(tournamentId uint, status models.EventStatus) error {
-	return nil
-}
-
 func (tournamentStore *TournamentStore) GetTournamentByUser(uid uint) (*models.Tournaments, error) {
 	ownerTournaments := new(models.Tournaments)
 	if err := tournamentStore.DB.Model(&models.User{ID: uid}).

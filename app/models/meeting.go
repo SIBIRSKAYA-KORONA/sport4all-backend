@@ -22,9 +22,9 @@ type Meeting struct {
 
 	Group uint `json:"group"`
 
-	TournamentId uint `json:"tournamentId"`
+	TournamentId uint `json:"tournamentId" gorm:"index"`
 
-	Stats string `json:"stats"` // TODO: move to table (Anton)
+	Stats []Stats `json:"stats" gorm:"foreignkey:meetingId"`
 
 	NextMeetingID *uint `json:"nextMeetingID"`
 

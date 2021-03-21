@@ -65,6 +65,8 @@ type User struct {
 	TeamOwner []Team `json:"-" gorm:"foreignKey:ownerId" faker:"-"`
 
 	TeamPlayer []Team `json:"-" gorm:"many2many:team_players;" faker:"-"`
+
+	Stats []Stats `json:"stats" gorm:"foreignkey:playerId" faker:"-"`
 }
 
 // swagger:model Users

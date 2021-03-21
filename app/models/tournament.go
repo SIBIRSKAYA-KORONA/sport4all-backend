@@ -6,7 +6,7 @@ type Tournament struct {
 	ID uint `json:"id" gorm:"primary_key"`
 
 	// example: 4
-	OwnerId uint `json:"ownerId" gorm:"not null"`
+	OwnerId uint `json:"ownerId" gorm:"not null;index"`
 
 	// example: Чемпионат мира
 	Name string `json:"name" gorm:"index" faker:"name"`
@@ -14,19 +14,17 @@ type Tournament struct {
 	// example: Moscow
 	Location string `json:"location" gorm:"index"`
 
-	// example: Olympic
+	// example: olympic
 	System string `json:"system"`
 
-	// example: 3
+	// example: 1
 	Status EventStatus `json:"status"`
 
 	// example: турнир по игре с котиками
 	About string `json:"about"`
 
-	// example: ЦСКА, Зенит
 	Teams []Teams `json:"teams,omitempty" gorm:"many2many:team_tournament;" faker:"-"`
 
-	// example: игра1, игра2
 	Meetings []Meeting `json:"meetings,omitempty" gorm:"foreignKey:tournamentId" faker:"-"`
 
 	// example: 1234
