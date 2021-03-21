@@ -55,17 +55,41 @@ func (meetingStore *MeetingStore) Update(meeting *models.Meeting) error {
 	if meeting.TournamentId != 0 {
 		oldMeeting.TournamentId = meeting.TournamentId
 	}
-	if meeting.Stats != "" {
-		oldMeeting.Stats = meeting.Stats
-	}
-	if meeting.PrevMeetings != nil && len(meeting.PrevMeetings) != 0 {
-		oldMeeting.PrevMeetings = meeting.PrevMeetings
-	}
-	if meeting.NextMeetingID != nil && *meeting.NextMeetingID != 0 {
-		oldMeeting.NextMeetingID = meeting.NextMeetingID
-	}
 
 	if err = meetingStore.DB.Save(oldMeeting).Error; err != nil {
+		logger.Error(err)
+		return errors.ErrInternal
+	}
+
+	return nil
+}
+
+func (meetingStore *MeetingStore) AssignTeam(mid uint, tid uint) error {
+	var teams []models.Team
+
+	if err := meetingStore.DB.Model(&models.Meeting{ID: mid}).
+		Association("teams").
+		Find(&teams).
+		Error; err != nil {
+		logger.Error(err)
+		return errors.ErrInternal
+	}
+
+	if len(teams) >= 2 {
+		logger.Error("Can't assign more than 2 teams on metting")
+		return errors.ErrInternal
+	}
+
+	var team models.Team
+
+	if err := meetingStore.DB.Where("id = ?", tid).First(&team).Error.Error; err != nil {
+		return errors.ErrTeamNotFound
+	}
+
+	if err := meetingStore.DB.Model(&models.Meeting{ID: mid}).
+		Association("teams").
+		Append(models.Team{ID: tid}).
+		Error; err != nil {
 		logger.Error(err)
 		return errors.ErrInternal
 	}

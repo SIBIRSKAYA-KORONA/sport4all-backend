@@ -23,6 +23,7 @@ var (
 
 	// ошибки, связанные со встречей
 	ErrMeetingNotFound = errors.New("meeting not found")
+	ErrMeetingStatusNotAcceptable = errors.New("meeting status not acceptable")
 
 	// ошибки, связанные с турнирами
 	ErrTournamentNotFound            = errors.New("tournament not found")
@@ -48,6 +49,7 @@ var errorToCodeMap = map[error]int{
 
 	// ошибки, связанные со встречей
 	ErrMeetingNotFound: http.StatusNotFound,
+	ErrMeetingStatusNotAcceptable: http.StatusNotAcceptable,
 
 	// ошибки, связанные с турнирами
 	ErrTournamentNotFound:            http.StatusNotFound,

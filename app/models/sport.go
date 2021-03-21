@@ -6,7 +6,7 @@ type Sport struct {
 	ID uint `json:"id" gorm:"primary_key"`
 
 	// example: Football
-	Kind string `json:"kind" gorm:"unique"`
+	Kind string `json:"kind" gorm:"unique;index"`
 
 	// example: https://someurl
 	ThumbURL string `json:"thumb" gorm:"unique"`

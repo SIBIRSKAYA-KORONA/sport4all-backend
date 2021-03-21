@@ -13,4 +13,6 @@ type TournamentUseCase interface {
 	RemoveTeam(tournamentId uint, teamId uint) error
 	GetAllTeams(tournamentId uint) (*models.Teams, error)
 	GetAllMeetings(tournamentId uint) (*models.Meetings, error)
+	CheckUserForTournamentRole(tournamentId uint, uid uint, role models.TournamentRole) (bool, error)
+	IsTeamInTournament(tournamentId uint, teamId uint) (bool, error)
 }

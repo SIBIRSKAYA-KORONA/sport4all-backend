@@ -28,7 +28,8 @@ func CreateMeetingsHandler(meetingsURL string, router *echo.Group, useCase useca
 
 	meeting.POST("", handler.Create, mw.CheckAuth)
 	meeting.GET("/:mid", handler.GetByID)
-	meeting.PUT("/:mid", handler.Update, mw.CheckAuth)
+	meeting.PUT("/:mid", handler.Update, mw.CheckTournamentPermissionByMeeting(models.TournamentOrganizer))
+	meeting.POST("/:mid/teams/:tid", handler.AssignTeam, mw.CheckMeetingStatus(models.RegistrationEvent))
 }
 
 func (meetingHandler *MeetingHandler) Create(ctx echo.Context) error {
@@ -83,6 +84,22 @@ func (meetingHandler *MeetingHandler) Update(ctx echo.Context) error {
 	}
 
 	if err := meetingHandler.UseCase.Update(&meeting); err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	return ctx.NoContent(http.StatusOK)
+}
+
+func (meetingHandler *MeetingHandler) AssignTeam(ctx echo.Context) error {
+	mid := ctx.Get("meetingId").(uint)
+
+	var tid uint
+	if _, err := fmt.Sscan(ctx.Param("tid"), &tid); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	if err := meetingHandler.UseCase.AssignTeam(mid, tid); err != nil {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}

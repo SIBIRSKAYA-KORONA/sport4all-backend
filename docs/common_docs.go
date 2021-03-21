@@ -37,7 +37,35 @@ type General403Response struct {
 		// The validation message
 
 		// Required: true
-		// Example: Отсутствует кука
+		// Example: Отсутствие прав
+		Message string
+	}
+}
+
+// 404, не найдено
+// swagger:response General404Response
+type General404Response struct {
+	// Описание
+	// in: body
+	Body struct {
+		// The validation message
+
+		// Required: true
+		// Example: Не найдено
+		Message string
+	}
+}
+
+// 406, не разрешено
+// swagger:response General406Response
+type General406Response struct {
+	// Описание
+	// in: body
+	Body struct {
+		// The validation message
+
+		// Required: true
+		// Example: Не разрешено
 		Message string
 	}
 }

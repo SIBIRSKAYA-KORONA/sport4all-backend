@@ -36,21 +36,6 @@ func CreateUserHandler(settingsURL string, profileURL string, router *echo.Group
 	settings.DELETE("", handler.Delete, mw.CheckAuth)
 }
 
-func (userHandler *UserHandler) GetByNickname(ctx echo.Context) error {
-	usrKey := ctx.Param("nickname")
-	usr, err := userHandler.UseCase.GetByNickname(usrKey)
-	if err != nil {
-		logger.Error(err)
-		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
-	}
-
-	resp, err := serializer.JSON().Marshal(&usr)
-	if err != nil {
-		return ctx.NoContent(http.StatusInternalServerError)
-	}
-	return ctx.String(http.StatusOK, string(resp))
-}
-
 func (userHandler *UserHandler) Create(ctx echo.Context) error {
 	body := ctx.Get("body").([]byte)
 	var usr models.User
@@ -66,6 +51,21 @@ func (userHandler *UserHandler) Create(ctx echo.Context) error {
 	}
 	common.SetCookie(ctx, session.SID, time.Now().Add(time.Duration(session.ExpiresSec)*time.Second))
 	return ctx.NoContent(http.StatusOK)
+}
+
+func (userHandler *UserHandler) GetByNickname(ctx echo.Context) error {
+	usrKey := ctx.Param("nickname")
+	usr, err := userHandler.UseCase.GetByNickname(usrKey)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	resp, err := serializer.JSON().Marshal(&usr)
+	if err != nil {
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
 }
 
 func (userHandler *UserHandler) GetByID(ctx echo.Context) error {

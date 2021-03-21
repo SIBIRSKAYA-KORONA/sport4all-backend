@@ -41,14 +41,6 @@ func (tournamentStore *TournamentStore) GetByID(tid uint) (*models.Tournament, e
 	return tournament, nil
 }
 
-func (tournamentStore *TournamentStore) GetTournamentStatus(tournamentId uint, status models.EventStatus) (models.EventStatus, error) {
-	return 0, nil
-}
-
-func (tournamentStore *TournamentStore) UpdateTournamentStatus(tournamentId uint, status models.EventStatus) error {
-	return nil
-}
-
 func (tournamentStore *TournamentStore) GetTournamentByUser(uid uint) (*models.Tournaments, error) {
 	ownerTournaments := new(models.Tournaments)
 	if err := tournamentStore.DB.Model(&models.User{ID: uid}).
@@ -58,6 +50,37 @@ func (tournamentStore *TournamentStore) GetTournamentByUser(uid uint) (*models.T
 	}
 
 	return ownerTournaments, nil
+}
+
+func (tournamentStore *TournamentStore) IsTournamentOrganizer(tournamentID uint, userID uint) (bool, error) {
+	tournament := new(models.Tournament)
+	if err := tournamentStore.DB.Where("id = ?", tournamentID).First(&tournament).Error; err != nil {
+		logger.Error(err)
+		return false, errors.ErrTournamentNotFound
+	}
+
+	return tournament.OwnerId == userID, nil
+}
+
+func (tournamentStore *TournamentStore) IsTournamentPlayer(tournamentID uint, userID uint) (bool, error) {
+	
+	teams := new(models.Teams)
+
+	if err := tournamentStore.DB.Model(models.Tournament{ID: tournamentID}).
+		Related(&teams, "teams").Error; err != nil {
+			logger.Error(err)
+			return false, errors.ErrInternal
+	}
+
+	for _, team := range *teams {
+		for _, player := range team.Players {
+			if player.ID == userID {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }
 
 func (tournamentStore *TournamentStore) Update(tournament *models.Tournament) error {
@@ -130,4 +153,16 @@ func (tournamentStore *TournamentStore) GetAllMeetings(tournamentId uint) (*mode
 	}
 
 	return &tournamentMeetings, nil
+}
+
+func (tournamentStore *TournamentStore) IsTeamInTournament(tournamentId uint, teamId uint) (bool, error) {
+	var team models.Team
+	if err := tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).
+		Where("id = ?", teamId).
+		Association("teams").
+		Find(&team).Error; err != nil {
+		logger.Error(err)
+		return false, errors.ErrTeamNotFound
+	}
+	return true, nil
 }

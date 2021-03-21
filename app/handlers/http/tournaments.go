@@ -29,8 +29,8 @@ func CreateTournamentHandler(tournamentsURL string, router *echo.Group, useCase 
 	tournaments.GET("", handler.GetTournamentByUser)
 	tournaments.GET("/:tournamentId", handler.GetByID)
 	tournaments.PUT("/:tournamentId", handler.Update, mw.CheckAuth)
-	tournaments.PUT("/:tournamentId/teams/:tid", handler.AddTeam, mw.CheckAuth)
-	tournaments.DELETE("/:tournamentId/teams/:tid", handler.RemoveTeam, mw.CheckAuth)
+	tournaments.PUT("/:tournamentId/teams/:tid", handler.AddTeam, mw.CheckTournamentPermission(models.TournamentOrganizer))
+	tournaments.DELETE("/:tournamentId/teams/:tid", handler.RemoveTeam, mw.CheckTournamentPermission(models.TournamentPlayer))
 	tournaments.GET("/:tournamentId/teams", handler.GetAllTeams)
 	tournaments.GET("/:tournamentId/meetings", handler.GetAllMeetings)
 }
@@ -40,7 +40,7 @@ func (tournamentHandler *TournamentHandler) Create(ctx echo.Context) error {
 	var tournament models.Tournament
 	if err := serializer.JSON().Unmarshal(body, &tournament); err != nil {
 		logger.Error(err)
-		return ctx.String(http.StatusInternalServerError, err.Error())
+		return ctx.String(http.StatusBadRequest, err.Error())
 	}
 	tournament.OwnerId = ctx.Get("uid").(uint)
 
@@ -118,10 +118,7 @@ func (tournamentHandler *TournamentHandler) AddTeam(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	var tournamentId uint
-	if _, err := fmt.Sscan(ctx.Param("tournamentId"), &tournamentId); err != nil {
-		return ctx.NoContent(http.StatusBadRequest)
-	}
+	tournamentId := ctx.Get("tournamentId").(uint)
 
 	if err := tournamentHandler.UseCase.AddTeam(tournamentId, teamId); err != nil {
 		logger.Error(err)
@@ -137,10 +134,7 @@ func (tournamentHandler *TournamentHandler) RemoveTeam(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	var tournamentId uint
-	if _, err := fmt.Sscan(ctx.Param("tournamentId"), &tournamentId); err != nil {
-		return ctx.NoContent(http.StatusBadRequest)
-	}
+	tournamentId := ctx.Get("tournamentId").(uint)
 
 	if err := tournamentHandler.UseCase.RemoveTeam(tournamentId, teamId); err != nil {
 		logger.Error(err)
