@@ -111,7 +111,7 @@ func (mw *MiddlewareImpl) CheckAuth(next echo.HandlerFunc) echo.HandlerFunc {
 		cookie, err := ctx.Cookie("session_id")
 		if err != nil {
 			logger.Error(err)
-			return ctx.String(http.StatusUnauthorized, errors.SessionNotFound)
+			return ctx.String(errors.ResolveErrorToCode(errors.ErrSessionNotFound), errors.ErrSessionNotFound.Error())
 		}
 		sid := cookie.Value
 		uid, err := mw.sessionUseCase.GetByID(sid)

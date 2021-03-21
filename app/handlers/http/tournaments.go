@@ -30,6 +30,7 @@ func CreateTournamentHandler(tournamentsURL string, router *echo.Group, useCase 
 	tournaments.GET("/:tournamentId", handler.GetByID)
 	tournaments.PUT("/:tournamentId", handler.Update, mw.CheckAuth)
 	tournaments.PUT("/:tournamentId/teams/:tid", handler.AddTeam, mw.CheckAuth)
+	tournaments.DELETE("/:tournamentId/teams/:tid", handler.RemoveTeam, mw.CheckAuth)
 	tournaments.GET("/:tournamentId/teams", handler.GetAllTeams)
 	tournaments.GET("/:tournamentId/meetings", handler.GetAllMeetings)
 }
@@ -127,7 +128,25 @@ func (tournamentHandler *TournamentHandler) AddTeam(ctx echo.Context) error {
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
 
-	return nil
+	return ctx.NoContent(http.StatusOK)
+}
+
+func (tournamentHandler *TournamentHandler) RemoveTeam(ctx echo.Context) error {
+	var teamId uint
+	if _, err := fmt.Sscan(ctx.Param("tid"), &teamId); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	var tournamentId uint
+	if _, err := fmt.Sscan(ctx.Param("tournamentId"), &tournamentId); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	if err := tournamentHandler.UseCase.RemoveTeam(tournamentId, teamId); err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+	return ctx.NoContent(http.StatusOK)
 }
 
 func (tournamentHandler *TournamentHandler) GetAllTeams(ctx echo.Context) error {
