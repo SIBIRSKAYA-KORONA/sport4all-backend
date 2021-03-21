@@ -55,15 +55,6 @@ func (meetingStore *MeetingStore) Update(meeting *models.Meeting) error {
 	if meeting.TournamentId != 0 {
 		oldMeeting.TournamentId = meeting.TournamentId
 	}
-	if meeting.Stats != "" {
-		oldMeeting.Stats = meeting.Stats
-	}
-	if meeting.PrevMeetings != nil && len(meeting.PrevMeetings) != 0 {
-		oldMeeting.PrevMeetings = meeting.PrevMeetings
-	}
-	if meeting.NextMeetingID != nil && *meeting.NextMeetingID != 0 {
-		oldMeeting.NextMeetingID = meeting.NextMeetingID
-	}
 
 	if err = meetingStore.DB.Save(oldMeeting).Error; err != nil {
 		logger.Error(err)

@@ -51,6 +51,7 @@ type DeleteSession200Response struct {
 type DeleteSessionRequest struct {
 	// Авторизационная кука
 	// in: header
+	// required: true
 	// example: session_id=215c5a74-efa3-41f9-8c27-55d8e13ecf64
 	Cookie string `json:"Cookie"`
 }

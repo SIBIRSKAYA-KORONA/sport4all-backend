@@ -5,15 +5,6 @@ type Team struct {
 	// example: 101
 	ID uint `json:"id" gorm:"primary_key"`
 
-	// example: 4
-	OwnerId uint `json:"ownerId" gorm:"not null"`
-
-	Players []User `json:"players,omitempty" gorm:"many2many:team_players;" faker:"-"`
-
-	Tournaments []Tournament `json:"tournaments,omitempty" gorm:"many2many:team_tournament;" faker:"-"`
-
-	Meetings []Meeting `json:"meetings,omitempty" gorm:"many2many:team_meetings;" faker:"-"`
-
 	// example: ЦСКА
 	Name string `json:"name" gorm:"index" faker:"name"`
 
@@ -28,6 +19,17 @@ type Team struct {
 
 	// example: Один из ведущих футбольных клубов Москвы
 	About string `json:"about"`
+
+	// example: 4
+	OwnerId uint `json:"ownerId" gorm:"not null;index"`
+
+	Players []User `json:"players,omitempty" gorm:"many2many:team_players;" faker:"-"`
+
+	Tournaments []Tournament `json:"tournaments,omitempty" gorm:"many2many:team_tournament;" faker:"-"`
+
+	Meetings []Meeting `json:"meetings,omitempty" gorm:"many2many:team_meetings;" faker:"-"`
+
+	Stats []Stats `json:"stats" gorm:"foreignkey:teamId" faker:"-"`
 }
 
 // swagger:model Teams

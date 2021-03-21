@@ -62,10 +62,8 @@ type SearchTeamsByName200Response struct {
 	Body models.Teams
 }
 
-// swagger:parameters SearchTeamsByNameRequest ываываываыва
+// swagger:parameters SearchTeamsByNameRequest
 type SearchTeamsByNameRequest struct {
-	// ываыва
-
 	// Часть названия команды
 	// in: query
 	// example: ЦСК

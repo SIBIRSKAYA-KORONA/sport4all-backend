@@ -40,7 +40,7 @@ func (tournamentHandler *TournamentHandler) Create(ctx echo.Context) error {
 	var tournament models.Tournament
 	if err := serializer.JSON().Unmarshal(body, &tournament); err != nil {
 		logger.Error(err)
-		return ctx.String(http.StatusInternalServerError, err.Error())
+		return ctx.String(http.StatusBadRequest, err.Error())
 	}
 	tournament.OwnerId = ctx.Get("uid").(uint)
 
