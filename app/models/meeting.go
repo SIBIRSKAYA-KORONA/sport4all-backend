@@ -12,6 +12,7 @@ const (
 
 // swagger:model Game
 type Meeting struct {
+
 	// example: 101
 	ID uint `json:"id" gorm:"primary_key"`
 
@@ -25,9 +26,9 @@ type Meeting struct {
 
 	Stats string `json:"stats"` // TODO: move to table (Anton)
 
-	PrevMeetings []Meeting `json:"prevMeetings,omitempty" faker:"-"`
+	NextMeetingID *uint `json:"nextMeetingID"`
 
-	NextMeeting *Meeting `json:"nextMeeting,omitempty" faker:"-"`
+	PrevMeetings []Meeting `json:"prevMeetings,omitempty" gorm:"foreignkey:nextMeetingID" faker:"-"`
 
 	Teams []Team `json:"teams,omitempty" gorm:"many2many:team_meetings;" faker:"-"`
 }
@@ -36,5 +37,5 @@ type Meeting struct {
 type Meetings []Meeting
 
 func (meeting *Meeting) TableName() string {
-	return "meeting"
+	return "meetings"
 }
