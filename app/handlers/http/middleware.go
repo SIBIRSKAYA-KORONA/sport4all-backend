@@ -128,7 +128,7 @@ func (mw *MiddlewareImpl) CheckAuth(next echo.HandlerFunc) echo.HandlerFunc {
 
 func (mw *MiddlewareImpl) CheckTeamPermission(role models.Role) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return mw.CheckAuth( func(ctx echo.Context) error {
+		return mw.CheckAuth(func(ctx echo.Context) error {
 			var teamID uint
 			_, err := fmt.Sscan(ctx.Param("tid"), &teamID)
 			if err != nil {

@@ -36,7 +36,7 @@ func (sessionHandler *SessionHandler) Create(ctx echo.Context) error {
 	var usr models.User
 	if err := serializer.JSON().Unmarshal(body, &usr); err != nil {
 		logger.Error(err)
-		return ctx.String(http.StatusInternalServerError, err.Error())
+		return ctx.String(http.StatusBadRequest, err.Error())
 	}
 
 	session, err := sessionHandler.UseCase.Create(&usr)

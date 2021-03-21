@@ -35,6 +35,10 @@ func CreateTournamentUseCase(userRepo repositories.UserRepository, tournamentRep
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) Create(tournament *models.Tournament) error {
+	if _, ok := tournamentUseCase.tournamentSystems[tournament.System]; !ok {
+		return errors.ErrTournamentSystemNotAcceptable
+	}
+
 	if _, err := tournamentUseCase.userRepo.GetByID(tournament.OwnerId); err != nil { // TODO: move it to mv
 		logger.Error(err)
 		return err
@@ -96,7 +100,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) GetTournamentByUser(uid uint) (*
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) Update(tournament *models.Tournament) error {
-	// TODO: move it to mv
+	// TODO: move it to mv (Антон)
 	oldTournament, err := tournamentUseCase.GetByID(tournament.ID)
 	if err != nil {
 		return err
@@ -121,7 +125,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) Update(tournament *models.Tourna
 			return err
 		}
 		fallthrough
-	case models.FinishedEvent:
+	case models.RegistrationEvent, models.FinishedEvent:
 		if err = tournamentUseCase.tournamentRepo.
 			Update(&models.Tournament{ID: tournament.ID, Status: tournament.Status}); err != nil {
 			logger.Error(err)
@@ -201,14 +205,11 @@ func generateOlympicMeshImpl(root *models.Meeting, deep int) {
 	}
 
 	root.PrevMeetings = make([]models.Meeting, 2)
-
-	root.PrevMeetings[0].NextMeeting = root
-	root.PrevMeetings[0].TournamentId = root.TournamentId
-	generateOlympicMeshImpl(&root.PrevMeetings[0], deep)
-
-	root.PrevMeetings[1].NextMeeting = root
-	root.PrevMeetings[1].TournamentId = root.TournamentId
-	generateOlympicMeshImpl(&root.PrevMeetings[1], deep)
+	for idx := range root.PrevMeetings {
+		root.PrevMeetings[idx].NextMeetingID = &root.ID
+		root.PrevMeetings[idx].TournamentId = root.TournamentId
+		generateOlympicMeshImpl(&root.PrevMeetings[idx], deep)
+	}
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) generateOlympicMesh(tournamentId uint) error {
@@ -218,7 +219,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) generateOlympicMesh(tournamentId
 		return err
 	}
 
-	root := &models.Meeting{TournamentId: tournamentId, NextMeeting: nil}
+	root := &models.Meeting{TournamentId: tournamentId /*, NextMeeting: nil*/}
 	numTeams := len(*teams)
 	if numTeams%2 != 0 {
 		numTeams++

@@ -12,4 +12,4 @@ package docs
 type GenerateMeetings200 struct{}
 
 // swagger:parameters GenerateMeetingsRequest
-type GenerateMeetingsRequest struct {}
+type GenerateMeetingsRequest struct{}

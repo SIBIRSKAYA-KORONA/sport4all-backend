@@ -1,5 +1,9 @@
 package docs
 
+import "sport4all/app/models"
+
+// ------------------------------------------------ СОЗДАНИЕ ТУРНИРА ---------------------------------------------------
+
 // swagger:route POST /api/tournaments Tournaments PostApiTournamentsRequest
 // Создаем турнир
 // responses:
@@ -10,19 +14,28 @@ package docs
 // 200, успешно создали турнир
 // swagger:response PostApiTournaments200Response
 type PostApiTournaments200Response struct {
+	// Описание ответа
+	// in:body
+	Body models.Tournaments
 }
 
 // swagger:parameters PostApiTournamentsRequest
 type PostApiTournamentsRequest struct {
-	// Описание реквеста
+	// Описание запроса
 	// in:body
 	Body TournamentsRequestBody
 }
 
 type TournamentsRequestBody struct {
 	// example: Чемпионат мира
-	Name string `json:"name"`
+	Name string `json:"name" gorm:"index" faker:"name"`
 
 	// example: Moscow
-	Location string `json:"location" `
+	Location string `json:"location" gorm:"index"`
+
+	// example: olympic
+	System string `json:"system"`
+
+	// example: турнир по игре с котиками
+	About string `json:"about"`
 }

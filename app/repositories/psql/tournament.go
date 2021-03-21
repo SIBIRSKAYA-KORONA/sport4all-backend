@@ -123,8 +123,8 @@ func (tournamentStore *TournamentStore) GetAllTeams(tournamentId uint) (*models.
 
 func (tournamentStore *TournamentStore) GetAllMeetings(tournamentId uint) (*models.Meetings, error) {
 	var tournamentMeetings models.Meetings
-	if err := tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).
-		Related(&tournamentMeetings, "Meetings").Error; err != nil {
+	if err := tournamentStore.DB.Model(&models.Tournament{ID: tournamentId}).Where("next_meeting_id is null").
+		Preload("PrevMeetings").Related(&tournamentMeetings, "tournamentId").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTournamentNotFound
 	}

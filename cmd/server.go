@@ -5,9 +5,9 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/labstack/echo/v4"
+	"sport4all/app/models"
 
 	httpHandlers "sport4all/app/handlers/http"
-	"sport4all/app/models"
 	psqlRepos "sport4all/app/repositories/psql"
 	redisRepos "sport4all/app/repositories/redis"
 	useCases "sport4all/app/usecases/impl"
@@ -46,7 +46,7 @@ func (server *Server) Run() {
 	}
 	defer common.Close(postgresClient.Close)
 
-	// postgresClient.DropTableIfExists(&models.User{})
+	// postgresClient.DropTableIfExists(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{})
 	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{})
 
 	usrRepo := psqlRepos.CreateUserRepository(postgresClient)

@@ -61,8 +61,8 @@ func (meetingStore *MeetingStore) Update(meeting *models.Meeting) error {
 	if meeting.PrevMeetings != nil && len(meeting.PrevMeetings) != 0 {
 		oldMeeting.PrevMeetings = meeting.PrevMeetings
 	}
-	if meeting.NextMeeting != nil {
-		oldMeeting.NextMeeting = meeting.NextMeeting
+	if meeting.NextMeetingID != nil && *meeting.NextMeetingID != 0 {
+		oldMeeting.NextMeetingID = meeting.NextMeetingID
 	}
 
 	if err = meetingStore.DB.Save(oldMeeting).Error; err != nil {

@@ -1,5 +1,19 @@
 package docs
 
+// 400, прислали гавно
+// swagger:response General400Response
+type General400Response struct {
+	// Описание
+	// in: body
+	Body struct {
+		// The validation message
+
+		// Required: true
+		// Example: Прислали гавно
+		Message string
+	}
+}
+
 // 401, проблемы с авторизацией
 // swagger:response General401Response
 type General401Response struct {
@@ -28,7 +42,7 @@ type General403Response struct {
 	}
 }
 
-// 500, внутренняя ошибка серввера
+// 500, внутренняя ошибка сервера
 // swagger:response General500Response
 type General500Response struct {
 	// Описание
