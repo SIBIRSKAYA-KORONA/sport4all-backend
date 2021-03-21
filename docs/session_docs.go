@@ -3,7 +3,11 @@ package docs
 // ------------------------------------------------ СОЗДАНИЕ СЕССИИ ----------------------------------------------------
 
 // swagger:route POST /api/sessions Sessions CreateSessionRequest
+//
 // Операция логина
+//
+// Передаем в теле json с нужными полями
+//
 // responses:
 //   200: CreateSession200Response
 //   400: General400Response
@@ -35,14 +39,14 @@ type SessionRequestBody struct {
 //
 // Операция логаута
 //
-// обязательно наличие куки
+// Передаем Cookie в заголовке запроса
 //
 // responses:
 //   200: DeleteSession200Response
 //   401: General401Response
 //   500: General500Response
 
-// 200, успешно авторизовались
+// 200, успешно выполнили логаут
 // swagger:response DeleteSession200Response
 type DeleteSession200Response struct {
 }
