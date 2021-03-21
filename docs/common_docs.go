@@ -37,7 +37,7 @@ type General403Response struct {
 		// The validation message
 
 		// Required: true
-		// Example: Отсутствует кука
+		// Example: Отсутствие прав
 		Message string
 	}
 }

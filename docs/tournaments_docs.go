@@ -28,6 +28,7 @@ type CreateTournament200Response struct {
 type CreateTournamentRequest struct {
 	// Авторизационная кука
 	// in: header
+	// required: true
 	// example: session_id=215c5a74-efa3-41f9-8c27-55d8e13ecf64
 	Cookie string `json:"Cookie"`
 
@@ -52,7 +53,7 @@ type CreateTournamentRequestBody struct {
 
 // ------------------------------------------------ ПОЛУЧЕНИЕ ТУРНИРА --------------------------------------------------
 
-// swagger:route GET /api/teams/{tournamentId} Tournaments GetTournamentByID
+// swagger:route GET /api/tournaments/{tournamentId} Tournaments GetTournamentByID
 //
 // Получаем турнир по его ID
 //
@@ -107,7 +108,7 @@ type GetTournamentResponseBody struct {
 
 // ------------------------------------------------ ОБНОВЛЕНИЕ ТУРНИРА -------------------------------------------------
 
-// swagger:route PUT /api/teams/{tournamentId} Tournaments UpdateTournamentByID
+// swagger:route PUT /api/tournaments/{tournamentId} Tournaments UpdateTournamentByID
 //
 // Обновляем турнир по его ID
 //
@@ -117,6 +118,7 @@ type GetTournamentResponseBody struct {
 //   200: UpdateTournamentByID200Response
 //   400: General400Response
 //   401: General401Response
+//   403: General403Response
 //   404: General404Response
 //   406: General406Response
 //   500: General500Response
@@ -163,7 +165,7 @@ type UpdateTournamentRequestBody struct {
 
 // ------------------------------------------------ ПОЛУЧЕНИЕ ВСЕХ КОМАНД ТУРНИРА --------------------------------------
 
-// swagger:route GET /{tournamentId}/teams Tournaments GetAllTeams
+// swagger:route GET /api/tournaments/{tournamentId}/teams Tournaments GetAllTeams
 //
 // Получаем все команды турнира по его ID
 //
@@ -175,7 +177,7 @@ type UpdateTournamentRequestBody struct {
 //   404: General404Response
 //   500: General500Response
 
-// 200, успешно обновили турнир
+// 200, успешно получили все команды
 // swagger:response GetAllTeams200Response
 type GetAllTeams200Response struct {
 	// in:body
@@ -188,4 +190,130 @@ type GetAllTeamsRequest struct {
 	// in: path
 	// example: 1
 	Tid string `json:"tournamentId"`
+}
+
+// ------------------------------------------------ ПОЛУЧЕНИЕ ВСЕХ МАТЧЕЙ ТУРНИРА --------------------------------------
+
+// swagger:route GET /api/tournaments/{tournamentId}/meetings Tournaments GetAllMeetings
+//
+// Получаем все встречи турнира по его ID
+//
+// Передаем ID турнира в урле
+//
+// responses:
+//   200: GetAllMeetings200Response
+//   400: General400Response
+//   404: General404Response
+//   500: General500Response
+
+// 200, успешно получили все встречи (их формат определяется системой турнира)
+// swagger:response GetAllMeetings200Response
+type GetAllMeetings200Response struct {
+	// Описание ответа
+	// in:body
+	Body models.Meetings
+}
+
+// swagger:parameters GetAllMeetings
+type GetAllMeetingsRequest struct {
+	// ID турнира
+	// in: path
+	// example: 1
+	Tid string `json:"tournamentId"`
+}
+
+// ------------------------------------------------ ДОБАВЛЕНИЕ КОМАНДЫ В ТУРНИР ----------------------------------------
+
+// swagger:route PUT /api/tournaments/{tournamentId}/teams/{tid} Tournaments AddTeam
+//
+// Добавляем в турнир команду по их ID
+//
+// Передаем ID команды и турнира в урле
+//
+// responses:
+//   200: AddTeam200Response
+//   400: General400Response
+//   401: General401Response
+//   403: General403Response
+//   404: General404Response
+//   406: General406Response
+//   500: General500Response
+
+// 200, успешно добавили команду в турнир
+// swagger:response AddTeam200Response
+type AddTeam200Response struct {
+}
+
+// swagger:parameters AddTeam
+type AddTeamRequest struct {
+	// Авторизационная кука
+	// in: header
+	// required: true
+	// example: session_id=215c5a74-efa3-41f9-8c27-55d8e13ecf64
+	Cookie string `json:"Cookie"`
+
+	// ID турнира
+	// in: path
+	// example: 1
+	TournamenId string `json:"tournamentId"`
+
+	// ID команды
+	// in: path
+	// example: 1
+	Tid string `json:"tid"`
+}
+
+// ------------------------------------------------ УДАЛЕНИЕ КОМАНДЫ ИЗ ТУРНИРА ----------------------------------------
+
+// swagger:route DELETE /api/tournaments/{tournamentId}/teams/{tid} Tournaments DeleteTeam
+//
+// Удаляем команду из турнира по их ID
+//
+// Передаем ID команды и турнира в урле
+//
+// responses:
+//   200: DeleteTeam200Response
+//   400: General400Response
+//   401: General401Response
+//   403: General403Response
+//   404: General404Response
+//   406: General406Response
+//   500: General500Response
+
+// 200, успешно удалили команду из турнира
+// swagger:response DeleteTeam200Response
+type DeleteTeam200Response struct {
+}
+
+// swagger:parameters DeleteTeam
+type DeleteTeamRequest AddTeamRequest
+
+// ------------------------------------------------ ПОЛУЧЕНИЕ ВСЕХ ТУРНИРОВ ПОЛЬЗОВАТЕЛЯ -------------------------------
+
+// swagger:route GET /api/tournaments?userId=uid Tournaments GetTournamentByUser
+//
+// Получаем все турниры пользователя по его ID
+//
+// Передаем ID юзера в query string
+//
+// responses:
+//   200: GetTournamentByUser200Response
+//   400: General400Response
+//   404: General404Response
+//   500: General500Response
+
+// 200, успешно получили все турниры пользователя
+// swagger:response GetTournamentByUser200Response
+type GetTournamentByUser200Response struct {
+	// in:body
+	Body models.UserTournament
+}
+
+// swagger:parameters GetTournamentByUser
+type GetTournamentByUserRequest struct {
+	// ID пользователя
+	// in: query
+	// required: true
+	// example: 1
+	UserId uint `json:"userId"`
 }
