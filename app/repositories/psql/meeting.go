@@ -33,6 +33,13 @@ func (meetingStore *MeetingStore) GetByID(mid uint) (*models.Meeting, error) {
 		return nil, errors.ErrMeetingNotFound
 	}
 
+	if err := meetingStore.DB.Model(meeting).
+		Related(&meeting.Teams, "teams").
+		Order("id").Error; err != nil {
+		logger.Error(err)
+		return nil, errors.ErrInternal
+	}
+
 	return meeting, nil
 }
 
@@ -77,13 +84,7 @@ func (meetingStore *MeetingStore) AssignTeam(mid uint, tid uint) error {
 
 	if len(teams) >= 2 {
 		logger.Error("Can't assign more than 2 teams on metting")
-		return errors.ErrInternal
-	}
-
-	var team models.Team
-
-	if err := meetingStore.DB.Where("id = ?", tid).First(&team).Error.Error; err != nil {
-		return errors.ErrTeamNotFound
+		return errors.ErrMeetingTeamsAreAlreadyAssigned
 	}
 
 	if err := meetingStore.DB.Model(&models.Meeting{ID: mid}).
@@ -91,8 +92,45 @@ func (meetingStore *MeetingStore) AssignTeam(mid uint, tid uint) error {
 		Append(models.Team{ID: tid}).
 		Error; err != nil {
 		logger.Error(err)
-		return errors.ErrInternal
+		return errors.ErrTeamNotFound
 	}
 
 	return nil
+}
+
+func (meetingStore *MeetingStore) IsTeamInMeeting(mid uint, tid uint) (bool, error) {
+	teams := new(models.Teams)
+	if err := meetingStore.DB.Model(&models.Meeting{ID: mid}).
+		Related(&teams, "teams").Error; err != nil {
+		logger.Error(err)
+		return false, errors.ErrMeetingNotFound
+	}
+
+	for _, team := range *teams {
+		if team.ID == tid {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func (meetingStore *MeetingStore) UpdateTeamStat(stat *models.Stats) error {
+	if err := meetingStore.DB.Create(stat).Error; err != nil {
+		logger.Error(err)
+		return errors.ErrConflict
+	}
+
+	return nil
+}
+
+func (meetingStore *MeetingStore) GetMeetingStat(mid uint) ([]models.Stats, error) {
+	var stats []models.Stats
+	if err := meetingStore.DB.Model(&models.Meeting{ID: mid}).
+		Related(&stats, "meetingId").Error; err != nil {
+		logger.Error(err)
+		return nil, errors.ErrMeetingNotFound
+	}
+
+	return stats, nil
 }

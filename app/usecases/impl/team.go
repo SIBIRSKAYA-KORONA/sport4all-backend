@@ -51,7 +51,7 @@ func (teamUseCase *TeamUseCaseImpl) CheckUserForRole(teamID uint, userID uint, r
 	case models.Player:
 		return teamUseCase.teamRepo.IsTeamPlayer(teamID, userID)
 	default:
-		return false, errors.ErrInternal
+		return false, errors.ErrTeamBadRole
 	}
 }
 
@@ -119,4 +119,14 @@ func (teamUseCase *TeamUseCaseImpl) DeleteMember(tid uint, uid uint) error {
 	}
 
 	return nil
+}
+
+func (teamUseCase *TeamUseCaseImpl) GetTeamStats(tid uint) ([]models.Stats, error) {
+	stats, err := teamUseCase.teamRepo.GetTeamStats(tid)
+	if err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+
+	return stats, nil
 }

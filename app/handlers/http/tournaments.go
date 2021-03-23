@@ -30,7 +30,7 @@ func CreateTournamentHandler(tournamentsURL string, router *echo.Group, useCase 
 	tournaments.GET("/:tournamentId", handler.GetByID)
 	tournaments.PUT("/:tournamentId", handler.Update, mw.CheckAuth)
 	tournaments.PUT("/:tournamentId/teams/:tid", handler.AddTeam, mw.CheckTournamentPermission(models.TournamentOrganizer))
-	tournaments.DELETE("/:tournamentId/teams/:tid", handler.RemoveTeam, mw.CheckTournamentPermission(models.TournamentPlayer))
+	tournaments.DELETE("/:tournamentId/teams/:tid", handler.RemoveTeam, mw.CheckTournamentPermission(models.TournamentOrganizer))
 	tournaments.GET("/:tournamentId/teams", handler.GetAllTeams)
 	tournaments.GET("/:tournamentId/meetings", handler.GetAllMeetings)
 }

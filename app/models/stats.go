@@ -18,5 +18,8 @@ type Stats struct {
 	TeamId uint `json:"teamId" gorm:"not null;index"`
 
 	// example: 24
-	PlayerId *uint `json:"playerId" gorm:"not null;index"`
+	PlayerId *uint `json:"playerId" gorm:"index"`
 }
+
+// swagger:model StatsSet
+type StatsSet []Stats

@@ -25,14 +25,23 @@ func CreateTeamHandler(teamsURL string, router *echo.Group, useCase usecases.Tea
 	}
 
 	teams := router.Group(handler.TeamsURL)
+
+	// --- CRUD ---
 	teams.POST("", handler.Create, mw.CheckAuth)
 	teams.GET("", handler.GetTeamsByUser, mw.CheckAuth)
 	teams.GET("/:tid", handler.GetByID)
 	teams.GET("/:tid/tournaments", handler.GetAllTournaments)
+
+	// --- Поиск ---
 	teams.GET("/search", handler.GetTeamsByNamePart)
 	teams.GET("/:tid/members/search", handler.GetUsersForInvite, mw.CheckTeamPermission(models.Owner))
+
+	// --- Управление участниками ---
 	teams.POST("/:tid/members/:uid", handler.InviteMember, mw.CheckTeamPermission(models.Owner))
 	teams.DELETE("/:tid/members/:uid", handler.DeleteMember, mw.CheckTeamPermission(models.Owner))
+
+	// --- Статистика ---
+	teams.GET("/:tid/stats", handler.GetTeamStats, mw.CheckAuth)
 }
 
 func (teamHandler *TeamHandler) Create(ctx echo.Context) error {
@@ -199,6 +208,25 @@ func (teamHandler *TeamHandler) GetTeamsByNamePart(ctx echo.Context) error {
 	resp, err := serializer.JSON().Marshal(&teams)
 	if err != nil {
 		logger.Error(err)
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
+}
+
+func (teamHandler *TeamHandler) GetTeamStats(ctx echo.Context) error {
+	var tid uint
+	if _, err := fmt.Sscan(ctx.Param("tid"), &tid); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	stats, err := teamHandler.UseCase.GetTeamStats(tid)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	resp, err := serializer.JSON().Marshal(&stats)
+	if err != nil {
 		return ctx.NoContent(http.StatusInternalServerError)
 	}
 	return ctx.String(http.StatusOK, string(resp))

@@ -108,7 +108,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) CheckUserForTournamentRole(tourn
 	case models.TournamentPlayer:
 		return tournamentUseCase.tournamentRepo.IsTournamentPlayer(tournamentId, uid)
 	default:
-		return false, errors.ErrInternal
+		return false, errors.ErrTournamentBadRole
 	}
 	return true, nil
 }

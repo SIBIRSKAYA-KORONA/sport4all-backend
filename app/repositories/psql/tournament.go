@@ -63,13 +63,10 @@ func (tournamentStore *TournamentStore) IsTournamentOrganizer(tournamentID uint,
 }
 
 func (tournamentStore *TournamentStore) IsTournamentPlayer(tournamentID uint, userID uint) (bool, error) {
-	
-	teams := new(models.Teams)
-
-	if err := tournamentStore.DB.Model(models.Tournament{ID: tournamentID}).
-		Related(&teams, "teams").Error; err != nil {
-			logger.Error(err)
-			return false, errors.ErrInternal
+	teams, err := tournamentStore.GetAllTeams(tournamentID)
+	if err != nil {
+		logger.Error(err)
+		return false, err
 	}
 
 	for _, team := range *teams {

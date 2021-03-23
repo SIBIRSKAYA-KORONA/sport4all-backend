@@ -48,8 +48,8 @@ func (server *Server) Run() {
 
 	// postgresClient.DropTableIfExists(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{})
 	postgresClient.AutoMigrate(&models.User{},
-	&models.Team{}, &models.Tournament{}, &models.Meeting{},
-	&models.Stats{})
+		&models.Team{}, &models.Tournament{}, &models.Meeting{},
+		&models.Stats{})
 
 	usrRepo := psqlRepos.CreateUserRepository(postgresClient)
 	teamRepo := psqlRepos.CreateTeamRepository(postgresClient)

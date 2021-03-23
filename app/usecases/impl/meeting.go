@@ -9,7 +9,7 @@ import (
 )
 
 type MeetingUseCaseImpl struct {
-	meetingRepo repositories.MeetingRepository
+	meetingRepo    repositories.MeetingRepository
 	tournamentRepo repositories.TournamentRepository
 }
 
@@ -47,7 +47,7 @@ func (meetingUseCase *MeetingUseCaseImpl) Update(meeting *models.Meeting) error 
 	return nil
 }
 
-func (meetingUseCase *MeetingUseCaseImpl) AssignTeam(mid uint, tid uint)  error {
+func (meetingUseCase *MeetingUseCaseImpl) AssignTeam(mid uint, tid uint) error {
 	meeting, err := meetingUseCase.meetingRepo.GetByID(mid)
 	if err != nil {
 		logger.Error(err)
@@ -70,4 +70,33 @@ func (meetingUseCase *MeetingUseCaseImpl) AssignTeam(mid uint, tid uint)  error 
 	}
 
 	return nil
+}
+
+func (meetingUseCase *MeetingUseCaseImpl) IsTeamInMeeting(mid uint, tid uint) (bool, error) {
+	result, err := meetingUseCase.meetingRepo.IsTeamInMeeting(mid, tid)
+	if err != nil {
+		logger.Error(err)
+		return false, err
+	}
+
+	return result, nil
+}
+
+func (meetingUseCase *MeetingUseCaseImpl) UpdateTeamStat(stat *models.Stats) error {
+	if err := meetingUseCase.meetingRepo.UpdateTeamStat(stat); err != nil {
+		logger.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func (meetingUseCase *MeetingUseCaseImpl) GetMeetingStat(mid uint) ([]models.Stats, error) {
+	stats, err := meetingUseCase.meetingRepo.GetMeetingStat(mid)
+	if err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+
+	return stats, nil
 }
