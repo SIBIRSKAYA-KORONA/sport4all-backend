@@ -1,5 +1,25 @@
 package models
 
+type TournamentSystem uint
+type TournamentRole uint
+
+const (
+	UnknownSystem TournamentSystem = iota
+	OlympicSystem
+	CircularSystem
+)
+
+const (
+	TournamentOrganizer TournamentRole = iota
+	TournamentPlayer
+	TournamentMember // обобщающая роль (и организатор, и игроки, и т.д.
+)
+
+//var StringToRole = map[string]Role{
+//	"player": Player,
+//	"owner":  Owner,
+//}
+
 // swagger:model Tournament
 type Tournament struct {
 	// example: 10

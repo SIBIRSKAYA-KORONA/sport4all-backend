@@ -14,4 +14,5 @@ type TeamUseCase interface {
 	DeleteMember(tid uint, uid uint) error
 	GetUsersForInvite(tid uint, nicknamePart string, limit uint) (*models.Users, error)
 	CheckUserForRole(tid uint, uid uint, role models.Role) (bool, error)
+	GetTeamStats(tid uint) ([]models.Stats, error)
 }

@@ -20,12 +20,16 @@ var (
 
 	// ошибки, связанные с командой
 	ErrTeamNotFound = errors.New("team not found")
+	ErrTeamBadRole  = errors.New("unprocessable team role")
 
 	// ошибки, связанные со встречей
-	ErrMeetingNotFound = errors.New("meeting not found")
+	ErrMeetingNotFound                = errors.New("meeting not found")
+	ErrMeetingStatusNotAcceptable     = errors.New("meeting status not acceptable")
+	ErrMeetingTeamsAreAlreadyAssigned = errors.New("teams are already assigned")
 
 	// ошибки, связанные с турнирами
 	ErrTournamentNotFound            = errors.New("tournament not found")
+	ErrTournamentBadRole             = errors.New("unprocessable tournament role")
 	ErrTournamentStatusNotAcceptable = errors.New("tournament status not acceptable")
 	ErrTournamentSystemNotAcceptable = errors.New("tournament system not acceptable")
 )
@@ -45,12 +49,16 @@ var errorToCodeMap = map[error]int{
 
 	// ошибки, связанные с командой
 	ErrTeamNotFound: http.StatusNotFound,
+	ErrTeamBadRole:  http.StatusUnprocessableEntity,
 
 	// ошибки, связанные со встречей
-	ErrMeetingNotFound: http.StatusNotFound,
+	ErrMeetingNotFound:                http.StatusNotFound,
+	ErrMeetingStatusNotAcceptable:     http.StatusNotAcceptable,
+	ErrMeetingTeamsAreAlreadyAssigned: http.StatusUnavailableForLegalReasons,
 
 	// ошибки, связанные с турнирами
 	ErrTournamentNotFound:            http.StatusNotFound,
+	ErrTournamentBadRole:             http.StatusUnprocessableEntity,
 	ErrTournamentStatusNotAcceptable: http.StatusNotAcceptable,
 	ErrTournamentSystemNotAcceptable: http.StatusNotAcceptable,
 }

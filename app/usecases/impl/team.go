@@ -4,6 +4,7 @@ import (
 	"sport4all/app/models"
 	"sport4all/app/repositories"
 	"sport4all/app/usecases"
+	"sport4all/pkg/errors"
 	"sport4all/pkg/logger"
 )
 
@@ -50,7 +51,7 @@ func (teamUseCase *TeamUseCaseImpl) CheckUserForRole(teamID uint, userID uint, r
 	case models.Player:
 		return teamUseCase.teamRepo.IsTeamPlayer(teamID, userID)
 	default:
-		return false, nil
+		return false, errors.ErrTeamBadRole
 	}
 }
 
@@ -107,8 +108,7 @@ func (teamUseCase *TeamUseCaseImpl) InviteMember(tid uint, uid uint, role models
 }
 
 func (teamUseCase *TeamUseCaseImpl) DeleteMember(tid uint, uid uint) error {
-	_, err := teamUseCase.userRepo.GetByID(uid)
-	if err != nil {
+	if _, err := teamUseCase.userRepo.GetByID(uid); err != nil {
 		logger.Error(err)
 		return err
 	}
@@ -119,4 +119,14 @@ func (teamUseCase *TeamUseCaseImpl) DeleteMember(tid uint, uid uint) error {
 	}
 
 	return nil
+}
+
+func (teamUseCase *TeamUseCaseImpl) GetTeamStats(tid uint) ([]models.Stats, error) {
+	stats, err := teamUseCase.teamRepo.GetTeamStats(tid)
+	if err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+
+	return stats, nil
 }

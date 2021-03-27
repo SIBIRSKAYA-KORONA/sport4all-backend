@@ -47,7 +47,9 @@ func (server *Server) Run() {
 	defer common.Close(postgresClient.Close)
 
 	// postgresClient.DropTableIfExists(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{})
-	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{})
+	postgresClient.AutoMigrate(&models.User{},
+		&models.Team{}, &models.Tournament{}, &models.Meeting{},
+		&models.Stats{})
 
 	usrRepo := psqlRepos.CreateUserRepository(postgresClient)
 	teamRepo := psqlRepos.CreateTeamRepository(postgresClient)
@@ -59,7 +61,7 @@ func (server *Server) Run() {
 	usrUseCase := useCases.CreateUserUseCase(sessionRepo, usrRepo)
 	teamUseCase := useCases.CreateTeamUseCase(teamRepo, usrRepo)
 	tournamentUseCase := useCases.CreateTournamentUseCase(usrRepo, tournamentRepo, teamRepo, meetingRepo)
-	meetingUseCase := useCases.CreateMeetingUseCase(meetingRepo)
+	meetingUseCase := useCases.CreateMeetingUseCase(meetingRepo, tournamentRepo)
 
 	/* HANDLERS */
 	origins := make(map[string]struct{})
@@ -67,7 +69,7 @@ func (server *Server) Run() {
 		origins[key] = struct{}{}
 	}
 
-	mw := httpHandlers.CreateMiddleware(sesUseCase, teamUseCase, origins)
+	mw := httpHandlers.CreateMiddleware(sesUseCase, teamUseCase, tournamentUseCase, meetingUseCase, origins)
 	router := echo.New()
 	router.Use(mw.ProcessPanic)
 	router.Use(mw.LogRequest)

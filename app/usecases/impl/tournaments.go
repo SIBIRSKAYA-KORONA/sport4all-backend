@@ -99,6 +99,20 @@ func (tournamentUseCase *TournamentUseCaseImpl) GetTournamentByUser(uid uint) (*
 	return userTournament, nil
 }
 
+func (tournamentUseCase *TournamentUseCaseImpl) CheckUserForTournamentRole(tournamentId uint,
+	uid uint, role models.TournamentRole) (bool, error) {
+
+	switch role {
+	case models.TournamentOrganizer:
+		return tournamentUseCase.tournamentRepo.IsTournamentOrganizer(tournamentId, uid)
+	case models.TournamentPlayer:
+		return tournamentUseCase.tournamentRepo.IsTournamentPlayer(tournamentId, uid)
+	default:
+		return false, errors.ErrTournamentBadRole
+	}
+	return true, nil
+}
+
 func (tournamentUseCase *TournamentUseCaseImpl) Update(tournament *models.Tournament) error {
 	// TODO: move it to mv (Антон)
 	oldTournament, err := tournamentUseCase.GetByID(tournament.ID)
@@ -172,6 +186,15 @@ func (tournamentUseCase *TournamentUseCaseImpl) RemoveTeam(tournamentId uint, te
 	}
 
 	return nil
+}
+
+func (tournamentUseCase *TournamentUseCaseImpl) IsTeamInTournament(tournamentId uint, teamId uint) (bool, error) {
+	result, err := tournamentUseCase.tournamentRepo.IsTeamInTournament(tournamentId, teamId)
+	if err != nil {
+		logger.Error(err)
+		return false, err
+	}
+	return result, err
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) GetAllTeams(tournamentId uint) (*models.Teams, error) {

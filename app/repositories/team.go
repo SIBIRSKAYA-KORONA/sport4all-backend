@@ -15,4 +15,5 @@ type TeamRepository interface {
 	GetUsersForInvite(tid uint, nicknamePart string, limit uint) (*models.Users, error)
 	IsTeamOwner(teamID uint, userID uint) (bool, error)
 	IsTeamPlayer(teamID uint, userID uint) (bool, error)
+	GetTeamStats(tid uint) ([]models.Stats, error)
 }

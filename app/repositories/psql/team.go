@@ -59,8 +59,8 @@ func (teamStore *TeamStore) IsTeamOwner(teamID uint, userID uint) (bool, error) 
 func (teamStore *TeamStore) IsTeamPlayer(teamID uint, userID uint) (bool, error) {
 	players := new(models.Users)
 
-	if err := teamStore.DB.Model(models.Team{ID: teamID}).Select("id").Related(&players, "players"); err != nil {
-		return false, errors.ErrInternal
+	if err := teamStore.DB.Model(models.Team{ID: teamID}).Select("id").Related(&players, "players").Error; err != nil {
+		return false, errors.ErrUserNotFound
 	}
 
 	for _, player := range *players {
@@ -181,4 +181,15 @@ func (teamStore *TeamStore) GetUsersForInvite(tid uint, nicknamePart string, lim
 	}
 
 	return users, nil
+}
+
+func (teamStore *TeamStore) GetTeamStats(tid uint) ([]models.Stats, error) {
+	var stats []models.Stats
+	if err := teamStore.DB.Model(&models.Team{ID: tid}).
+		Related(&stats, "teamId").Error; err != nil {
+		logger.Error(err)
+		return nil, errors.ErrTeamNotFound
+	}
+
+	return stats, nil
 }

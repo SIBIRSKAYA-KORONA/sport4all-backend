@@ -23,21 +23,32 @@ type Middleware interface {
 	CORS(echo.HandlerFunc) echo.HandlerFunc
 	CheckAuth(echo.HandlerFunc) echo.HandlerFunc
 	CheckTeamPermission(role models.Role) echo.MiddlewareFunc
+	CheckTournamentPermission(role models.TournamentRole) echo.MiddlewareFunc
+	CheckTournamentPermissionByMeeting(role models.TournamentRole) echo.MiddlewareFunc
+	CheckMeetingStatus(status models.EventStatus) echo.MiddlewareFunc
+	CheckTeamInMeeting(echo.HandlerFunc) echo.HandlerFunc
+	CheckPlayerInTeam() echo.MiddlewareFunc
 }
 
 type MiddlewareImpl struct {
-	sessionUseCase useCases.SessionUseCase
-	teamUseCase    useCases.TeamUseCase
-	origins        map[string]struct{}
+	sessionUseCase    useCases.SessionUseCase
+	teamUseCase       useCases.TeamUseCase
+	tournamentUseCase useCases.TournamentUseCase
+	mettingUseCase    useCases.MeetingUseCase
+	origins           map[string]struct{}
 }
 
 func CreateMiddleware(sessionUseCase useCases.SessionUseCase,
 	teamUseCase useCases.TeamUseCase,
+	tournamentUseCase useCases.TournamentUseCase,
+	meetingUseCase useCases.MeetingUseCase,
 	origins map[string]struct{}) Middleware {
 	return &MiddlewareImpl{
-		sessionUseCase: sessionUseCase,
-		teamUseCase:    teamUseCase,
-		origins:        origins,
+		sessionUseCase:    sessionUseCase,
+		teamUseCase:       teamUseCase,
+		tournamentUseCase: tournamentUseCase,
+		mettingUseCase:    meetingUseCase,
+		origins:           origins,
 	}
 }
 
@@ -130,8 +141,7 @@ func (mw *MiddlewareImpl) CheckTeamPermission(role models.Role) echo.MiddlewareF
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return mw.CheckAuth(func(ctx echo.Context) error {
 			var teamID uint
-			_, err := fmt.Sscan(ctx.Param("tid"), &teamID)
-			if err != nil {
+			if _, err := fmt.Sscan(ctx.Param("tid"), &teamID); err != nil {
 				return ctx.NoContent(http.StatusBadRequest)
 			}
 			userID := ctx.Get("uid").(uint)
@@ -145,10 +155,166 @@ func (mw *MiddlewareImpl) CheckTeamPermission(role models.Role) echo.MiddlewareF
 			if ok {
 				ctx.Set("tid", teamID)
 				return next(ctx)
-			} else {
+			}
+
+			error := errors.ErrNoPermission
+			return ctx.String(errors.ResolveErrorToCode(error), error.Error())
+		})
+	}
+}
+
+func (mw *MiddlewareImpl) CheckTournamentPermission(role models.TournamentRole) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return mw.CheckAuth(func(ctx echo.Context) error {
+			var tournamentID uint
+			if _, err := fmt.Sscan(ctx.Param("tournamentId"), &tournamentID); err != nil {
+				return ctx.NoContent(http.StatusBadRequest)
+			}
+			userID := ctx.Get("uid").(uint)
+
+			if _, err := mw.tournamentUseCase.GetByID(tournamentID); err != nil {
+				logger.Error(err)
+				return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+			}
+			ctx.Set("tournamentId", tournamentID)
+
+			ok, err := mw.tournamentUseCase.CheckUserForTournamentRole(tournamentID, userID, role)
+			if err != nil {
+				logger.Error(err)
+				return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+			}
+
+			if ok {
+				return next(ctx)
+			}
+
+			error := errors.ErrNoPermission
+			return ctx.String(errors.ResolveErrorToCode(error), error.Error())
+		})
+	}
+}
+
+func (mw *MiddlewareImpl) CheckTournamentPermissionByMeeting(role models.TournamentRole) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return mw.CheckAuth(func(ctx echo.Context) error {
+			var meetingID uint
+			if _, err := fmt.Sscan(ctx.Param("mid"), &meetingID); err != nil {
+				return ctx.NoContent(http.StatusBadRequest)
+			}
+			userID := ctx.Get("uid").(uint)
+
+			meeting, err := mw.mettingUseCase.GetByID(meetingID)
+			if err != nil {
+				logger.Error(err)
+				return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+			}
+
+			ctx.Set("tournamentId", meeting.TournamentId)
+
+			ok, err := mw.tournamentUseCase.CheckUserForTournamentRole(meeting.TournamentId, userID, role)
+			if err != nil {
+				logger.Error(err)
+				return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+			}
+
+			if ok {
+				return next(ctx)
+			}
+
+			error := errors.ErrNoPermission
+			return ctx.String(errors.ResolveErrorToCode(error), error.Error())
+		})
+	}
+}
+
+func (mw *MiddlewareImpl) CheckMeetingStatus(status models.EventStatus) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return mw.CheckAuth(func(ctx echo.Context) error {
+			var meetingId uint
+			if _, err := fmt.Sscan(ctx.Param("mid"), &meetingId); err != nil {
+				return ctx.NoContent(http.StatusBadRequest)
+			}
+
+			meeting, err := mw.mettingUseCase.GetByID(meetingId)
+			if err != nil {
+				logger.Error(err)
+				return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+			}
+
+			userId := ctx.Get("uid").(uint)
+
+			ok, err := mw.tournamentUseCase.CheckUserForTournamentRole(meeting.TournamentId, userId, models.TournamentOrganizer)
+			if err != nil {
+				logger.Error(err)
+				return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+			}
+
+			if !ok {
 				error := errors.ErrNoPermission
 				return ctx.String(errors.ResolveErrorToCode(error), error.Error())
 			}
+
+			if meeting.Status != status {
+				error := errors.ErrMeetingStatusNotAcceptable
+				return ctx.String(errors.ResolveErrorToCode(error), error.Error())
+			}
+
+			ctx.Set("meetingId", meeting.ID)
+			ctx.Set("tournamentId", meeting.TournamentId)
+
+			return next(ctx)
+		})
+	}
+}
+
+func (mw *MiddlewareImpl) CheckTeamInMeeting(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		meetingId := ctx.Get("meetingId").(uint)
+
+		var teamId uint
+		if _, err := fmt.Sscan(ctx.Param("tid"), &teamId); err != nil {
+			return ctx.NoContent(http.StatusBadRequest)
+		}
+
+		result, err := mw.mettingUseCase.IsTeamInMeeting(meetingId, teamId)
+		if err != nil {
+			logger.Error(err)
+			return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+		}
+
+		if !result {
+			error := errors.ErrMeetingNotFound
+			return ctx.String(errors.ResolveErrorToCode(error), error.Error())
+		}
+
+		ctx.Set("teamId", teamId)
+		return next(ctx)
+	}
+}
+
+func (mw *MiddlewareImpl) CheckPlayerInTeam() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return mw.CheckTeamInMeeting(func(ctx echo.Context) error {
+			var playerId uint
+			if _, err := fmt.Sscan(ctx.Param("uid"), &playerId); err != nil {
+				return ctx.NoContent(http.StatusBadRequest)
+			}
+
+			teamId := ctx.Get("teamId").(uint)
+
+			result, err := mw.teamUseCase.CheckUserForRole(teamId, playerId, models.Player)
+			if err != nil {
+				logger.Error(err)
+				return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+			}
+
+			if !result {
+				error := errors.ErrNoPermission
+				return ctx.String(errors.ResolveErrorToCode(error), error.Error())
+			}
+
+			ctx.Set("playerId", playerId)
+			return next(ctx)
 		})
 	}
 }

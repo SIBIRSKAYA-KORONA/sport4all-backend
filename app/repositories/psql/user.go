@@ -54,3 +54,14 @@ func (userStore *UserStore) GetByNickname(nickname string) (*models.User, error)
 func (userStore *UserStore) IsValidPassword(password string, hashPassword []byte) bool {
 	return hasher.IsEqualPassword(password, hashPassword)
 }
+
+func (userStore *UserStore) GetUserStats(uid uint) ([]models.Stats, error) {
+	var stats []models.Stats
+	if err := userStore.DB.Model(&models.User{ID: uid}).
+		Related(&stats, "playerId").Error; err != nil {
+		logger.Error(err)
+		return nil, errors.ErrUserNotFound
+	}
+
+	return stats, nil
+}
