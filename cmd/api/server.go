@@ -5,9 +5,9 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/labstack/echo/v4"
-	"sport4all/app/models"
-
+	"github.com/streadway/amqp"
 	httpHandlers "sport4all/app/handlers/http"
+	"sport4all/app/models"
 	psqlRepos "sport4all/app/repositories/psql"
 	redisRepos "sport4all/app/repositories/redis"
 	useCases "sport4all/app/usecases/impl"
@@ -26,7 +26,7 @@ func CreateServer(configFilePath string) *Server {
 }
 
 func (server *Server) Run() {
-	/* REPOS */
+	/*  Redis */
 	redisPool := &redis.Pool{
 		Dial: func() (redis.Conn, error) {
 			conn, err := redis.Dial(server.settings.RedisProtocol, server.settings.RedisAddress)
@@ -38,8 +38,7 @@ func (server *Server) Run() {
 	}
 	defer common.Close(redisPool.Close)
 
-	sessionRepo := redisRepos.CreateSessionRepository(redisPool, server.settings.RedisExpiresKeySec)
-
+	/* PostgreSQL */
 	postgresClient, err := gorm.Open(server.settings.PsqlName, server.settings.PsqlData)
 	if err != nil {
 		logger.Fatal(err)
@@ -50,6 +49,34 @@ func (server *Server) Run() {
 	postgresClient.AutoMigrate(&models.User{},
 		&models.Team{}, &models.Tournament{}, &models.Meeting{},
 		&models.Stats{})
+
+	/* RabbitMQ */
+	conn, err := amqp.Dial(server.settings.RabbitMQConnAddress)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	if err != nil {
+		logger.Fatal(err)
+	}
+	defer ch.Close()
+
+	queue, err := ch.QueueDeclare(
+		server.settings.RabbitMQEventQueueId, // name
+		false,                                // durable
+		false,                                // delete when unused
+		false,                                // exclusive
+		false,                                // no-wait
+		nil,                                  // arguments
+	)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	/* REPOS */
+	sessionRepo := redisRepos.CreateSessionRepository(redisPool, server.settings.RedisExpiresKeySec)
 
 	usrRepo := psqlRepos.CreateUserRepository(postgresClient)
 	teamRepo := psqlRepos.CreateTeamRepository(postgresClient)
@@ -69,7 +96,7 @@ func (server *Server) Run() {
 		origins[key] = struct{}{}
 	}
 
-	mw := httpHandlers.CreateMiddleware(sesUseCase, teamUseCase, tournamentUseCase, meetingUseCase, origins)
+	mw := httpHandlers.CreateMiddleware(sesUseCase, teamUseCase, tournamentUseCase, meetingUseCase, origins, ch, queue)
 	router := echo.New()
 	router.Use(mw.ProcessPanic)
 	router.Use(mw.LogRequest)

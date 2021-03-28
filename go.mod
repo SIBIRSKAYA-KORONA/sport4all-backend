@@ -10,6 +10,7 @@ require (
 	github.com/labstack/echo/v4 v4.1.17
 	github.com/microcosm-cc/bluemonday v1.0.4
 	github.com/spf13/viper v1.7.1
+	github.com/streadway/amqp v1.0.0
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0

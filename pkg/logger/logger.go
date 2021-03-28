@@ -78,7 +78,7 @@ func Debugf(template string, args ...interface{}) {
 }
 
 func Info(args ...interface{}) {
-	sugarLogger.With("bar", "style").Info(args...)
+	sugarLogger.Info(args...)
 }
 
 func Infof(template string, args ...interface{}) {

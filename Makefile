@@ -1,4 +1,5 @@
 SERVER_BINARY=sport4all
+NOTIFIER_BINARY=notifier
 DOCKER_DIR=docker
 
 DOCUMENTATION_CONTAINER_NAME=documentation
@@ -13,10 +14,12 @@ format:
 generate:
 	go generate ./...
 
-
 # application
 build-server:
-	go build -o ${SERVER_BINARY} cmd/*.go
+	go build -o ${SERVER_BINARY} cmd/api/*.go
+
+build-notifier:
+	go build -o ${NOTIFIER_BINARY} cmd/notifier/*.go
 
 run:
 	go run cmd/*.go -c conf/config.yml

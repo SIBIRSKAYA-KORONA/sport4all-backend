@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sport4all/pkg/serializer"
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/streadway/amqp"
 
 	"sport4all/app/models"
 	useCases "sport4all/app/usecases"
@@ -28,6 +30,7 @@ type Middleware interface {
 	CheckMeetingStatus(status models.EventStatus) echo.MiddlewareFunc
 	CheckTeamInMeeting(echo.HandlerFunc) echo.HandlerFunc
 	CheckPlayerInTeam() echo.MiddlewareFunc
+	NotificationMiddleware(echo.HandlerFunc) echo.HandlerFunc
 }
 
 type MiddlewareImpl struct {
@@ -36,19 +39,26 @@ type MiddlewareImpl struct {
 	tournamentUseCase useCases.TournamentUseCase
 	mettingUseCase    useCases.MeetingUseCase
 	origins           map[string]struct{}
+
+	channel *amqp.Channel
+	queue   amqp.Queue
 }
 
 func CreateMiddleware(sessionUseCase useCases.SessionUseCase,
 	teamUseCase useCases.TeamUseCase,
 	tournamentUseCase useCases.TournamentUseCase,
 	meetingUseCase useCases.MeetingUseCase,
-	origins map[string]struct{}) Middleware {
+	origins map[string]struct{},
+	channel *amqp.Channel,
+	queue amqp.Queue) Middleware {
 	return &MiddlewareImpl{
 		sessionUseCase:    sessionUseCase,
 		teamUseCase:       teamUseCase,
 		tournamentUseCase: tournamentUseCase,
 		mettingUseCase:    meetingUseCase,
 		origins:           origins,
+		channel:           channel,
+		queue:             queue,
 	}
 }
 
@@ -316,5 +326,40 @@ func (mw *MiddlewareImpl) CheckPlayerInTeam() echo.MiddlewareFunc {
 			ctx.Set("playerId", playerId)
 			return next(ctx)
 		})
+	}
+}
+
+func (mw *MiddlewareImpl) NotificationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+
+		// тестовый пример
+		meeting := models.Message{
+			MessageType: "Some",
+			SourceUid: 1,
+			TargetUid: 1,
+			Tid: 1,
+			Mid: 1,
+		}
+
+		encoded, err := serializer.JSON().Marshal(&meeting)
+		if err != nil {
+			logger.Error(err)
+			return ctx.NoContent(http.StatusInternalServerError)
+		}
+
+		err = mw.channel.Publish(
+			"",            // exchange
+			mw.queue.Name, // routing key
+			false,         // mandatory
+			false,         // immediate
+			amqp.Publishing{
+				ContentType: "application/json",
+				Body:        encoded,
+			})
+		if err != nil {
+			logger.Error(err)
+		}
+
+		return next(ctx)
 	}
 }

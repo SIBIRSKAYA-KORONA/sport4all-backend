@@ -2,7 +2,6 @@ package psql
 
 import (
 	"github.com/jinzhu/gorm"
-
 	"sport4all/app/models"
 	"sport4all/app/repositories"
 	"sport4all/pkg/errors"

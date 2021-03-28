@@ -37,3 +37,10 @@ redis: {
   protocol: tcp,
   expiresKeySec: 7200,  # 2 hours
 }
+
+rabbitmq: {
+  address: localhost:5672,
+  user: sport4all_user,
+  password: sport4all,
+  queueId: "events"
+}
