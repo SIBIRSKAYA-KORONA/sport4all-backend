@@ -1,6 +1,8 @@
 package impl
 
 import (
+	"math"
+
 	"sport4all/app/models"
 	"sport4all/app/repositories"
 	"sport4all/app/usecases"
@@ -110,7 +112,6 @@ func (tournamentUseCase *TournamentUseCaseImpl) CheckUserForTournamentRole(tourn
 	default:
 		return false, errors.ErrTournamentBadRole
 	}
-	return true, nil
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) Update(tournament *models.Tournament) error {
@@ -119,7 +120,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) Update(tournament *models.Tourna
 	if err != nil {
 		return err
 	}
-	if oldTournament.Status > models.NotStartedEvent && tournament.Status < oldTournament.Status {
+	if oldTournament.Status > models.NotStartedEvent && tournament.Status <= oldTournament.Status {
 		return errors.ErrTournamentStatusNotAcceptable
 	}
 
@@ -242,12 +243,8 @@ func (tournamentUseCase *TournamentUseCaseImpl) generateOlympicMesh(tournamentId
 		return err
 	}
 
-	root := &models.Meeting{TournamentId: tournamentId /*, NextMeeting: nil*/}
-	numTeams := len(*teams)
-	if numTeams%2 != 0 {
-		numTeams++
-	}
-	generateOlympicMeshImpl(root, numTeams/2)
+	root := &models.Meeting{TournamentId: tournamentId, NextMeetingID: nil}
+	generateOlympicMeshImpl(root, int(math.Ceil(math.Log2(float64(len(*teams))))))
 
 	if err = tournamentUseCase.meetingRepo.Create(root); err != nil {
 		return err
