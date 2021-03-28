@@ -25,6 +25,15 @@ func (meetingStore *MeetingStore) Create(meeting *models.Meeting) error {
 	return nil
 }
 
+func (meetingStore *MeetingStore) CreateBatch(meetings *[]models.Meeting) error {
+	if err := meetingStore.DB.Create(meetings).Error; err != nil {
+		logger.Error(err)
+		return errors.ErrConflict
+	}
+
+	return nil
+}
+
 func (meetingStore *MeetingStore) GetByID(mid uint) (*models.Meeting, error) {
 	meeting := new(models.Meeting)
 	if err := meetingStore.DB.Where("id = ?", mid).First(&meeting).Error; err != nil {
@@ -123,7 +132,7 @@ func (meetingStore *MeetingStore) UpdateTeamStat(stat *models.Stats) error {
 	return nil
 }
 
-func (meetingStore *MeetingStore) GetMeetingStat(mid uint) ([]models.Stats, error) {
+func (meetingStore *MeetingStore) GetMeetingStat(mid uint) (*[]models.Stats, error) {
 	var stats []models.Stats
 	if err := meetingStore.DB.Model(&models.Meeting{ID: mid}).
 		Related(&stats, "meetingId").Error; err != nil {
@@ -131,5 +140,5 @@ func (meetingStore *MeetingStore) GetMeetingStat(mid uint) ([]models.Stats, erro
 		return nil, errors.ErrMeetingNotFound
 	}
 
-	return stats, nil
+	return &stats, nil
 }

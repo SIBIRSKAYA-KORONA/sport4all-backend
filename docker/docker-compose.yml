@@ -7,6 +7,12 @@ services:
     ports:
       - "8080:8080"
 
+  notifier:
+    image: sport-notifier
+    container_name: sport-notifier
+    ports:
+      - "6060:6060"
+
   postgres:
     container_name: postgres_container
     image: postgres

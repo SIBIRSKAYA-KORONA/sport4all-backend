@@ -91,7 +91,7 @@ func (meetingUseCase *MeetingUseCaseImpl) UpdateTeamStat(stat *models.Stats) err
 	return nil
 }
 
-func (meetingUseCase *MeetingUseCaseImpl) GetMeetingStat(mid uint) ([]models.Stats, error) {
+func (meetingUseCase *MeetingUseCaseImpl) GetMeetingStat(mid uint) (*[]models.Stats, error) {
 	stats, err := meetingUseCase.meetingRepo.GetMeetingStat(mid)
 	if err != nil {
 		logger.Error(err)

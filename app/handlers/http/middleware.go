@@ -331,14 +331,20 @@ func (mw *MiddlewareImpl) CheckPlayerInTeam() echo.MiddlewareFunc {
 
 func (mw *MiddlewareImpl) NotificationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
+		err := next(ctx)
+		status := ctx.Response().Status
+		if err != nil || status != http.StatusOK {
+			logger.Error("error:", err, " status:", status)
+			return err
+		}
 
 		// тестовый пример
 		meeting := models.Message{
 			MessageType: "Some",
-			SourceUid: 1,
-			TargetUid: 1,
-			Tid: 1,
-			Mid: 1,
+			SourceUid:   ctx.Get("uid").(uint),
+			TargetUid:   ctx.Get("member").(uint),
+			Tid:         ctx.Get("tid").(uint),
+			Mid:         1,
 		}
 
 		encoded, err := serializer.JSON().Marshal(&meeting)

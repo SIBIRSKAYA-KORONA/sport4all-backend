@@ -45,10 +45,8 @@ func (server *Server) Run() {
 	}
 	defer common.Close(postgresClient.Close)
 
-	// postgresClient.DropTableIfExists(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{})
-	postgresClient.AutoMigrate(&models.User{},
-		&models.Team{}, &models.Tournament{}, &models.Meeting{},
-		&models.Stats{})
+	// postgresClient.DropTableIfExists(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{}, &models.Stats{})
+	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{}, &models.Stats{})
 
 	/* RabbitMQ */
 	conn, err := amqp.Dial(server.settings.RabbitMQConnAddress)

@@ -1,4 +1,4 @@
-package receiver
+package queue
 
 import (
 	"context"
@@ -9,16 +9,16 @@ import (
 )
 
 type RabbitMQReceiverOpts struct {
-	ConnAddress string
-	QueueId string
+	ConnAddress       string
+	QueueId           string
 	MessageBufferSize int
 }
 
 type RabbitMQReceiver struct {
-	opts    RabbitMQReceiverOpts
+	opts         RabbitMQReceiverOpts
 	queueConnect *amqp.Connection
-	queueChannel  *amqp.Channel
-	messageBuff chan *models.Message
+	queueChannel *amqp.Channel
+	messageBuff  chan *models.Message
 }
 
 func NewRabbitMQReceiver(opts RabbitMQReceiverOpts) (Receiver, error) {
@@ -35,10 +35,10 @@ func NewRabbitMQReceiver(opts RabbitMQReceiverOpts) (Receiver, error) {
 	}
 
 	return &RabbitMQReceiver{
-		opts:    opts,
+		opts:         opts,
 		queueConnect: conn,
-		queueChannel:  channel,
-		messageBuff: make(chan *models.Message, opts.MessageBufferSize),
+		queueChannel: channel,
+		messageBuff:  make(chan *models.Message, opts.MessageBufferSize),
 	}, nil
 }
 
@@ -48,11 +48,11 @@ func (receiver *RabbitMQReceiver) Run(ctx context.Context) {
 
 	queue, err := receiver.queueChannel.QueueDeclare(
 		receiver.opts.QueueId, // name
-		false,    // durable
-		false,    // delete when unused
-		false,    // exclusive
-		false,    // no-wait
-		nil,      // arguments
+		false,                 // durable
+		false,                 // delete when unused
+		false,                 // exclusive
+		false,                 // no-wait
+		nil,                   // arguments
 	)
 	if err != nil {
 		logger.Error(err)
@@ -60,12 +60,12 @@ func (receiver *RabbitMQReceiver) Run(ctx context.Context) {
 
 	msgs, err := receiver.queueChannel.Consume(
 		queue.Name, // queue
-		"",     // consumer
-		true,   // auto-ack
-		false,  // exclusive
-		false,  // no-local
-		false,  // no-wait
-		nil,    // args
+		"",         // consumer
+		true,       // auto-ack
+		false,      // exclusive
+		false,      // no-local
+		false,      // no-wait
+		nil,        // args
 	)
 	if err != nil {
 		logger.Fatal(err)
@@ -91,12 +91,10 @@ func (receiver *RabbitMQReceiver) TakeMessage(ctx context.Context) (*models.Mess
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
-	case mess, ok := <- receiver.messageBuff:
+	case mess, ok := <-receiver.messageBuff:
 		if !ok {
 			return nil, ErrMessageQueueIsClosed
 		}
 		return mess, nil
 	}
 }
-
-

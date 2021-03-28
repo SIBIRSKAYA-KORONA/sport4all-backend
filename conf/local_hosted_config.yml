@@ -35,7 +35,7 @@ psql: {
 redis: {
   address: localhost:6379,
   protocol: tcp,
-  expiresKeySec: 7200,  # 2 hours
+  expiresKeySec: 31536000, # 1 year
 }
 
 rabbitmq: {

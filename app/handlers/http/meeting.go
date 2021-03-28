@@ -147,7 +147,7 @@ func (meetingHandler *MeetingHandler) UpdateTeamStat(ctx echo.Context) error {
 
 	if err := meetingHandler.UseCase.UpdateTeamStat(&stats); err != nil {
 		logger.Error(err)
-		ctx.String(errors.ResolveErrorToCode(err), err.Error())
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
 
 	return ctx.NoContent(http.StatusOK)
@@ -172,7 +172,7 @@ func (meetingHandler *MeetingHandler) UpdatePlayerStat(ctx echo.Context) error {
 
 	if err := meetingHandler.UseCase.UpdateTeamStat(&stats); err != nil {
 		logger.Error(err)
-		ctx.String(errors.ResolveErrorToCode(err), err.Error())
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
 
 	return ctx.NoContent(http.StatusOK)

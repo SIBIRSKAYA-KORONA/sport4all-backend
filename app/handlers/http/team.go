@@ -37,7 +37,7 @@ func CreateTeamHandler(teamsURL string, router *echo.Group, useCase usecases.Tea
 	teams.GET("/:tid/members/search", handler.GetUsersForInvite, mw.CheckTeamPermission(models.Owner))
 
 	// --- Управление участниками ---
-	teams.POST("/:tid/members/:uid", handler.InviteMember, mw.CheckTeamPermission(models.Owner))
+	teams.POST("/:tid/members/:uid", handler.InviteMember, mw.CheckTeamPermission(models.Owner), mw.NotificationMiddleware)
 	teams.DELETE("/:tid/members/:uid", handler.DeleteMember, mw.CheckTeamPermission(models.Owner))
 
 	// --- Статистика ---
@@ -168,6 +168,8 @@ func (teamHandler *TeamHandler) InviteMember(ctx echo.Context) error {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
+
+	ctx.Set("member", uid)
 	return ctx.NoContent(http.StatusOK)
 }
 

@@ -39,13 +39,16 @@ doc-stop:
 	docker rm ${DOCUMENTATION_CONTAINER_NAME}
 
 # docker
-docker-make-all-images: docker-make-builder-image docker-make-api-image
+docker-make-all-images: docker-make-builder-image docker-make-api-image docker-make-notifier-image
 
 docker-make-builder-image:
 	docker build -t sport-builder -f ${DOCKER_DIR}/builder.Dockerfile .
 
 docker-make-api-image:
 	docker build -t sport-api -f ${DOCKER_DIR}/Dockerfile .
+
+docker-make-notifier-image:
+	docker build -t sport-notifier -f ${DOCKER_DIR}/Dockerfile-notifier .
 
 # docker-compose
 start:

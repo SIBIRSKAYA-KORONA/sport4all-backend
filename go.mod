@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/gomodule/redigo v1.8.3
 	github.com/google/uuid v1.1.1
+	github.com/gorilla/websocket v1.4.2
 	github.com/jinzhu/gorm v1.9.16
 	github.com/json-iterator/go v1.1.6
 	github.com/labstack/echo/v4 v4.1.17
