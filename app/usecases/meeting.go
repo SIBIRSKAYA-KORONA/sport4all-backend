@@ -11,5 +11,5 @@ type MeetingUseCase interface {
 	AssignTeam(mid uint, tid uint) error
 	IsTeamInMeeting(mid uint, tid uint) (bool, error)
 	UpdateTeamStat(stat *models.Stats) error
-	GetMeetingStat(mid uint) ([]models.Stats, error)
+	GetMeetingStat(mid uint) (*[]models.Stats, error)
 }
