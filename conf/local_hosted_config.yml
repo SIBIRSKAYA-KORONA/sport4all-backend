@@ -37,3 +37,8 @@ redis: {
   protocol: tcp,
   expiresKeySec: 31536000, # 1 year
 }
+
+s3: {
+  bucket: kek,
+  region: lol,
+}

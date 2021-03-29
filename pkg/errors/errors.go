@@ -32,6 +32,11 @@ var (
 	ErrTournamentBadRole             = errors.New("unprocessable tournament role")
 	ErrTournamentStatusNotAcceptable = errors.New("tournament status not acceptable")
 	ErrTournamentSystemNotAcceptable = errors.New("tournament system not acceptable")
+
+	// ошибки, связанные с аттачами
+	ErrBadFileUploadS3 = errors.New("unsuccessful file upload to s3")
+	ErrBadFileDeleteS3 = errors.New("unsuccessful file delete on s3")
+	ErrFileNotFound    = errors.New("not found file in db")
 )
 
 var errorToCodeMap = map[error]int{
@@ -61,6 +66,11 @@ var errorToCodeMap = map[error]int{
 	ErrTournamentBadRole:             http.StatusUnprocessableEntity,
 	ErrTournamentStatusNotAcceptable: http.StatusNotAcceptable,
 	ErrTournamentSystemNotAcceptable: http.StatusNotAcceptable,
+
+	// ошибки, связанные с аттачами
+	ErrBadFileUploadS3: http.StatusUnprocessableEntity,
+	ErrBadFileDeleteS3: http.StatusNotFound,
+	ErrFileNotFound:    http.StatusNotFound,
 }
 
 func ResolveErrorToCode(err error) (code int) {

@@ -10,15 +10,15 @@ import (
 )
 
 type MeetingStore struct {
-	DB *gorm.DB
+	db *gorm.DB
 }
 
 func CreateMeetingRepository(db *gorm.DB) repositories.MeetingRepository {
-	return &MeetingStore{DB: db}
+	return &MeetingStore{db: db}
 }
 
 func (meetingStore *MeetingStore) Create(meeting *models.Meeting) error {
-	if err := meetingStore.DB.Create(meeting).Error; err != nil {
+	if err := meetingStore.db.Create(meeting).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrConflict
 	}
@@ -27,7 +27,7 @@ func (meetingStore *MeetingStore) Create(meeting *models.Meeting) error {
 }
 
 func (meetingStore *MeetingStore) CreateBatch(meetings *[]models.Meeting) error {
-	if err := meetingStore.DB.Create(meetings).Error; err != nil {
+	if err := meetingStore.db.Create(meetings).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrConflict
 	}
@@ -37,12 +37,16 @@ func (meetingStore *MeetingStore) CreateBatch(meetings *[]models.Meeting) error 
 
 func (meetingStore *MeetingStore) GetByID(mid uint) (*models.Meeting, error) {
 	meeting := new(models.Meeting)
-	if err := meetingStore.DB.Where("id = ?", mid).First(&meeting).Error; err != nil {
+	if err := meetingStore.db.Where("id = ?", mid).First(&meeting).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrMeetingNotFound
 	}
 
-	if err := meetingStore.DB.Model(meeting).
+	if err := meetingStore.db.Where("meeting_id = ?", mid).Find(&meeting.Attachments).Error; err != nil {
+		logger.Warn("meeting attachments not found: ", err)
+	}
+
+	if err := meetingStore.db.Model(meeting).
 		Related(&meeting.Teams, "teams").
 		Order("id").Error; err != nil {
 		logger.Error(err)
@@ -72,7 +76,7 @@ func (meetingStore *MeetingStore) Update(meeting *models.Meeting) error {
 		oldMeeting.TournamentId = meeting.TournamentId
 	}
 
-	if err = meetingStore.DB.Save(oldMeeting).Error; err != nil {
+	if err = meetingStore.db.Save(oldMeeting).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrInternal
 	}
@@ -83,7 +87,7 @@ func (meetingStore *MeetingStore) Update(meeting *models.Meeting) error {
 func (meetingStore *MeetingStore) AssignTeam(mid uint, tid uint) error {
 	var teams []models.Team
 
-	if err := meetingStore.DB.Model(&models.Meeting{ID: mid}).
+	if err := meetingStore.db.Model(&models.Meeting{ID: mid}).
 		Association("teams").
 		Find(&teams).
 		Error; err != nil {
@@ -96,7 +100,7 @@ func (meetingStore *MeetingStore) AssignTeam(mid uint, tid uint) error {
 		return errors.ErrMeetingTeamsAreAlreadyAssigned
 	}
 
-	if err := meetingStore.DB.Model(&models.Meeting{ID: mid}).
+	if err := meetingStore.db.Model(&models.Meeting{ID: mid}).
 		Association("teams").
 		Append(models.Team{ID: tid}).
 		Error; err != nil {
@@ -109,7 +113,7 @@ func (meetingStore *MeetingStore) AssignTeam(mid uint, tid uint) error {
 
 func (meetingStore *MeetingStore) IsTeamInMeeting(mid uint, tid uint) (bool, error) {
 	teams := new(models.Teams)
-	if err := meetingStore.DB.Model(&models.Meeting{ID: mid}).
+	if err := meetingStore.db.Model(&models.Meeting{ID: mid}).
 		Related(&teams, "teams").Error; err != nil {
 		logger.Error(err)
 		return false, errors.ErrMeetingNotFound
@@ -125,7 +129,7 @@ func (meetingStore *MeetingStore) IsTeamInMeeting(mid uint, tid uint) (bool, err
 }
 
 func (meetingStore *MeetingStore) UpdateTeamStat(stat *models.Stats) error {
-	if err := meetingStore.DB.Create(stat).Error; err != nil {
+	if err := meetingStore.db.Create(stat).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrConflict
 	}
@@ -135,7 +139,7 @@ func (meetingStore *MeetingStore) UpdateTeamStat(stat *models.Stats) error {
 
 func (meetingStore *MeetingStore) GetMeetingStat(mid uint) (*[]models.Stats, error) {
 	var stats []models.Stats
-	if err := meetingStore.DB.Model(&models.Meeting{ID: mid}).
+	if err := meetingStore.db.Model(&models.Meeting{ID: mid}).
 		Related(&stats, "meetingId").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrMeetingNotFound

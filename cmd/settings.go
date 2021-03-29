@@ -17,6 +17,7 @@ type Settings struct {
 	TeamsURL       string
 	TournamentsURL string
 	MeetingsURL    string
+	AttachURL      string
 
 	ServerAddress string
 
@@ -28,6 +29,9 @@ type Settings struct {
 	RedisAddress       string
 	RedisProtocol      string
 	RedisExpiresKeySec uint
+
+	S3Bucket string
+	S3Region string
 }
 
 func InitSettings(configFilePath string) Settings {
@@ -64,5 +68,8 @@ func InitSettings(configFilePath string) Settings {
 		RedisAddress:       viper.GetString("redis.address"),
 		RedisProtocol:      viper.GetString("redis.protocol"),
 		RedisExpiresKeySec: viper.GetUint("redis.expiresKeySec"),
+
+		S3Bucket: viper.GetString("s3.bucket"),
+		S3Region: viper.GetString("s3.region"),
 	}
 }
