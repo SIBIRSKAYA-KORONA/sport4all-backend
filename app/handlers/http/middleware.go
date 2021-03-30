@@ -13,7 +13,6 @@ import (
 	"sport4all/pkg/common"
 	"sport4all/pkg/errors"
 	"sport4all/pkg/logger"
-	"sport4all/pkg/sanitize"
 )
 
 type Middleware interface {
@@ -89,13 +88,13 @@ func (mw *MiddlewareImpl) Sanitize(next echo.HandlerFunc) echo.HandlerFunc {
 		if err != nil {
 			return ctx.NoContent(http.StatusBadRequest)
 		}
-		defer common.Close(ctx.Request().Body.Close)
-		sanBody, err := sanitize.SanitizeJSON(body)
-		if err != nil {
-			logger.Warn("bluemonday XSS register")
-			return ctx.NoContent(http.StatusBadRequest)
-		}
-		ctx.Set("body", sanBody)
+		//defer common.Close(ctx.Request().Body.Close)
+		//sanBody, err := sanitize.SanitizeJSON(body)
+		//if err != nil {
+			//logger.Warn("bluemonday XSS register")
+			//return ctx.NoContent(http.StatusBadRequest)
+		//}
+		ctx.Set("body", body)
 		return next(ctx)
 	}
 }
