@@ -93,6 +93,7 @@ func (wsPool *GorillaWebSocketPool) Delete(uid uint, ws *websocket.Conn) error {
 }
 
 func (wsPool *GorillaWebSocketPool) Send(uid uint, mess []byte) {
+	logger.Debug("Sending for uid ", uid)
 	wsPool.mux.Lock()
 	defer wsPool.mux.Unlock()
 	for _, elem := range wsPool.socketPool[uid] {

@@ -31,7 +31,7 @@ func (api *ApiImpl) Run(wg *sync.WaitGroup) {
 
 	router.GET("/api/ws", api.Handle, api.mw.CheckAuth)
 
-	if err := router.Start(":6060"); err != nil {
+	if err := router.Start("0.0.0.0:6060"); err != nil {
 		logger.Fatal(err)
 	}
 }
