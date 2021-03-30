@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
 	"sport4all/pkg/serializer"
 	"time"
 
@@ -22,6 +23,7 @@ type Middleware interface {
 	LogRequest(echo.HandlerFunc) echo.HandlerFunc
 	ProcessPanic(echo.HandlerFunc) echo.HandlerFunc
 	Sanitize(echo.HandlerFunc) echo.HandlerFunc
+	DebugMiddle(echo.HandlerFunc) echo.HandlerFunc
 	CORS(echo.HandlerFunc) echo.HandlerFunc
 	CheckAuth(echo.HandlerFunc) echo.HandlerFunc
 	CheckTeamPermission(role models.Role) echo.MiddlewareFunc
@@ -123,6 +125,17 @@ func (mw *MiddlewareImpl) CORS(next echo.HandlerFunc) echo.HandlerFunc {
 		if ctx.Request().Method == "OPTIONS" {
 			return ctx.NoContent(http.StatusOK)
 		}
+		return next(ctx)
+	}
+}
+
+func (mw *MiddlewareImpl) DebugMiddle(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		dump, err := httputil.DumpRequest(ctx.Request(), true)
+		if err != nil {
+			return ctx.NoContent(http.StatusInternalServerError)
+		}
+		logger.Debugf("\nRequest dump begin :--------------\n\n%s\n\nRequest dump end :--------------", dump)
 		return next(ctx)
 	}
 }
