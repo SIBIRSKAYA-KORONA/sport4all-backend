@@ -16,13 +16,13 @@ generate:
 
 # application
 build-server:
-	go build -o ${SERVER_BINARY} cmd/api/*.go
+	go build -o ${SERVER_BINARY} ./cmd/api
 
 build-notifier:
-	go build -o ${NOTIFIER_BINARY} cmd/notifier/*.go
+	go build -o ${NOTIFIER_BINARY} ./cmd/notifier
 
 run:
-	go run cmd/*.go -c conf/config.yml
+	go run ./cmd -c conf/config.yml
 
 # docs
 generate-swagger:
