@@ -27,7 +27,7 @@ func CreateAttachHandler(attachURL string, router *echo.Group, useCase usecases.
 
 	attach := router.Group(handler.URL)
 
-	attach.POST("", handler.Create, mw.CheckAuth)
+	attach.PUT("", handler.Create, mw.CheckAuth)
 	// attach.DELETE("", handler.Delete, mw.CheckAuth)
 }
 
