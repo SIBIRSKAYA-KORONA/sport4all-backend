@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sport4all/pkg/sanitize"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -35,19 +36,22 @@ type MiddlewareImpl struct {
 	tournamentUseCase useCases.TournamentUseCase
 	mettingUseCase    useCases.MeetingUseCase
 	origins           map[string]struct{}
+	attachUrl         string
 }
 
 func CreateMiddleware(sessionUseCase useCases.SessionUseCase,
 	teamUseCase useCases.TeamUseCase,
 	tournamentUseCase useCases.TournamentUseCase,
 	meetingUseCase useCases.MeetingUseCase,
-	origins map[string]struct{}) Middleware {
+	origins map[string]struct{},
+	attachUrl string) Middleware {
 	return &MiddlewareImpl{
 		sessionUseCase:    sessionUseCase,
 		teamUseCase:       teamUseCase,
 		tournamentUseCase: tournamentUseCase,
 		mettingUseCase:    meetingUseCase,
 		origins:           origins,
+		attachUrl:         attachUrl,
 	}
 }
 
@@ -81,34 +85,22 @@ func (mw *MiddlewareImpl) ProcessPanic(next echo.HandlerFunc) echo.HandlerFunc {
 
 func (mw *MiddlewareImpl) Sanitize(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		if ctx.Request().Method != echo.PUT && ctx.Request().Method != echo.POST {
+		if ctx.Request().Method != echo.PUT && ctx.Request().Method != echo.POST || ctx.Path() != mw.attachUrl {
 			return next(ctx)
 		}
 
-		// 1
-
-		var id uint
-		if _, err := fmt.Sscan(ctx.FormValue("tournamentId"), &id); err != nil {
-			logger.Error(err)
-			return nil
-		}
-		logger.Warn(id)
-		
 		body, err := ioutil.ReadAll(ctx.Request().Body)
 		if err != nil {
 			return ctx.NoContent(http.StatusBadRequest)
 		}
 
-
-		// 2
-
-		//defer common.Close(ctx.Request().Body.Close)
-		//sanBody, err := sanitize.SanitizeJSON(body)
-		//if err != nil {
-			//logger.Warn("bluemonday XSS register")
-			//return ctx.NoContent(http.StatusBadRequest)
-		//}
-		ctx.Set("body", body)
+		defer common.Close(ctx.Request().Body.Close)
+		sanBody, err := sanitize.SanitizeJSON(body)
+		if err != nil {
+			logger.Warn("bluemonday XSS register")
+			return ctx.NoContent(http.StatusBadRequest)
+		}
+		ctx.Set("body", sanBody)
 		return next(ctx)
 	}
 }
