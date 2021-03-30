@@ -47,6 +47,7 @@ func (meetingStore *MeetingStore) GetByID(mid uint) (*models.Meeting, error) {
 	}
 
 	if err := meetingStore.db.Model(meeting).
+		Preload("Players").
 		Related(&meeting.Teams, "teams").
 		Order("id").Error; err != nil {
 		logger.Error(err)
