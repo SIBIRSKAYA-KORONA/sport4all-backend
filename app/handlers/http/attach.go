@@ -9,6 +9,7 @@ import (
 	"sport4all/pkg/common"
 	"sport4all/pkg/errors"
 	"sport4all/pkg/logger"
+	"sport4all/pkg/serializer"
 
 	"github.com/labstack/echo/v4"
 )
@@ -70,5 +71,9 @@ func (attachHandler *AttachHandler) Create(ctx echo.Context) error {
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
 
-	return ctx.NoContent(http.StatusOK)
+	resp, err := serializer.JSON().Marshal(&attach)
+	if err != nil {
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
 }

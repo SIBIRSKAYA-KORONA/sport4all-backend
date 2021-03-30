@@ -57,7 +57,7 @@ func InitSettings(configFilePath string) Settings {
 		TeamsURL:       viper.GetString("api.teamsURL"),
 		TournamentsURL: viper.GetString("api.tournamentsURL"),
 		MeetingsURL:    viper.GetString("api.meetingsURL"),
-		AttachURL:    viper.GetString("api.attachURL"),
+		AttachURL:      viper.GetString("api.attachURL"),
 
 		ServerAddress: viper.GetString("server.address"),
 
