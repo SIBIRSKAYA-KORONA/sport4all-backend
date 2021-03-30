@@ -4,7 +4,7 @@ logger: {
 }
 
 api: {
-  baseUrl: /api,
+  baseURL: /api,
   settingsURL: /settings,
   profileURL: /profile,
   sessionsUrl: /sessions,
