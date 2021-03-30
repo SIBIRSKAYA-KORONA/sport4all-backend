@@ -84,10 +84,24 @@ func (mw *MiddlewareImpl) Sanitize(next echo.HandlerFunc) echo.HandlerFunc {
 		if ctx.Request().Method != echo.PUT && ctx.Request().Method != echo.POST {
 			return next(ctx)
 		}
+
+		// 1
+
+		var id uint
+		if _, err := fmt.Sscan(ctx.FormValue("tournamentId"), &id); err != nil {
+			logger.Error(err)
+			return nil
+		}
+		logger.Warn(id)
+		
 		body, err := ioutil.ReadAll(ctx.Request().Body)
 		if err != nil {
 			return ctx.NoContent(http.StatusBadRequest)
 		}
+
+
+		// 2
+
 		//defer common.Close(ctx.Request().Body.Close)
 		//sanBody, err := sanitize.SanitizeJSON(body)
 		//if err != nil {
