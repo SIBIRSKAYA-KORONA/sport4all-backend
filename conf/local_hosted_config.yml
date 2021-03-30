@@ -10,7 +10,8 @@ api: {
   sessionsUrl: /sessions,
   teamsURL: /teams,
   tournamentsURL: /tournaments,
-  meetingsURL: /meetings
+  meetingsURL: /meetings,
+  attachURL: /attachments,
 }
 
 server: {
@@ -19,7 +20,7 @@ server: {
 
 cors: {
   allowed_origins: [
-      http://localhost:8080
+      http://localhost:8080,
   ]
 }
 
@@ -29,7 +30,7 @@ psql: {
   user: sport4all_user,
   password: sport4all,
   name: sport4all_db,
-  sslmode: disable
+  sslmode: disable,
 }
 
 redis: {
@@ -40,5 +41,5 @@ redis: {
 
 s3: {
   bucket: kek,
-  region: lol,
+  region: us-east-2,
 }
