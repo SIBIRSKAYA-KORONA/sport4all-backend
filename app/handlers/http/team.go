@@ -49,7 +49,7 @@ func (teamHandler *TeamHandler) Create(ctx echo.Context) error {
 	var team models.Team
 	if err := serializer.JSON().Unmarshal(body, &team); err != nil {
 		logger.Error(err)
-		return ctx.String(http.StatusInternalServerError, err.Error())
+		return ctx.String(http.StatusBadRequest, err.Error())
 	}
 
 	ownerId := ctx.Get("uid").(uint)

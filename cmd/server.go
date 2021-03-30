@@ -1,18 +1,21 @@
 package main
 
 import (
-	"github.com/gomodule/redigo/redis"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"github.com/labstack/echo/v4"
-	"sport4all/app/models"
-
 	httpHandlers "sport4all/app/handlers/http"
+	"sport4all/app/models"
+	amazonS3Repos "sport4all/app/repositories/amazon_s3"
 	psqlRepos "sport4all/app/repositories/psql"
 	redisRepos "sport4all/app/repositories/redis"
 	useCases "sport4all/app/usecases/impl"
 	"sport4all/pkg/common"
 	"sport4all/pkg/logger"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/gomodule/redigo/redis"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/labstack/echo/v4"
 )
 
 type Server struct {
@@ -46,13 +49,21 @@ func (server *Server) Run() {
 	}
 	defer common.Close(postgresClient.Close)
 
-	// postgresClient.DropTableIfExists(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{}, &models.Stats{})
-	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{}, &models.Stats{})
+	s3session, err := session.NewSession(&aws.Config{Region: aws.String(server.settings.S3Region)})
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	// postgresClient.DropTableIfExists(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{},
+	//&models.Stats{}, &models.Attach{})
+	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{},
+		&models.Stats{}, &models.Attach{})
 
 	usrRepo := psqlRepos.CreateUserRepository(postgresClient)
 	teamRepo := psqlRepos.CreateTeamRepository(postgresClient)
 	tournamentRepo := psqlRepos.CreateTournamentRepository(postgresClient)
 	meetingRepo := psqlRepos.CreateMeetingRepository(postgresClient)
+	attachRepo := amazonS3Repos.CreateAttachRepository(postgresClient, s3session, server.settings.S3Bucket)
 
 	/* USE CASES */
 	sesUseCase := useCases.CreateSessionUseCase(sessionRepo, usrRepo)
@@ -60,6 +71,7 @@ func (server *Server) Run() {
 	teamUseCase := useCases.CreateTeamUseCase(teamRepo, usrRepo)
 	tournamentUseCase := useCases.CreateTournamentUseCase(usrRepo, tournamentRepo, teamRepo, meetingRepo)
 	meetingUseCase := useCases.CreateMeetingUseCase(meetingRepo, tournamentRepo)
+	attachUseCase := useCases.CreateAttachUseCase(attachRepo)
 
 	/* HANDLERS */
 	origins := make(map[string]struct{})
@@ -80,8 +92,9 @@ func (server *Server) Run() {
 	httpHandlers.CreateTeamHandler(server.settings.TeamsURL, rootGroup, teamUseCase, mw)
 	httpHandlers.CreateTournamentHandler(server.settings.TournamentsURL, rootGroup, tournamentUseCase, mw)
 	httpHandlers.CreateMeetingsHandler(server.settings.MeetingsURL, rootGroup, meetingUseCase, mw)
+	httpHandlers.CreateAttachHandler(server.settings.AttachURL, rootGroup, attachUseCase, mw)
 
-	logger.Error("start server on address: ", server.settings.ServerAddress,
+	logger.Info("start server on address: ", server.settings.ServerAddress,
 		", log file: ", server.settings.LogFile, ", log level: ", server.settings.LogLevel)
 
 	if err = router.Start(server.settings.ServerAddress); err != nil {

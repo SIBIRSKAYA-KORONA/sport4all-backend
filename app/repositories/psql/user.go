@@ -13,17 +13,17 @@ import (
 )
 
 type UserStore struct {
-	DB *gorm.DB
+	db *gorm.DB
 }
 
 func CreateUserRepository(db *gorm.DB) repositories.UserRepository {
-	return &UserStore{DB: db}
+	return &UserStore{db: db}
 }
 
 func (userStore *UserStore) Create(usr *models.User) error {
 	usr.Created = time.Now().Unix()
 	usr.HashPassword = hasher.HashPassword(usr.Password)
-	if err := userStore.DB.Create(usr).Error; err != nil {
+	if err := userStore.db.Create(usr).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrConflict
 	}
@@ -33,9 +33,13 @@ func (userStore *UserStore) Create(usr *models.User) error {
 
 func (userStore *UserStore) GetByID(uid uint) (*models.User, error) {
 	usr := new(models.User)
-	if err := userStore.DB.Where("id = ?", uid).First(&usr).Error; err != nil {
+	if err := userStore.db.Where("id = ?", uid).First(&usr).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrUserNotFound
+	}
+
+	if err := userStore.db.Where("user_id = ?", uid).First(&usr.Avatar).Error; err != nil {
+		logger.Warn("user avatar not found: ", err)
 	}
 
 	return usr, nil
@@ -43,7 +47,7 @@ func (userStore *UserStore) GetByID(uid uint) (*models.User, error) {
 
 func (userStore *UserStore) GetByNickname(nickname string) (*models.User, error) {
 	usr := new(models.User)
-	if err := userStore.DB.Where("nickname = ?", nickname).First(&usr).Error; err != nil {
+	if err := userStore.db.Where("nickname = ?", nickname).First(&usr).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrUserNotFound
 	}
@@ -57,7 +61,7 @@ func (userStore *UserStore) IsValidPassword(password string, hashPassword []byte
 
 func (userStore *UserStore) GetUserStats(uid uint) ([]models.Stats, error) {
 	var stats []models.Stats
-	if err := userStore.DB.Model(&models.User{ID: uid}).
+	if err := userStore.db.Model(&models.User{ID: uid}).
 		Related(&stats, "playerId").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrUserNotFound

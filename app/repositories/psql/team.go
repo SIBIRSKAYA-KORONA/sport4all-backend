@@ -12,16 +12,16 @@ import (
 )
 
 type TeamStore struct {
-	DB *gorm.DB
+	db *gorm.DB
 }
 
 func CreateTeamRepository(db *gorm.DB) repositories.TeamRepository {
-	return &TeamStore{DB: db}
+	return &TeamStore{db: db}
 }
 
 func (teamStore *TeamStore) Create(team *models.Team) error {
 	team.Created = time.Now().Unix()
-	if err := teamStore.DB.Create(team).Error; err != nil {
+	if err := teamStore.db.Create(team).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrConflict
 	}
@@ -31,12 +31,16 @@ func (teamStore *TeamStore) Create(team *models.Team) error {
 
 func (teamStore *TeamStore) GetByID(tid uint) (*models.Team, error) {
 	team := new(models.Team)
-	if err := teamStore.DB.Where("id = ?", tid).First(&team).Error; err != nil {
+	if err := teamStore.db.Where("id = ?", tid).First(&team).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
 	}
 
-	if err := teamStore.DB.Model(team).Select("id, name, surname, nickname, link_on_avatar").
+	if err := teamStore.db.Where("team_id = ?", tid).First(&team.Avatar).Error; err != nil {
+		logger.Warn("team avatar not found: ", err)
+	}
+
+	if err := teamStore.db.Model(team).Select("id, name, surname, nickname, link_on_avatar").
 		Related(&team.Players, "Players").
 		Order("id").Error; err != nil {
 		logger.Error(err)
@@ -48,7 +52,7 @@ func (teamStore *TeamStore) GetByID(tid uint) (*models.Team, error) {
 
 func (teamStore *TeamStore) IsTeamOwner(teamID uint, userID uint) (bool, error) {
 	team := new(models.Team)
-	if err := teamStore.DB.Where("id = ?", teamID).First(&team).Error; err != nil {
+	if err := teamStore.db.Where("id = ?", teamID).First(&team).Error; err != nil {
 		logger.Error(err)
 		return false, errors.ErrTeamNotFound
 	}
@@ -59,7 +63,7 @@ func (teamStore *TeamStore) IsTeamOwner(teamID uint, userID uint) (bool, error) 
 func (teamStore *TeamStore) IsTeamPlayer(teamID uint, userID uint) (bool, error) {
 	players := new(models.Users)
 
-	if err := teamStore.DB.Model(models.Team{ID: teamID}).Select("id").Related(&players, "players").Error; err != nil {
+	if err := teamStore.db.Model(models.Team{ID: teamID}).Select("id").Related(&players, "players").Error; err != nil {
 		return false, errors.ErrUserNotFound
 	}
 
@@ -85,7 +89,7 @@ func (teamStore *TeamStore) GetTeamsByUser(uid uint, role models.Role) (*models.
 		return nil, errors.ErrInternal
 	}
 
-	if err := teamStore.DB.Model(&models.User{ID: uid}).Related(&userTeams, foreignKey).Error; err != nil {
+	if err := teamStore.db.Model(&models.User{ID: uid}).Related(&userTeams, foreignKey).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
 	}
@@ -99,7 +103,7 @@ func (teamStore *TeamStore) GetTeamsByUser(uid uint, role models.Role) (*models.
 
 func (teamStore *TeamStore) GetAllTournaments(tid uint) (*models.Tournaments, error) {
 	var tournamentTeams models.Tournaments
-	if err := teamStore.DB.Model(&models.Team{ID: tid}).
+	if err := teamStore.db.Model(&models.Team{ID: tid}).
 		Related(&tournamentTeams, "Tournaments").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
@@ -110,7 +114,7 @@ func (teamStore *TeamStore) GetAllTournaments(tid uint) (*models.Tournaments, er
 
 func (teamStore *TeamStore) GetTeamsByNamePart(namePart string, limit uint) (*models.Teams, error) {
 	teams := new(models.Teams)
-	if err := teamStore.DB.Limit(limit).Where("name LIKE ?", namePart+"%").Find(&teams).Error; err != nil {
+	if err := teamStore.db.Limit(limit).Where("name LIKE ?", namePart+"%").Find(&teams).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
 	}
@@ -120,13 +124,13 @@ func (teamStore *TeamStore) GetTeamsByNamePart(namePart string, limit uint) (*mo
 
 func (teamStore *TeamStore) InviteMember(tid uint, user *models.User, role models.Role) error {
 	team := new(models.Team)
-	if err := teamStore.DB.First(team, tid).Error; err != nil {
+	if err := teamStore.db.First(team, tid).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrTeamNotFound
 	}
 
 	// TODO: обработать значение role (Антон)
-	if err := teamStore.DB.Model(&team).Association("Players").Append(user).Error; err != nil {
+	if err := teamStore.db.Model(&team).Association("Players").Append(user).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrInternal
 	}
@@ -136,7 +140,7 @@ func (teamStore *TeamStore) InviteMember(tid uint, user *models.User, role model
 
 func (teamStore *TeamStore) DeleteMember(tid uint, uid uint) error {
 	team := new(models.Team)
-	if err := teamStore.DB.First(team, tid).Error; err != nil {
+	if err := teamStore.db.First(team, tid).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrTeamNotFound
 	}
@@ -150,7 +154,7 @@ func (teamStore *TeamStore) DeleteMember(tid uint, uid uint) error {
 		return errors.ErrNoPermission
 	}
 
-	if err := teamStore.DB.Model(&team).Association("Players").Delete(models.User{ID: uid}).Error; err != nil {
+	if err := teamStore.db.Model(&team).Association("Players").Delete(models.User{ID: uid}).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrInternal
 	}
@@ -171,7 +175,7 @@ func (teamStore *TeamStore) GetUsersForInvite(tid uint, nicknamePart string, lim
 		teamOwnerAndPlayersIDs = append(teamOwnerAndPlayersIDs, player.ID)
 	}
 
-	if err = teamStore.DB.Select("id, name, surname, nickname, link_on_avatar").
+	if err = teamStore.db.Select("id, name, surname, nickname, link_on_avatar").
 		Limit(limit).
 		Where("nickname LIKE ?", nicknamePart+"%").
 		Not("id", teamOwnerAndPlayersIDs).
@@ -185,7 +189,7 @@ func (teamStore *TeamStore) GetUsersForInvite(tid uint, nicknamePart string, lim
 
 func (teamStore *TeamStore) GetTeamStats(tid uint) ([]models.Stats, error) {
 	var stats []models.Stats
-	if err := teamStore.DB.Model(&models.Team{ID: tid}).
+	if err := teamStore.db.Model(&models.Team{ID: tid}).
 		Related(&stats, "teamId").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
