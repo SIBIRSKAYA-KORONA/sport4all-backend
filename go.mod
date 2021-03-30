@@ -3,12 +3,14 @@ module sport4all
 go 1.16
 
 require (
+	github.com/aws/aws-sdk-go v1.38.7 // indirect
 	github.com/gomodule/redigo v1.8.3
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.2
 	github.com/jinzhu/gorm v1.9.16
 	github.com/json-iterator/go v1.1.6
 	github.com/labstack/echo/v4 v4.1.17
+	github.com/labstack/gommon v0.3.0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.4
 	github.com/spf13/viper v1.7.1
 	github.com/streadway/amqp v1.0.0

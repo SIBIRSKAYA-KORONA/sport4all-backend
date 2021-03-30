@@ -17,6 +17,7 @@ type Settings struct {
 	TeamsURL       string
 	TournamentsURL string
 	MeetingsURL    string
+	AttachURL      string
 
 	ServerAddress string
 
@@ -31,6 +32,9 @@ type Settings struct {
 
 	RabbitMQConnAddress  string
 	RabbitMQEventQueueId string
+
+	S3Bucket string
+	S3Region string
 }
 
 func InitSettings(configFilePath string) Settings {
@@ -60,6 +64,7 @@ func InitSettings(configFilePath string) Settings {
 		TeamsURL:       viper.GetString("api.teamsURL"),
 		TournamentsURL: viper.GetString("api.tournamentsURL"),
 		MeetingsURL:    viper.GetString("api.meetingsURL"),
+		AttachURL:    viper.GetString("api.attachURL"),
 
 		ServerAddress: viper.GetString("server.address"),
 
@@ -74,5 +79,8 @@ func InitSettings(configFilePath string) Settings {
 
 		RabbitMQConnAddress:  fmt.Sprintf("amqp://%s:%s@%s/", rbmqUser, rbmqPass, rbmqAddress),
 		RabbitMQEventQueueId: viper.GetString("rabbitmq.queueId"),
+	
+		S3Bucket: viper.GetString("s3.bucket"),
+		S3Region: viper.GetString("s3.region"),
 	}
 }

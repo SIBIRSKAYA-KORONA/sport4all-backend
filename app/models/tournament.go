@@ -4,12 +4,6 @@ type TournamentSystem uint
 type TournamentRole uint
 
 const (
-	UnknownSystem TournamentSystem = iota
-	OlympicSystem
-	CircularSystem
-)
-
-const (
 	TournamentOrganizer TournamentRole = iota
 	TournamentPlayer
 	TournamentMember // обобщающая роль (и организатор, и игроки, и т.д.
@@ -43,12 +37,14 @@ type Tournament struct {
 	// example: турнир по игре с котиками
 	About string `json:"about"`
 
+	// example: 1234
+	Created int64 `json:"created" gorm:"autoCreateTime"`
+
 	Teams []Teams `json:"teams,omitempty" gorm:"many2many:team_tournament;" faker:"-"`
 
 	Meetings []Meeting `json:"meetings,omitempty" gorm:"foreignKey:tournamentId" faker:"-"`
 
-	// example: 1234
-	Created int64 `json:"created" gorm:"autoCreateTime"`
+	Avatar Attach `json:"avatar" gorm:"foreignKey:tournamentId"`
 }
 
 // swagger:model Teams
