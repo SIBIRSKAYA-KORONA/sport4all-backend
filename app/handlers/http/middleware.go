@@ -85,7 +85,7 @@ func (mw *MiddlewareImpl) ProcessPanic(next echo.HandlerFunc) echo.HandlerFunc {
 
 func (mw *MiddlewareImpl) Sanitize(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		if ctx.Request().Method != echo.PUT && ctx.Request().Method != echo.POST || ctx.Path() != mw.attachUrl {
+		if (ctx.Request().Method != echo.PUT && ctx.Request().Method != echo.POST) || ctx.Path() == mw.attachUrl {
 			return next(ctx)
 		}
 
