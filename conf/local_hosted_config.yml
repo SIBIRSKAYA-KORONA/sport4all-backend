@@ -40,6 +40,6 @@ redis: {
 }
 
 s3: {
-  bucket: kek,
+  bucket: sport4all,
   region: us-east-2,
 }
