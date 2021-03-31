@@ -59,16 +59,7 @@ func (meetingStore *MeetingStore) GetByID(mid uint) (*models.Meeting, error) {
 		logger.Error(err)
 		return nil, errors.ErrInternal
 	}
-
-	for id, team := range meeting.Teams {
-		if err := meetingStore.db.Model(&models.Team{ID: team.ID}).
-			Related(&meeting.Teams[id], "attachments").
-			Order("id").Error; err != nil {
-			logger.Error(err)
-			return nil, errors.ErrInternal
-		}
-	}
-
+	
 	return meeting, nil
 }
 

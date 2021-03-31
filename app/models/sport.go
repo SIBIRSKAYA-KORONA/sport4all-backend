@@ -9,5 +9,5 @@ type Sport struct {
 	Kind string `json:"kind" gorm:"unique;index"`
 
 	// example: https://someurl
-	ThumbURL string `json:"thumb" gorm:"unique"`
+	Avatar Attach `json:"avatar" gorm:"unique"`
 }

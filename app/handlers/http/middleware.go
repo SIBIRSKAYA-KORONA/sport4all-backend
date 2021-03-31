@@ -186,8 +186,7 @@ func (mw *MiddlewareImpl) CheckTeamPermission(role models.Role) echo.MiddlewareF
 				return next(ctx)
 			}
 
-			error := errors.ErrNoPermission
-			return ctx.String(errors.ResolveErrorToCode(error), error.Error())
+			return ctx.String(errors.ResolveErrorToCode(errors.ErrNoPermission), errors.ErrNoPermission.Error())
 		})
 	}
 }
@@ -217,8 +216,7 @@ func (mw *MiddlewareImpl) CheckTournamentPermission(role models.TournamentRole) 
 				return next(ctx)
 			}
 
-			error := errors.ErrNoPermission
-			return ctx.String(errors.ResolveErrorToCode(error), error.Error())
+			return ctx.String(errors.ResolveErrorToCode(errors.ErrNoPermission), errors.ErrNoPermission.Error())
 		})
 	}
 }
@@ -250,8 +248,7 @@ func (mw *MiddlewareImpl) CheckTournamentPermissionByMeeting(role models.Tournam
 				return next(ctx)
 			}
 
-			error := errors.ErrNoPermission
-			return ctx.String(errors.ResolveErrorToCode(error), error.Error())
+			return ctx.String(errors.ResolveErrorToCode(errors.ErrNoPermission), errors.ErrNoPermission.Error())
 		})
 	}
 }
@@ -279,13 +276,11 @@ func (mw *MiddlewareImpl) CheckMeetingStatus(status models.EventStatus) echo.Mid
 			}
 
 			if !ok {
-				error := errors.ErrNoPermission
-				return ctx.String(errors.ResolveErrorToCode(error), error.Error())
+				return ctx.String(errors.ResolveErrorToCode(errors.ErrNoPermission), errors.ErrNoPermission.Error())
 			}
 
 			if meeting.Status != status {
-				error := errors.ErrMeetingStatusNotAcceptable
-				return ctx.String(errors.ResolveErrorToCode(error), error.Error())
+				return ctx.String(errors.ResolveErrorToCode(errors.ErrMeetingStatusNotAcceptable),  errors.ErrMeetingStatusNotAcceptable.Error())
 			}
 
 			ctx.Set("meetingId", meeting.ID)
@@ -312,8 +307,7 @@ func (mw *MiddlewareImpl) CheckTeamInMeeting(next echo.HandlerFunc) echo.Handler
 		}
 
 		if !result {
-			error := errors.ErrMeetingNotFound
-			return ctx.String(errors.ResolveErrorToCode(error), error.Error())
+			return ctx.String(errors.ResolveErrorToCode(errors.ErrMeetingNotFound), errors.ErrMeetingNotFound.Error())
 		}
 
 		ctx.Set("teamId", teamId)
@@ -338,8 +332,7 @@ func (mw *MiddlewareImpl) CheckPlayerInTeam() echo.MiddlewareFunc {
 			}
 
 			if !result {
-				error := errors.ErrNoPermission
-				return ctx.String(errors.ResolveErrorToCode(error), error.Error())
+				return ctx.String(errors.ResolveErrorToCode(errors.ErrNoPermission), errors.ErrNoPermission.Error())
 			}
 
 			ctx.Set("playerId", playerId)
