@@ -11,9 +11,6 @@ type Team struct {
 	// example: Moscow
 	Location string `json:"location" gorm:"index"`
 
-	// example: super_ava.jpg
-	LinkOnAvatar string `json:"linkOnAvatar"`
-
 	// example: 1234
 	Created int64 `json:"created" gorm:"autoCreateTime"`
 
