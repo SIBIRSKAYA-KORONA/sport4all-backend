@@ -261,13 +261,33 @@ func (tournamentUseCase *TournamentUseCaseImpl) generateCircularMesh(tournamentI
 
 	numTeams := len(*teams)
 	// numMeetings := (numTeams - 1) * numTeams / 2
+	rounds := make(map[int]map[int]bool)
 	var meetings []models.Meeting
-
 	for i := 0; i < numTeams; i++ {
 		for j := 0; j < i; j++ {
+			round := 0
+			for k := 0; k < numTeams; k++ {
+				if _, has := rounds[k]; !has {
+					rounds[k] = make(map[int]bool)
+				}
+				if len(rounds[k]) >= numTeams {
+					continue
+				}
+				if _, has := rounds[k][i]; has {
+					continue
+				}
+				if _, has := rounds[k][j]; has {
+					continue
+				}
+				rounds[k][i] = true
+				rounds[k][j] = true
+				round = k
+				logger.Debug("team1: ", i, ", team2: ", j, ", round: ", k)
+				break
+			}
 			meetings = append(meetings, models.Meeting{
 				Group:        0,
-				Round:        uint(j),
+				Round:        uint(round),
 				TournamentId: tournamentId,
 				Teams:        []models.Team{(*teams)[i], (*teams)[j]},
 			})
