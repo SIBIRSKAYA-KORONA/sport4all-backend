@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
+	"sport4all/pkg/sanitize"
 	"sport4all/pkg/serializer"
 	"time"
 
@@ -16,7 +17,6 @@ import (
 	"sport4all/pkg/common"
 	"sport4all/pkg/errors"
 	"sport4all/pkg/logger"
-	"sport4all/pkg/sanitize"
 )
 
 type Middleware interface {
@@ -42,6 +42,8 @@ type MiddlewareImpl struct {
 	mettingUseCase    useCases.MeetingUseCase
 	origins           map[string]struct{}
 
+	attachURL string
+
 	channel *amqp.Channel
 	queue   amqp.Queue
 }
@@ -51,6 +53,7 @@ func CreateMiddleware(sessionUseCase useCases.SessionUseCase,
 	tournamentUseCase useCases.TournamentUseCase,
 	meetingUseCase useCases.MeetingUseCase,
 	origins map[string]struct{},
+    attachURL string,
 	channel *amqp.Channel,
 	queue amqp.Queue) Middleware {
 	return &MiddlewareImpl{
@@ -59,6 +62,7 @@ func CreateMiddleware(sessionUseCase useCases.SessionUseCase,
 		tournamentUseCase: tournamentUseCase,
 		mettingUseCase:    meetingUseCase,
 		origins:           origins,
+		attachURL: attachURL,
 		channel:           channel,
 		queue:             queue,
 	}
@@ -94,13 +98,15 @@ func (mw *MiddlewareImpl) ProcessPanic(next echo.HandlerFunc) echo.HandlerFunc {
 
 func (mw *MiddlewareImpl) Sanitize(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		if ctx.Request().Method != echo.PUT && ctx.Request().Method != echo.POST {
+		if (ctx.Request().Method != echo.PUT && ctx.Request().Method != echo.POST) || ctx.Path() == mw.attachURL {
 			return next(ctx)
 		}
+
 		body, err := ioutil.ReadAll(ctx.Request().Body)
 		if err != nil {
 			return ctx.NoContent(http.StatusBadRequest)
 		}
+
 		defer common.Close(ctx.Request().Body.Close)
 		sanBody, err := sanitize.SanitizeJSON(body)
 		if err != nil {

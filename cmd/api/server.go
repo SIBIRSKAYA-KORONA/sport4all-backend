@@ -107,7 +107,7 @@ func (server *Server) Run() {
 		origins[key] = struct{}{}
 	}
 
-	mw := httpHandlers.CreateMiddleware(sesUseCase, teamUseCase, tournamentUseCase, meetingUseCase, origins, ch, queue)
+	mw := httpHandlers.CreateMiddleware(sesUseCase, teamUseCase, tournamentUseCase, meetingUseCase, origins, server.settings.BaseURL + server.settings.AttachURL, ch, queue)
 	router := echo.New()
 	router.Use(mw.ProcessPanic)
 	router.Use(mw.LogRequest)
