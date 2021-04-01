@@ -20,8 +20,9 @@ server: {
 
 cors: {
   allowed_origins: [
-      https://sport4all.tech,
       http://localhost:8001,
+      https://sport4all.tech:443,
+      https://sport4all.tech,
   ]
 }
 
@@ -44,7 +45,7 @@ rabbitmq: {
   address: rabbitmq:5672,
   user: sport4all_user,
   password: sport4all,
-  queueId: "events"
+  queueId: events,
 }
 
 s3: {
