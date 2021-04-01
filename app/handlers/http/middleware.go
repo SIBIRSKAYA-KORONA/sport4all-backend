@@ -121,7 +121,7 @@ func (mw *MiddlewareImpl) Sanitize(next echo.HandlerFunc) echo.HandlerFunc {
 func (mw *MiddlewareImpl) CORS(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		origin := ctx.Request().Header.Get("Origin")
-		if _, exist := mw.origins[origin]; !exist {
+		if _, exist := mw.origins[origin]; len(origin) != 0 && !exist {
 			return ctx.NoContent(http.StatusForbidden)
 		}
 		ctx.Response().Header().Set("Access-Control-Allow-Origin", origin)
@@ -149,6 +149,7 @@ func (mw *MiddlewareImpl) DebugMiddle(next echo.HandlerFunc) echo.HandlerFunc {
 func (mw *MiddlewareImpl) CheckAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		cookie, err := ctx.Cookie("session_id")
+		logger.Info("cookie: ", cookie)
 		if err != nil {
 			logger.Error(err)
 			return ctx.String(errors.ResolveErrorToCode(errors.ErrSessionNotFound), errors.ErrSessionNotFound.Error())
