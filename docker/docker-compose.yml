@@ -65,6 +65,7 @@ services:
     container_name: nginx
     image: nginx
     volumes:
+      - /home/ubuntu/sport4all-frontend/dist:/etc/sport4all-frontend/dist
       - ../conf/nginx.conf:/etc/nginx/nginx.conf
       - /etc/letsencrypt/live/sport4all.tech/fullchain.pem:/etc/letsencrypt/live/sport4all.tech/fullchain.pem
       - /etc/letsencrypt/live/sport4all.tech/privkey.pem:/etc/letsencrypt/live/sport4all.tech/privkey.pem
