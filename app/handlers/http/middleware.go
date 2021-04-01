@@ -121,7 +121,7 @@ func (mw *MiddlewareImpl) Sanitize(next echo.HandlerFunc) echo.HandlerFunc {
 func (mw *MiddlewareImpl) CORS(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		origin := ctx.Request().Header.Get("Origin")
-		if _, exist := mw.origins[origin]; !exist {
+		if _, exist := mw.origins[origin]; len(origin) != 0 && !exist {
 			return ctx.NoContent(http.StatusForbidden)
 		}
 		ctx.Response().Header().Set("Access-Control-Allow-Origin", origin)
