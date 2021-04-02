@@ -2,9 +2,6 @@ package impl
 
 import (
 	"math"
-	"sort"
-	"strconv"
-	"strings"
 
 	"sport4all/app/models"
 	"sport4all/app/repositories"
@@ -256,10 +253,24 @@ func (tournamentUseCase *TournamentUseCaseImpl) generateOlympicMesh(tournamentId
 	return nil
 }
 
-func sortString(w string) string {
-	s := strings.Split(w, "")
-	sort.Strings(s)
-	return strings.Join(s, "")
+func (tournamentUseCase *TournamentUseCaseImpl) calcCircularRound(teamNum1, teamNum2, maxRounds int) uint {
+	round := 0
+	sum := teamNum1 + teamNum2
+	if maxRounds == teamNum1 || maxRounds == teamNum2 {
+		sum = teamNum1
+		if teamNum1 > teamNum2 {
+			sum = teamNum2
+		}
+		sum *= 2
+	}
+
+	if sum <= maxRounds {
+		round = sum - 1
+	} else {
+		round = sum - maxRounds
+	}
+
+	return uint(round)
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) generateCircularMesh(tournamentId uint) error {
@@ -270,59 +281,15 @@ func (tournamentUseCase *TournamentUseCaseImpl) generateCircularMesh(tournamentI
 
 	numTeams := len(*teams)
 	numRound := numTeams
-	if numRound %2 != 0 {
-		numRound--
+	if numRound%2 != 0 {
+		numRound++
 	}
-	// numMeetings := (numTeams - 1) * numTeams / 2
-	rounds := make(map[int]map[int]bool)
 	var meetings []models.Meeting
-	hashs := make([]string, numTeams)
 	for i := 0; i < numTeams; i++ {
 		for j := 0; j < i; j++ {
-			round := 0
-			for k := 0; k < numTeams; k++ {
-				if _, has := rounds[k]; !has {
-					rounds[k] = make(map[int]bool)
-				}
-				if len(rounds[k]) >= numRound {
-					continue
-				}
-				if _, has := rounds[k][i]; has {
-					continue
-				}
-				if _, has := rounds[k][j]; has {
-					continue
-				}
-
-				hash := sortString(hashs[k]+strconv.Itoa(i)+strconv.Itoa(j))
-				if len(rounds[k]) == numRound - 2 {
-					hasCollision := false
-					for _, elem := range hashs {
-						if hash == elem {
-							hasCollision = true
-							break
-						}
-					}
-					if hasCollision {
-						continue
-					}
-					// check hash
-				}
-				hashs[k] = hash
-				rounds[k][i] = true
-				rounds[k][j] = true
-				round = k
-
-				for _, elem := range hashs {
-					logger.Debug("elem: ", elem)
-				}
-
-				logger.Debug("team1: ", i, ", team2: ", j, ", round: ", k)
-				break
-			}
 			meetings = append(meetings, models.Meeting{
 				Group:        0,
-				Round:        uint(round),
+				Round:        tournamentUseCase.calcCircularRound(i+1, j+1, numRound),
 				TournamentId: tournamentId,
 				Teams:        []models.Team{(*teams)[i], (*teams)[j]},
 			})
