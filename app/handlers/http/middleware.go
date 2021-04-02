@@ -256,7 +256,7 @@ func (mw *MiddlewareImpl) CheckMeetingStatus(status models.EventStatus) echo.Mid
 			}
 
 			if meeting.Status != status {
-				return ctx.String(errors.ResolveErrorToCode(errors.ErrMeetingStatusNotAcceptable),  errors.ErrMeetingStatusNotAcceptable.Error())
+				return ctx.String(errors.ResolveErrorToCode(errors.ErrMeetingStatusNotAcceptable), errors.ErrMeetingStatusNotAcceptable.Error())
 			}
 
 			ctx.Set("meetingId", meeting.ID)

@@ -80,7 +80,7 @@ func (server *Server) Run() {
 	}
 
 	mw := httpHandlers.CreateMiddleware(sesUseCase, teamUseCase, tournamentUseCase, meetingUseCase, origins,
-		server.settings.BaseURL + server.settings.AttachURL)
+		server.settings.BaseURL+server.settings.AttachURL)
 	router := echo.New()
 	router.Use(mw.ProcessPanic)
 	router.Use(mw.LogRequest)
