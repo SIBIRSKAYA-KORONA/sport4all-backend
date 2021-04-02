@@ -16,6 +16,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/labstack/echo/v4"
+	"github.com/streadway/amqp"
 )
 
 type Server struct {
@@ -29,7 +30,7 @@ func CreateServer(configFilePath string) *Server {
 }
 
 func (server *Server) Run() {
-	/* REPOS */
+	/*  Redis */
 	redisPool := &redis.Pool{
 		Dial: func() (redis.Conn, error) {
 			conn, err := redis.Dial(server.settings.RedisProtocol, server.settings.RedisAddress)
@@ -41,8 +42,7 @@ func (server *Server) Run() {
 	}
 	defer common.Close(redisPool.Close)
 
-	sessionRepo := redisRepos.CreateSessionRepository(redisPool, server.settings.RedisExpiresKeySec)
-
+	/* PostgreSQL */
 	postgresClient, err := gorm.Open(server.settings.PsqlName, server.settings.PsqlData)
 	if err != nil {
 		logger.Fatal(err)
@@ -58,6 +58,34 @@ func (server *Server) Run() {
 	//&models.Stats{}, &models.Attach{})
 	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{},
 		&models.Stats{}, &models.Attach{})
+
+	/* RabbitMQ */
+	conn, err := amqp.Dial(server.settings.RabbitMQConnAddress)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	if err != nil {
+		logger.Fatal(err)
+	}
+	defer ch.Close()
+
+	queue, err := ch.QueueDeclare(
+		server.settings.RabbitMQEventQueueId, // name
+		false,                                // durable
+		false,                                // delete when unused
+		false,                                // exclusive
+		false,                                // no-wait
+		nil,                                  // arguments
+	)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	/* REPOS */
+	sessionRepo := redisRepos.CreateSessionRepository(redisPool, server.settings.RedisExpiresKeySec)
 
 	usrRepo := psqlRepos.CreateUserRepository(postgresClient)
 	teamRepo := psqlRepos.CreateTeamRepository(postgresClient)
@@ -80,7 +108,8 @@ func (server *Server) Run() {
 	}
 
 	mw := httpHandlers.CreateMiddleware(sesUseCase, teamUseCase, tournamentUseCase, meetingUseCase, origins,
-		server.settings.BaseURL+server.settings.AttachURL)
+		server.settings.BaseURL+server.settings.AttachURL, ch, queue)
+
 	router := echo.New()
 	router.Use(mw.ProcessPanic)
 	router.Use(mw.LogRequest)

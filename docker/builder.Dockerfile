@@ -9,3 +9,4 @@ WORKDIR /application
 COPY . .
 
 RUN make build-server
+RUN make build-notifier

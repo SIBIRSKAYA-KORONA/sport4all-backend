@@ -2,7 +2,6 @@ package psql
 
 import (
 	"github.com/jinzhu/gorm"
-
 	"sport4all/app/models"
 	"sport4all/app/repositories"
 	"sport4all/pkg/errors"
@@ -49,6 +48,13 @@ func (meetingStore *MeetingStore) GetByID(mid uint) (*models.Meeting, error) {
 	if err := meetingStore.db.Model(meeting).
 		Preload("Players").
 		Related(&meeting.Teams, "teams").
+		Order("id").Error; err != nil {
+		logger.Error(err)
+		return nil, errors.ErrInternal
+	}
+
+	if err := meetingStore.db.Model(meeting).
+		Related(&meeting.Attachments, "attachments").
 		Order("id").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrInternal

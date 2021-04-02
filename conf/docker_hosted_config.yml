@@ -20,8 +20,8 @@ server: {
 
 cors: {
   allowed_origins: [
-      https://sport4all.tech,
       http://localhost:8001,
+      https://sport4all.tech,
   ]
 }
 
@@ -38,6 +38,13 @@ redis: {
   address: redis:6379,
   protocol: tcp,
   expiresKeySec: 31536000, # 1 year
+}
+
+rabbitmq: {
+  address: rabbitmq:5672,
+  user: sport4all_user,
+  password: sport4all,
+  queueId: events,
 }
 
 s3: {

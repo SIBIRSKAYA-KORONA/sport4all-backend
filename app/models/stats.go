@@ -12,7 +12,7 @@ type Stats struct {
 	// ...
 
 	// example: 4
-	MeetingId uint `json:"ownerId" gorm:"not null;index"`
+	MeetingId uint `json:"meetingId" gorm:"not null;index"`
 
 	// example: 3
 	TeamId uint `json:"teamId" gorm:"not null;index"`

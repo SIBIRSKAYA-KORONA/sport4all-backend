@@ -1,4 +1,5 @@
 SERVER_BINARY=sport4all
+NOTIFIER_BINARY=notifier
 DOCKER_DIR=docker
 
 DOCUMENTATION_CONTAINER_NAME=documentation
@@ -13,10 +14,12 @@ format:
 generate:
 	go generate ./...
 
-
 # application
 build-server:
-	go build -o ${SERVER_BINARY} ./cmd
+	go build -o ${SERVER_BINARY} ./cmd/api
+
+build-notifier:
+	go build -o ${NOTIFIER_BINARY} ./cmd/notifier
 
 run:
 	go run ./cmd -c conf/config.yml
@@ -36,13 +39,16 @@ doc-stop:
 	docker rm ${DOCUMENTATION_CONTAINER_NAME}
 
 # docker
-docker-make-all-images: docker-make-builder-image docker-make-api-image
+docker-make-all-images: docker-make-builder-image docker-make-api-image docker-make-notifier-image
 
 docker-make-builder-image:
 	docker build -t sport-builder -f ${DOCKER_DIR}/builder.Dockerfile .
 
 docker-make-api-image:
 	docker build -t sport-api -f ${DOCKER_DIR}/Dockerfile .
+
+docker-make-notifier-image:
+	docker build -t sport-notifier -f ${DOCKER_DIR}/Dockerfile-notifier .
 
 # docker-compose
 start:

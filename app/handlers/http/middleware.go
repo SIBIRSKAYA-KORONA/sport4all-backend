@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
 	"sport4all/pkg/sanitize"
+	"sport4all/pkg/serializer"
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/streadway/amqp"
 
 	"sport4all/app/models"
 	useCases "sport4all/app/usecases"
@@ -20,6 +23,7 @@ type Middleware interface {
 	LogRequest(echo.HandlerFunc) echo.HandlerFunc
 	ProcessPanic(echo.HandlerFunc) echo.HandlerFunc
 	Sanitize(echo.HandlerFunc) echo.HandlerFunc
+	DebugMiddle(echo.HandlerFunc) echo.HandlerFunc
 	CORS(echo.HandlerFunc) echo.HandlerFunc
 	CheckAuth(echo.HandlerFunc) echo.HandlerFunc
 	CheckTeamPermission(role models.Role) echo.MiddlewareFunc
@@ -28,6 +32,7 @@ type Middleware interface {
 	CheckMeetingStatus(status models.EventStatus) echo.MiddlewareFunc
 	CheckTeamInMeeting(echo.HandlerFunc) echo.HandlerFunc
 	CheckPlayerInTeam() echo.MiddlewareFunc
+	NotificationMiddleware(echo.HandlerFunc) echo.HandlerFunc
 }
 
 type MiddlewareImpl struct {
@@ -36,7 +41,11 @@ type MiddlewareImpl struct {
 	tournamentUseCase useCases.TournamentUseCase
 	mettingUseCase    useCases.MeetingUseCase
 	origins           map[string]struct{}
-	attachUrl         string
+
+	attachURL string
+
+	channel *amqp.Channel
+	queue   amqp.Queue
 }
 
 func CreateMiddleware(sessionUseCase useCases.SessionUseCase,
@@ -44,14 +53,18 @@ func CreateMiddleware(sessionUseCase useCases.SessionUseCase,
 	tournamentUseCase useCases.TournamentUseCase,
 	meetingUseCase useCases.MeetingUseCase,
 	origins map[string]struct{},
-	attachUrl string) Middleware {
+	attachURL string,
+	channel *amqp.Channel,
+	queue amqp.Queue) Middleware {
 	return &MiddlewareImpl{
 		sessionUseCase:    sessionUseCase,
 		teamUseCase:       teamUseCase,
 		tournamentUseCase: tournamentUseCase,
 		mettingUseCase:    meetingUseCase,
 		origins:           origins,
-		attachUrl:         attachUrl,
+		attachURL:         attachURL,
+		channel:           channel,
+		queue:             queue,
 	}
 }
 
@@ -85,7 +98,7 @@ func (mw *MiddlewareImpl) ProcessPanic(next echo.HandlerFunc) echo.HandlerFunc {
 
 func (mw *MiddlewareImpl) Sanitize(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		if (ctx.Request().Method != echo.PUT && ctx.Request().Method != echo.POST) || ctx.Path() == mw.attachUrl {
+		if (ctx.Request().Method != echo.PUT && ctx.Request().Method != echo.POST) || ctx.Path() == mw.attachURL {
 			return next(ctx)
 		}
 
@@ -108,7 +121,7 @@ func (mw *MiddlewareImpl) Sanitize(next echo.HandlerFunc) echo.HandlerFunc {
 func (mw *MiddlewareImpl) CORS(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		origin := ctx.Request().Header.Get("Origin")
-		if _, exist := mw.origins[origin]; !exist {
+		if _, exist := mw.origins[origin]; len(origin) != 0 && !exist {
 			return ctx.NoContent(http.StatusForbidden)
 		}
 		ctx.Response().Header().Set("Access-Control-Allow-Origin", origin)
@@ -118,6 +131,17 @@ func (mw *MiddlewareImpl) CORS(next echo.HandlerFunc) echo.HandlerFunc {
 		if ctx.Request().Method == "OPTIONS" {
 			return ctx.NoContent(http.StatusOK)
 		}
+		return next(ctx)
+	}
+}
+
+func (mw *MiddlewareImpl) DebugMiddle(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		dump, err := httputil.DumpRequest(ctx.Request(), true)
+		if err != nil {
+			return ctx.NoContent(http.StatusInternalServerError)
+		}
+		logger.Debugf("\nRequest dump begin :--------------\n\n%s\n\nRequest dump end :--------------", dump)
 		return next(ctx)
 	}
 }
@@ -314,5 +338,46 @@ func (mw *MiddlewareImpl) CheckPlayerInTeam() echo.MiddlewareFunc {
 			ctx.Set("playerId", playerId)
 			return next(ctx)
 		})
+	}
+}
+
+func (mw *MiddlewareImpl) NotificationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		err := next(ctx)
+		status := ctx.Response().Status
+		if err != nil || status != http.StatusOK {
+			logger.Error("error:", err, " status:", status)
+			return err
+		}
+
+		// тестовый пример
+		meeting := models.Message{
+			MessageType: "Some",
+			SourceUid:   ctx.Get("uid").(uint),
+			TargetUid:   ctx.Get("member").(uint),
+			Tid:         ctx.Get("tid").(uint),
+			Mid:         1,
+		}
+
+		encoded, err := serializer.JSON().Marshal(&meeting)
+		if err != nil {
+			logger.Error(err)
+			return ctx.NoContent(http.StatusInternalServerError)
+		}
+
+		err = mw.channel.Publish(
+			"",            // exchange
+			mw.queue.Name, // routing key
+			false,         // mandatory
+			false,         // immediate
+			amqp.Publishing{
+				ContentType: "application/json",
+				Body:        encoded,
+			})
+		if err != nil {
+			logger.Error(err)
+		}
+
+		return next(ctx)
 	}
 }

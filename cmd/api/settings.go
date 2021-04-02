@@ -30,6 +30,9 @@ type Settings struct {
 	RedisProtocol      string
 	RedisExpiresKeySec uint
 
+	RabbitMQConnAddress  string
+	RabbitMQEventQueueId string
+
 	S3Bucket string
 	S3Region string
 }
@@ -45,6 +48,10 @@ func InitSettings(configFilePath string) Settings {
 	dbPass := viper.GetString("psql.password")
 	dbName := viper.GetString("psql.name")
 	dbMode := viper.GetString("psql.sslmode")
+
+	rbmqAddress := viper.GetString("rabbitmq.address")
+	rbmqUser := viper.GetString("rabbitmq.user")
+	rbmqPass := viper.GetString("rabbitmq.password")
 
 	return Settings{
 		LogFile:  viper.GetString("logger.logfile"),
@@ -69,6 +76,9 @@ func InitSettings(configFilePath string) Settings {
 		RedisAddress:       viper.GetString("redis.address"),
 		RedisProtocol:      viper.GetString("redis.protocol"),
 		RedisExpiresKeySec: viper.GetUint("redis.expiresKeySec"),
+
+		RabbitMQConnAddress:  fmt.Sprintf("amqp://%s:%s@%s/", rbmqUser, rbmqPass, rbmqAddress),
+		RabbitMQEventQueueId: viper.GetString("rabbitmq.queueId"),
 
 		S3Bucket: viper.GetString("s3.bucket"),
 		S3Region: viper.GetString("s3.region"),
