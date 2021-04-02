@@ -59,7 +59,7 @@ func (meetingStore *MeetingStore) GetByID(mid uint) (*models.Meeting, error) {
 		logger.Error(err)
 		return nil, errors.ErrInternal
 	}
-	
+
 	return meeting, nil
 }
 

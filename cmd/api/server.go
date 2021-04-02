@@ -12,11 +12,11 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/streadway/amqp"
 	"github.com/gomodule/redigo/redis"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/labstack/echo/v4"
+	"github.com/streadway/amqp"
 )
 
 type Server struct {
@@ -107,7 +107,9 @@ func (server *Server) Run() {
 		origins[key] = struct{}{}
 	}
 
-	mw := httpHandlers.CreateMiddleware(sesUseCase, teamUseCase, tournamentUseCase, meetingUseCase, origins, server.settings.BaseURL + server.settings.AttachURL, ch, queue)
+	mw := httpHandlers.CreateMiddleware(sesUseCase, teamUseCase, tournamentUseCase, meetingUseCase, origins,
+		server.settings.BaseURL+server.settings.AttachURL, ch, queue)
+
 	router := echo.New()
 	router.Use(mw.ProcessPanic)
 	router.Use(mw.LogRequest)

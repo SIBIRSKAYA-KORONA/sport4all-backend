@@ -79,7 +79,7 @@ func InitSettings(configFilePath string) Settings {
 
 		RabbitMQConnAddress:  fmt.Sprintf("amqp://%s:%s@%s/", rbmqUser, rbmqPass, rbmqAddress),
 		RabbitMQEventQueueId: viper.GetString("rabbitmq.queueId"),
-	
+
 		S3Bucket: viper.GetString("s3.bucket"),
 		S3Region: viper.GetString("s3.region"),
 	}

@@ -53,7 +53,7 @@ func CreateMiddleware(sessionUseCase useCases.SessionUseCase,
 	tournamentUseCase useCases.TournamentUseCase,
 	meetingUseCase useCases.MeetingUseCase,
 	origins map[string]struct{},
-    attachURL string,
+	attachURL string,
 	channel *amqp.Channel,
 	queue amqp.Queue) Middleware {
 	return &MiddlewareImpl{
@@ -62,7 +62,7 @@ func CreateMiddleware(sessionUseCase useCases.SessionUseCase,
 		tournamentUseCase: tournamentUseCase,
 		mettingUseCase:    meetingUseCase,
 		origins:           origins,
-		attachURL: attachURL,
+		attachURL:         attachURL,
 		channel:           channel,
 		queue:             queue,
 	}
@@ -280,7 +280,7 @@ func (mw *MiddlewareImpl) CheckMeetingStatus(status models.EventStatus) echo.Mid
 			}
 
 			if meeting.Status != status {
-				return ctx.String(errors.ResolveErrorToCode(errors.ErrMeetingStatusNotAcceptable),  errors.ErrMeetingStatusNotAcceptable.Error())
+				return ctx.String(errors.ResolveErrorToCode(errors.ErrMeetingStatusNotAcceptable), errors.ErrMeetingStatusNotAcceptable.Error())
 			}
 
 			ctx.Set("meetingId", meeting.ID)
