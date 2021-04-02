@@ -43,7 +43,7 @@ rabbitmq: {
   address: localhost:5672,
   user: sport4all_user,
   password: sport4all,
-  queueId: "events"
+  queueId: events,
 }
 
 s3: {
