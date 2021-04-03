@@ -49,7 +49,13 @@ func (userUseCase *UserUseCaseImpl) GetByNickname(nickname string) (*models.User
 }
 
 func (userUseCase *UserUseCaseImpl) GetUserSkills(uid uint) (*[]models.Skill, error) {
-	return nil, nil
+	skill, err := userUseCase.userRepo.GetUserSkills(uid)
+	if err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+
+	return skill, nil
 }
 
 func (userUseCase *UserUseCaseImpl) GetUserStats(uid uint) (*[]models.Stats, error) {
