@@ -45,15 +45,22 @@ func (tournamentStore *TournamentStore) GetByID(tid uint) (*models.Tournament, e
 	return tournament, nil
 }
 
-func (tournamentStore *TournamentStore) GetTournamentByUser(uid uint) (*models.Tournaments, error) {
-	ownerTournaments := new(models.Tournaments)
+func (tournamentStore *TournamentStore) GetTournamentByUserOwner(uid uint) (*models.Tournaments, error) {
+	var ownerTournaments models.Tournaments
 	if err := tournamentStore.db.Model(&models.User{ID: uid}).
 		Related(&ownerTournaments, "owner_id").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTournamentNotFound
 	}
 
-	return ownerTournaments, nil
+	for idx := range ownerTournaments {
+		if err := tournamentStore.db.Where("tournament_id = ?", ownerTournaments[idx].ID).
+			First(&ownerTournaments[idx].Avatar).Error; err != nil {
+			logger.Warn("tournament", ownerTournaments[idx].ID, " avatar not found: ", err)
+		}
+	}
+
+	return &ownerTournaments, nil
 }
 
 func (tournamentStore *TournamentStore) IsTournamentOrganizer(tournamentID uint, userID uint) (bool, error) {

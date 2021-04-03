@@ -49,15 +49,13 @@ func (meetingStore *MeetingStore) GetByID(mid uint) (*models.Meeting, error) {
 		Preload("Players").
 		Related(&meeting.Teams, "teams").
 		Order("id").Error; err != nil {
-		logger.Error(err)
-		return nil, errors.ErrInternal
+		logger.Warn(err)
 	}
 
 	if err := meetingStore.db.Model(meeting).
 		Related(&meeting.Attachments, "attachments").
 		Order("id").Error; err != nil {
-		logger.Error(err)
-		return nil, errors.ErrInternal
+		logger.Warn(err)
 	}
 
 	return meeting, nil
@@ -85,7 +83,7 @@ func (meetingStore *MeetingStore) Update(meeting *models.Meeting) error {
 
 	if err = meetingStore.db.Save(oldMeeting).Error; err != nil {
 		logger.Error(err)
-		return errors.ErrInternal
+		return errors.ErrMeetingNotFound
 	}
 
 	return nil
@@ -99,7 +97,7 @@ func (meetingStore *MeetingStore) AssignTeam(mid uint, tid uint) error {
 		Find(&teams).
 		Error; err != nil {
 		logger.Error(err)
-		return errors.ErrInternal
+		return errors.ErrMeetingNotFound
 	}
 
 	if len(teams) >= 2 {
