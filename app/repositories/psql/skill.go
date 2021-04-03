@@ -46,7 +46,7 @@ func (skillStore *SkillStore) Create(approvedUid, approvalUid uint, skill *model
 
 func (skillStore *SkillStore) GetByNamePart(namePart string, limit uint) (*[]models.Skill, error) {
 	skills := make([]models.Skill, 0)
-	if err := skillStore.db.Limit(limit).Where("LOWER(name) LIKE ?", strings.ToLower(namePart)+"%").
+	if err := skillStore.db.Limit(limit).Where("LOWER(name) LIKE ? %", strings.ToLower(namePart)+"%").
 		Find(&skills).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrSkillNotFound
@@ -59,6 +59,21 @@ func (skillStore *SkillStore) CreateApprove(approvedUid, approvalUid uint, appro
 	if err := skillStore.db.Create(approve).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrConflict
+	}
+
+	if err := skillStore.db.Model(&models.Skill{ID: *approve.SkillId}).
+		Association("users").
+		Append(models.User{ID: approvedUid}).
+		Error; err != nil {
+		logger.Warn(err)
+	}
+
+	if err := skillStore.db.Model(&models.SkillApprove{ID: approve.ID}).
+		Association("users").
+		Append(models.User{ID: approvalUid}).
+		Error; err != nil {
+		logger.Error(err)
+		return errors.ErrSkillNotFound
 	}
 
 	return nil
