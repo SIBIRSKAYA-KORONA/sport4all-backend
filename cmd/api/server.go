@@ -54,23 +54,21 @@ func (server *Server) Run() {
 		logger.Fatal(err)
 	}
 
-	// postgresClient.DropTableIfExists(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{},
-	//&models.Stats{}, &models.Attach{})
 	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{},
-		&models.Stats{}, &models.Attach{}, &models.Message{})
+		&models.Stats{}, &models.Attach{}, &models.Message{}, &models.Skill{}, &models.SkillApprove{})
 
 	/* RabbitMQ */
 	conn, err := amqp.Dial(server.settings.RabbitMQConnAddress)
 	if err != nil {
 		logger.Fatal(err)
 	}
-	defer conn.Close()
+	defer common.Close(conn.Close)
 
 	ch, err := conn.Channel()
 	if err != nil {
 		logger.Fatal(err)
 	}
-	defer ch.Close()
+	defer common.Close(ch.Close)
 
 	queue, err := ch.QueueDeclare(
 		server.settings.RabbitMQEventQueueId, // name
@@ -87,19 +85,21 @@ func (server *Server) Run() {
 	/* REPOS */
 	sessionRepo := redisRepos.CreateSessionRepository(redisPool, server.settings.RedisExpiresKeySec)
 
-	usrRepo := psqlRepos.CreateUserRepository(postgresClient)
+	userRepo := psqlRepos.CreateUserRepository(postgresClient)
 	teamRepo := psqlRepos.CreateTeamRepository(postgresClient)
 	tournamentRepo := psqlRepos.CreateTournamentRepository(postgresClient)
 	meetingRepo := psqlRepos.CreateMeetingRepository(postgresClient)
+	skillRepo := psqlRepos.CreateSkillRepository(postgresClient)
 	attachRepo := amazonS3Repos.CreateAttachRepository(postgresClient, s3session, server.settings.S3Bucket)
 	messageRepo := psqlRepos.CreateMessageRepository(postgresClient)
 
 	/* USE CASES */
-	sesUseCase := useCases.CreateSessionUseCase(sessionRepo, usrRepo)
-	usrUseCase := useCases.CreateUserUseCase(sessionRepo, usrRepo)
-	teamUseCase := useCases.CreateTeamUseCase(teamRepo, usrRepo)
-	tournamentUseCase := useCases.CreateTournamentUseCase(usrRepo, tournamentRepo, teamRepo, meetingRepo)
+	sesUseCase := useCases.CreateSessionUseCase(sessionRepo, userRepo)
+	usrUseCase := useCases.CreateUserUseCase(sessionRepo, userRepo)
+	teamUseCase := useCases.CreateTeamUseCase(teamRepo, userRepo)
+	tournamentUseCase := useCases.CreateTournamentUseCase(userRepo, tournamentRepo, teamRepo, meetingRepo)
 	meetingUseCase := useCases.CreateMeetingUseCase(meetingRepo, tournamentRepo)
+	skillUseCase := useCases.CreateSkillUseCase(skillRepo, userRepo)
 	attachUseCase := useCases.CreateAttachUseCase(attachRepo)
 	messageUseCase := useCases.CreateMessageUseCase(messageRepo)
 
@@ -124,6 +124,7 @@ func (server *Server) Run() {
 	httpHandlers.CreateTeamHandler(server.settings.TeamsURL, rootGroup, teamUseCase, mw)
 	httpHandlers.CreateTournamentHandler(server.settings.TournamentsURL, rootGroup, tournamentUseCase, mw)
 	httpHandlers.CreateMeetingsHandler(server.settings.MeetingsURL, rootGroup, meetingUseCase, mw)
+	httpHandlers.CreateSkillHandler(server.settings.SkillsURL, rootGroup, skillUseCase, mw)
 	httpHandlers.CreateAttachHandler(server.settings.AttachURL, rootGroup, attachUseCase, mw)
 	httpHandlers.CreateMessageHandler(server.settings.MessageURL, rootGroup, messageUseCase, mw)
 

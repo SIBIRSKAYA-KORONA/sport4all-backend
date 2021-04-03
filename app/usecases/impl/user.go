@@ -48,7 +48,17 @@ func (userUseCase *UserUseCaseImpl) GetByNickname(nickname string) (*models.User
 	return usr, nil
 }
 
-func (userUseCase *UserUseCaseImpl) GetUserStats(uid uint) ([]models.Stats, error) {
+func (userUseCase *UserUseCaseImpl) GetUserSkills(uid uint) (*[]models.Skill, error) {
+	skill, err := userUseCase.userRepo.GetUserSkills(uid)
+	if err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+
+	return skill, nil
+}
+
+func (userUseCase *UserUseCaseImpl) GetUserStats(uid uint) (*[]models.Stats, error) {
 	stats, err := userUseCase.userRepo.GetUserStats(uid)
 	if err != nil {
 		logger.Error(err)

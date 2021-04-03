@@ -28,7 +28,10 @@ func CreateUserHandler(settingsURL string, profileURL string, router *echo.Group
 		ProfileURL:  profileURL,
 	}
 
-	router.GET(handler.ProfileURL+"/:nickname", handler.GetByNickname)
+	profile := router.Group(handler.ProfileURL)
+	profile.GET("/:nickname", handler.GetByNickname)
+	profile.GET("/:uid/skills", handler.GetUserSkills)
+	profile.GET("/:uid/stats", handler.GetUserStats)
 
 	settings := router.Group(handler.SettingsURL)
 	settings.POST("", handler.Create)
@@ -36,8 +39,8 @@ func CreateUserHandler(settingsURL string, profileURL string, router *echo.Group
 	settings.PUT("", handler.Update, mw.CheckAuth)
 	settings.DELETE("", handler.Delete, mw.CheckAuth)
 
-	// --- Статистика ---
-	settings.GET("/:uid/stats", handler.GetUserStats, mw.CheckAuth)
+	// TODO: remove it
+	settings.GET("/:uid/stats", handler.GetUserStats)
 }
 
 func (userHandler *UserHandler) Create(ctx echo.Context) error {
@@ -95,6 +98,25 @@ func (userHandler *UserHandler) Update(ctx echo.Context) error {
 func (userHandler *UserHandler) Delete(ctx echo.Context) error {
 	// TODO:
 	return ctx.NoContent(http.StatusOK)
+}
+
+func (userHandler *UserHandler) GetUserSkills(ctx echo.Context) error {
+	var uid uint
+	if _, err := fmt.Sscan(ctx.Param("uid"), &uid); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	skills, err := userHandler.UseCase.GetUserSkills(uid)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	resp, err := serializer.JSON().Marshal(&skills)
+	if err != nil {
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
 }
 
 func (userHandler *UserHandler) GetUserStats(ctx echo.Context) error {

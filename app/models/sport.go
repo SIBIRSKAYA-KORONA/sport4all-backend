@@ -2,12 +2,13 @@ package models
 
 // swagger:model Sport
 type Sport struct {
-	// example: 10
-	ID uint `json:"id" gorm:"primary_key"`
-
 	// example: Football
-	Kind string `json:"kind" gorm:"unique;index"`
+	Name string `json:"name" gorm:"primary_key"`
+
+	About string `json:"about"`
 
 	// example: https://someurl
 	Avatar Attach `json:"avatar" gorm:"unique"`
+
+	Tournament []Tournament `gorm:"foreignKey:sport"`
 }
