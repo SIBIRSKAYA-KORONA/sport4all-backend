@@ -138,10 +138,14 @@ func (tournamentStore *TournamentStore) RemoveTeam(tournamentId uint, teamId uin
 func (tournamentStore *TournamentStore) GetAllTeams(tournamentId uint) (*models.Teams, error) {
 	var tournamentTeams models.Teams
 	if err := tournamentStore.db.Model(&models.Tournament{ID: tournamentId}).
+		Preload("Players").
 		Related(&tournamentTeams, "Teams").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTournamentNotFound
 	}
+
+
+
 	return &tournamentTeams, nil
 }
 
