@@ -33,7 +33,7 @@ func CreateTournamentHandler(tournamentsURL string, router *echo.Group, useCase 
 	tournaments.DELETE("/:tournamentId/teams/:tid", handler.RemoveTeam, mw.CheckTournamentPermission(models.TournamentOrganizer))
 	tournaments.GET("/:tournamentId/teams", handler.GetAllTeams)
 	tournaments.GET("/:tournamentId/meetings", handler.GetAllMeetings)
-	tournaments.GET("/feeds?offset=10", handler.GetTournamentForFeeds)
+	tournaments.GET("/feeds", handler.GetTournamentForFeeds)
 }
 
 func (tournamentHandler *TournamentHandler) Create(ctx echo.Context) error {
