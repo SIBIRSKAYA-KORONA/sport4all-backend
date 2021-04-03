@@ -95,7 +95,7 @@ func (skillHandler *SkillHandler) CreateApprove(ctx echo.Context) error {
 	}
 
 	var uid uint
-	if _, err := fmt.Sscan(ctx.Param("uid"), &sid); err != nil {
+	if _, err := fmt.Sscan(ctx.Param("uid"), &uid); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
