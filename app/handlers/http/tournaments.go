@@ -106,8 +106,9 @@ func (tournamentHandler *TournamentHandler) Update(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	// перенести
+	// заменить на миддлвару
 	ctx.Set("status", tournament.Status)
+	ctx.Set("tournamentId", tournament.ID)
 
 	if err := tournamentHandler.UseCase.Update(&tournament); err != nil {
 		logger.Error(err)

@@ -401,12 +401,24 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 			return nil
 		}
 
-		messagesByUser := make(map[uint]bool)
 		status := ctx.Get("status").(models.EventStatus)
 		messageStr := mw.getMessageStr(entity, status)
 
-		meetingId := ctx.Get("meetingId").(uint)
+		var meetingId uint
+		var tournamentId uint
 
+		if entity == models.TournamentEntity {
+			tournamentId = ctx.Get("tournamentID").(uint)
+			meetingId = 0
+		} else if entity == models.MeetingEntity {
+			meetingId = ctx.Get("meetingId").(uint)
+			tournamentId = 0
+		} else {
+			tournamentId = 0
+			meetingId = 0
+		}
+
+		messagesByUser := make(map[uint]bool)
 		for teamID, _ := range *teams {
 			for _, player := range (*teams)[teamID].Players {
 				_, alreadySent := messagesByUser[player.ID]
@@ -415,6 +427,7 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 						MessageStr: messageStr,
 						TargetUid:   player.ID,
 						MeetingId:   meetingId,
+						TournamentId: tournamentId,
 						CreateAt:    time.Now().Unix(),
 						IsRead:      false,
 					}
@@ -430,8 +443,8 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 				ownerMessage := models.Message{
 					MessageStr: messageStr,
 					TargetUid:   teamOwnerId,
-					SourceUid: 0,
 					MeetingId:   meetingId,
+					TournamentId: tournamentId,
 					CreateAt:    time.Now().Unix(),
 					IsRead:      false,
 				}
