@@ -395,27 +395,25 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 	switch trigger {
 
 	case models.EventStatusChanged:
-		teams, err := mw.tournamentUseCase.GetAllTeams(ctx.Get("tournamentId").(uint))
+		tournamentId := ctx.Get("tournamentId").(uint)
+		teams, err := mw.tournamentUseCase.GetAllTeams(tournamentId)
 		if err != nil {
 			logger.Error(err)
 			return nil
 		}
 
 		status := models.EventStatus(ctx.Get("status").(uint))
+		if status != models.InProgressEvent && status != models.FinishedEvent {
+			return nil
+		}
+
 		messageStr := mw.getMessageStr(entity, status)
 
 		var meetingId uint
-		var tournamentId uint
-
 		if entity == models.TournamentEntity {
-			tournamentId = ctx.Get("tournamentID").(uint)
 			meetingId = 0
 		} else if entity == models.MeetingEntity {
 			meetingId = ctx.Get("meetingId").(uint)
-			tournamentId = 0
-		} else {
-			tournamentId = 0
-			meetingId = 0
 		}
 
 		messagesByUser := make(map[uint]bool)
