@@ -455,12 +455,12 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 	case models.AddToTeam:
 		message := models.Message{
 			MessageStr: "added_to_team",
-			TargetUid:   ctx.Get("member").(uint),
-			SourceUid:   ctx.Get("uid").(uint),
-			MeetingId:   0,
-			TeamId:      ctx.Get("tid").(uint),
-			CreateAt:    time.Now().Unix(),
-			IsRead:      false,
+			TargetUid:  ctx.Get("member").(uint),
+			SourceUid:  ctx.Get("uid").(uint),
+			MeetingId:  0,
+			TeamId:     ctx.Get("tid").(uint),
+			CreateAt:   time.Now().Unix(),
+			IsRead:     false,
 		}
 		messages = append(messages, message)
 	}
