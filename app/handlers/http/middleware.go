@@ -401,7 +401,7 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 			return nil
 		}
 
-		status := ctx.Get("status").(models.EventStatus)
+		status := models.EventStatus(ctx.Get("status").(uint))
 		messageStr := mw.getMessageStr(entity, status)
 
 		var meetingId uint
