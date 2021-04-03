@@ -54,23 +54,21 @@ func (server *Server) Run() {
 		logger.Fatal(err)
 	}
 
-	// postgresClient.DropTableIfExists(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{},
-	//&models.Stats{}, &models.Attach{})
 	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{},
-		&models.Stats{}, &models.Attach{})
+		&models.Stats{}, &models.Attach{}, &models.Skill{}, &models.SkillApprove{})
 
 	/* RabbitMQ */
 	conn, err := amqp.Dial(server.settings.RabbitMQConnAddress)
 	if err != nil {
 		logger.Fatal(err)
 	}
-	defer conn.Close()
+	defer common.Close(conn.Close)
 
 	ch, err := conn.Channel()
 	if err != nil {
 		logger.Fatal(err)
 	}
-	defer ch.Close()
+	defer common.Close(ch.Close)
 
 	queue, err := ch.QueueDeclare(
 		server.settings.RabbitMQEventQueueId, // name

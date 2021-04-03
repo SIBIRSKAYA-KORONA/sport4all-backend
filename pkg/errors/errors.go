@@ -37,6 +37,9 @@ var (
 	ErrBadFileUploadS3 = errors.New("unsuccessful file upload to s3")
 	ErrBadFileDeleteS3 = errors.New("unsuccessful file delete on s3")
 	ErrFileNotFound    = errors.New("not found file in db")
+
+	// ошибки, связанные с навыками
+	ErrSkillNotFound = errors.New("skill not found")
 )
 
 var errorToCodeMap = map[error]int{
@@ -71,6 +74,9 @@ var errorToCodeMap = map[error]int{
 	ErrBadFileUploadS3: http.StatusUnprocessableEntity,
 	ErrBadFileDeleteS3: http.StatusNotFound,
 	ErrFileNotFound:    http.StatusNotFound,
+
+	// ошибки, связанные с навыками
+	ErrSkillNotFound: http.StatusNotFound,
 }
 
 func ResolveErrorToCode(err error) (code int) {

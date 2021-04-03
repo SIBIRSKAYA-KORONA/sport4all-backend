@@ -9,5 +9,6 @@ type UserRepository interface {
 	GetByID(uid uint) (*models.User, error)
 	GetByNickname(nickname string) (*models.User, error)
 	IsValidPassword(password string, hashPassword []byte) bool
-	GetUserStats(uid uint) ([]models.Stats, error)
+	GetUserSkills(uid uint) (*[]models.Skill, error)
+	GetUserStats(uid uint) (*[]models.Stats, error)
 }
