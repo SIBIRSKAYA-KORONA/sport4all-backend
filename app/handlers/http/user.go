@@ -28,7 +28,7 @@ func CreateUserHandler(settingsURL string, profileURL string, router *echo.Group
 		ProfileURL:  profileURL,
 	}
 
-	profile := router.Group(handler.SettingsURL)
+	profile := router.Group(handler.ProfileURL)
 	profile.GET("/:nickname", handler.GetByNickname)
 	profile.GET("/:uid/skills", handler.GetUserSkills)
 	profile.GET("/:uid/stats", handler.GetUserStats)
