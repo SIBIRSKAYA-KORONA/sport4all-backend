@@ -29,7 +29,8 @@ func CreateMeetingsHandler(meetingsURL string, router *echo.Group, useCase useca
 	// --- CRUD ---
 	meeting.POST("", handler.Create, mw.CheckAuth)
 	meeting.GET("/:mid", handler.GetByID)
-	meeting.PUT("/:mid", handler.Update, mw.CheckTournamentPermissionByMeeting(models.TournamentOrganizer), mw.NotificationMiddleware(models.MeetingStatusChanged))
+	meeting.PUT("/:mid", handler.Update, mw.CheckTournamentPermissionByMeeting(models.TournamentOrganizer),
+		mw.NotificationMiddleware(models.EventStatusChanged, models.MeetingEntity))
 
 	// --- Управление командами во встрече ---
 	meeting.POST("/:mid/teams/:tid", handler.AssignTeam, mw.CheckMeetingStatus(models.RegistrationEvent))

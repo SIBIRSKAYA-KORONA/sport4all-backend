@@ -28,7 +28,8 @@ func CreateTournamentHandler(tournamentsURL string, router *echo.Group, useCase 
 	tournaments.POST("", handler.Create, mw.CheckAuth)
 	tournaments.GET("", handler.GetTournamentByUser)
 	tournaments.GET("/:tournamentId", handler.GetByID)
-	tournaments.PUT("/:tournamentId", handler.Update, mw.CheckAuth)
+	tournaments.PUT("/:tournamentId", handler.Update, mw.CheckAuth,
+		mw.NotificationMiddleware(models.EventStatusChanged, models.TournamentEntity))
 	tournaments.PUT("/:tournamentId/teams/:tid", handler.AddTeam, mw.CheckTournamentPermission(models.TournamentOrganizer))
 	tournaments.DELETE("/:tournamentId/teams/:tid", handler.RemoveTeam, mw.CheckTournamentPermission(models.TournamentOrganizer))
 	tournaments.GET("/:tournamentId/teams", handler.GetAllTeams)
@@ -104,6 +105,9 @@ func (tournamentHandler *TournamentHandler) Update(ctx echo.Context) error {
 	if _, err := fmt.Sscan(ctx.Param("tournamentId"), &tournament.ID); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
+
+	// перенести
+	ctx.Set("status", tournament.Status)
 
 	if err := tournamentHandler.UseCase.Update(&tournament); err != nil {
 		logger.Error(err)
