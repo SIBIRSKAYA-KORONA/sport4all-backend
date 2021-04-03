@@ -109,6 +109,12 @@ func (teamStore *TeamStore) GetAllTournaments(tid uint) (*models.Tournaments, er
 		return nil, errors.ErrTeamNotFound
 	}
 
+	for id, _ := range tournamentTeams {
+		if err := teamStore.db.Where("tournament_id = ?", tournamentTeams[id].ID).First(&tournamentTeams[id].Avatar).Error; err != nil {
+			logger.Warn("tournament avatar not found: ", err)
+		}
+	}
+
 	return &tournamentTeams, nil
 }
 

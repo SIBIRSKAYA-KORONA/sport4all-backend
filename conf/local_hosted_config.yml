@@ -20,6 +20,7 @@ server: {
 
 cors: {
   allowed_origins: [
+      http://localhost:8001,
       http://localhost:8080,
   ]
 }
