@@ -54,7 +54,7 @@ func (server *Server) Run() {
 		logger.Fatal(err)
 	}
 
-	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{},
+	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Sport{}, &models.Tournament{}, &models.Meeting{},
 		&models.Stats{}, &models.Attach{}, &models.Message{}, &models.Skill{}, &models.SkillApprove{})
 
 	/* RabbitMQ */

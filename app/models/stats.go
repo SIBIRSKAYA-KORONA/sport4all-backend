@@ -23,3 +23,7 @@ type Stats struct {
 
 // swagger:model StatsSet
 type StatsSet []Stats
+
+func (stats *Stats) TableName() string {
+	return "stats"
+}

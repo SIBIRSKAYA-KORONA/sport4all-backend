@@ -12,3 +12,7 @@ type Sport struct {
 
 	Tournament []Tournament `json:"tournament,omitempty" gorm:"foreignKey:sport"`
 }
+
+func (sport *Sport) TableName() string {
+	return "sport"
+}
