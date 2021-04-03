@@ -67,7 +67,7 @@ type User struct {
 
 	Avatar Attach `json:"avatar" gorm:"foreignKey:userId"`
 
-	Skills []Skill `json:"skills" gorm:"many2many:user_skills;"`
+	Skills []Skill `json:"skills,omitempty" gorm:"many2many:user_skills;"`
 
 	SkillsApprovals []SkillApprove `json:"-" gorm:"many2many:user_skill_approvals;"`
 }

@@ -21,11 +21,8 @@ func (skillUseCaseImpl *SkillUseCaseImpl) Create(approvedUid, approvalUid uint, 
 		return err
 	}
 
-	skill.Users = append(skill.Users, models.User{ID: approvedUid})
-	skill.Approvals = append(skill.Approvals, models.SkillApprove{SkillId: &skill.ID})
-	skill.Approvals[0].Users = append(skill.Approvals[0].Users, models.User{ID: approvalUid})
-	if err := skillUseCaseImpl.skillRepo.Create(skill); err != nil {
-		logger.Info(err)
+	if err := skillUseCaseImpl.skillRepo.Create(approvedUid, approvalUid, skill); err != nil {
+		logger.Error(err)
 		return err
 	}
 
@@ -35,9 +32,22 @@ func (skillUseCaseImpl *SkillUseCaseImpl) Create(approvedUid, approvalUid uint, 
 func (skillUseCaseImpl *SkillUseCaseImpl) GetByNamePart(namePart string, limit uint) (*[]models.Skill, error) {
 	skills, err := skillUseCaseImpl.skillRepo.GetByNamePart(namePart, limit)
 	if err != nil {
-		logger.Info(err)
+		logger.Error(err)
 		return nil, err
 	}
 
 	return skills, nil
+}
+
+func (skillUseCaseImpl *SkillUseCaseImpl) CreateApprove(approvedUid, approvalUid uint, approve *models.SkillApprove) error {
+	if _, err := skillUseCaseImpl.userRepo.GetByID(approvedUid); err != nil {
+		return err
+	}
+
+	if err := skillUseCaseImpl.skillRepo.CreateApprove(approvedUid, approvalUid, approve); err != nil {
+		logger.Error(err)
+		return err
+	}
+
+	return nil
 }

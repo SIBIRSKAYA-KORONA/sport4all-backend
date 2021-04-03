@@ -62,8 +62,8 @@ func (userStore *UserStore) IsValidPassword(password string, hashPassword []byte
 func (userStore *UserStore) GetUserSkills(uid uint) (*[]models.Skill, error) {
 	var skills []models.Skill
 	if err := userStore.db.Model(&models.User{ID: uid}).
-		Preload("Users").
 		Preload("Approvals").
+		Preload("Approvals.Users").
 		Related(&skills, "Skills").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrUserNotFound
