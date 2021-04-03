@@ -32,7 +32,7 @@ type Middleware interface {
 	CheckMeetingStatus(status models.EventStatus) echo.MiddlewareFunc
 	CheckTeamInMeeting(echo.HandlerFunc) echo.HandlerFunc
 	CheckPlayerInTeam() echo.MiddlewareFunc
-	NotificationMiddleware(models.MessageType) echo.MiddlewareFunc
+	NotificationMiddleware(models.MessageTrigger, models.MessageEntity) echo.MiddlewareFunc
 }
 
 type MiddlewareImpl struct {
@@ -345,7 +345,7 @@ func (mw *MiddlewareImpl) CheckPlayerInTeam() echo.MiddlewareFunc {
 	}
 }
 
-func (mw *MiddlewareImpl) NotificationMiddleware(messageType models.MessageType) echo.MiddlewareFunc {
+func (mw *MiddlewareImpl) NotificationMiddleware(trigger models.MessageTrigger, entity models.MessageEntity) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			err := next(ctx)
@@ -355,8 +355,7 @@ func (mw *MiddlewareImpl) NotificationMiddleware(messageType models.MessageType)
 				return err
 			}
 
-			messages := mw.fillMessageByType(ctx, messageType)
-			//logger.Info(len(*messages))
+			messages := mw.fillMessageByType(ctx, trigger, entity)
 
 			if err := mw.messageUseCase.Create(messages); err != nil {
 				logger.Error(err)
@@ -386,42 +385,51 @@ func (mw *MiddlewareImpl) NotificationMiddleware(messageType models.MessageType)
 	}
 }
 
-func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, messageType models.MessageType) *[]models.Message {
+func (mw *MiddlewareImpl) getMessageStr(entity models.MessageEntity, status models.EventStatus) string {
+	return models.EntityToStr[entity] + "_" + models.StatusToStr[status]
+}
+
+func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.MessageTrigger, entity models.MessageEntity) *[]models.Message {
 	var messages []models.Message
 
-	switch messageType {
+	switch trigger {
 
-	// -----------------------------------------------------------
-	case models.MeetingStatusChanged:
-		// получаем встречу
+	case models.EventStatusChanged:
 		teams, err := mw.tournamentUseCase.GetAllTeams(ctx.Get("tournamentId").(uint))
 		if err != nil {
 			logger.Error(err)
 			return nil
 		}
 
-		messagesByUser := make(map[uint]bool)
-		status := ctx.Get("status").(uint)
+		status := models.EventStatus(ctx.Get("status").(uint))
+		messageStr := mw.getMessageStr(entity, status)
 
-		var messageType models.MessageType
-		if status == uint(models.InProgressEvent) {
-			messageType = models.MeetingStarted
-		} else if status == uint(models.FinishedEvent) {
-			messageType = models.MeetingFinished
+		var meetingId uint
+		var tournamentId uint
+
+		if entity == models.TournamentEntity {
+			tournamentId = ctx.Get("tournamentID").(uint)
+			meetingId = 0
+		} else if entity == models.MeetingEntity {
+			meetingId = ctx.Get("meetingId").(uint)
+			tournamentId = 0
+		} else {
+			tournamentId = 0
+			meetingId = 0
 		}
 
-		meetingId := ctx.Get("meetingId").(uint)
-		// собираем всех игроков, которым будем отправлять уведомление
+		messagesByUser := make(map[uint]bool)
 		for teamID, _ := range *teams {
 			for _, player := range (*teams)[teamID].Players {
 				_, alreadySent := messagesByUser[player.ID]
 				if !alreadySent {
 					message := models.Message{
-						MessageType: messageType,
-						TargetUid:   player.ID,
-						MeetingId:   meetingId,
-						CreateAt:    time.Now().Unix(),
-						IsRead:      false,
+						MessageStr:   messageStr,
+						TargetUid:    player.ID,
+						MeetingId:    meetingId,
+						TournamentId: tournamentId,
+						CreateAt:     time.Now().Unix(),
+						IsRead:       false,
 					}
 
 					messages = append(messages, message)
@@ -433,26 +441,27 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, messageType models
 			_, alreadySent := messagesByUser[teamOwnerId]
 			if !alreadySent {
 				ownerMessage := models.Message{
-					MessageType: messageType,
-					TargetUid:   teamOwnerId,
-					SourceUid:   0,
-					MeetingId:   meetingId,
-					CreateAt:    time.Now().Unix(),
-					IsRead:      false,
+					MessageStr:   messageStr,
+					TargetUid:    teamOwnerId,
+					SourceUid:    0,
+					MeetingId:    meetingId,
+					TournamentId: tournamentId,
+					CreateAt:     time.Now().Unix(),
+					IsRead:       false,
 				}
 				messages = append(messages, ownerMessage)
 				messagesByUser[teamOwnerId] = true
 			}
 		}
 
-	case models.AddedToTeam:
+	case models.AddToTeam:
 		message := models.Message{
-			MessageType: models.AddedToTeam,
-			TargetUid:   ctx.Get("member").(uint),
-			SourceUid:   ctx.Get("uid").(uint),
-			MeetingId:   0,
-			CreateAt:    time.Now().Unix(),
-			IsRead:      false,
+			MessageStr: "added_to_team",
+			TargetUid:  ctx.Get("member").(uint),
+			SourceUid:  ctx.Get("uid").(uint),
+			MeetingId:  0,
+			CreateAt:   time.Now().Unix(),
+			IsRead:     false,
 		}
 		messages = append(messages, message)
 	}
