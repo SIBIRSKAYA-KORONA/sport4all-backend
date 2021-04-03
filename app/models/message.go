@@ -15,25 +15,25 @@ const (
 )
 
 var EntityToStr = map[MessageEntity]string{
-	MeetingEntity: "meeting",
+	MeetingEntity:    "meeting",
 	TournamentEntity: "tournament",
-	TeamEntity: "team",
+	TeamEntity:       "team",
 }
 
 var StatusToStr = map[EventStatus]string{
 	InProgressEvent: "started",
-	FinishedEvent: "finished",
+	FinishedEvent:   "finished",
 }
 
 type Message struct {
 	// example: 101
-	ID          uint        `json:"-" gorm:"primary_key"`
-	MessageStr  string `json:"type"`
+	ID         uint   `json:"-" gorm:"primary_key"`
+	MessageStr string `json:"type"`
 
-	SourceUid uint `json:"source_uid"`
-	TargetUid uint `json:"target_uid"`
-	TeamId    uint `json:"team_id"`
-	MeetingId uint `json:"meeting_id"`
+	SourceUid    uint `json:"source_uid"`
+	TargetUid    uint `json:"target_uid"`
+	TeamId       uint `json:"team_id"`
+	MeetingId    uint `json:"meeting_id"`
 	TournamentId uint `json:"tournament_id"`
 
 	CreateAt int64 `json:"createAt,omitempty" gorm:"not null"`

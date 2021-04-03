@@ -84,9 +84,9 @@ func (server *Server) Run() {
 
 	/* REPOS */
 	sessionRepo := redisRepos.CreateSessionRepository(redisPool, server.settings.RedisExpiresKeySec)
-
 	userRepo := psqlRepos.CreateUserRepository(postgresClient)
 	teamRepo := psqlRepos.CreateTeamRepository(postgresClient)
+	sportRepo := psqlRepos.CreateSportRepository(postgresClient)
 	tournamentRepo := psqlRepos.CreateTournamentRepository(postgresClient)
 	meetingRepo := psqlRepos.CreateMeetingRepository(postgresClient)
 	skillRepo := psqlRepos.CreateSkillRepository(postgresClient)
@@ -97,6 +97,7 @@ func (server *Server) Run() {
 	sesUseCase := useCases.CreateSessionUseCase(sessionRepo, userRepo)
 	usrUseCase := useCases.CreateUserUseCase(sessionRepo, userRepo)
 	teamUseCase := useCases.CreateTeamUseCase(teamRepo, userRepo)
+	sportUseCase := useCases.CreateSportUseCase(sportRepo)
 	tournamentUseCase := useCases.CreateTournamentUseCase(userRepo, tournamentRepo, teamRepo, meetingRepo)
 	meetingUseCase := useCases.CreateMeetingUseCase(meetingRepo, tournamentRepo)
 	skillUseCase := useCases.CreateSkillUseCase(skillRepo, userRepo)
@@ -122,6 +123,7 @@ func (server *Server) Run() {
 	httpHandlers.CreateSessionHandler(server.settings.SessionsURL, rootGroup, sesUseCase, mw)
 	httpHandlers.CreateUserHandler(server.settings.SettingsURL, server.settings.ProfileURL, rootGroup, usrUseCase, mw)
 	httpHandlers.CreateTeamHandler(server.settings.TeamsURL, rootGroup, teamUseCase, mw)
+	httpHandlers.CreateSportHandler(server.settings.SportsURL, rootGroup, sportUseCase, mw)
 	httpHandlers.CreateTournamentHandler(server.settings.TournamentsURL, rootGroup, tournamentUseCase, mw)
 	httpHandlers.CreateMeetingsHandler(server.settings.MeetingsURL, rootGroup, meetingUseCase, mw)
 	httpHandlers.CreateSkillHandler(server.settings.SkillsURL, rootGroup, skillUseCase, mw)
