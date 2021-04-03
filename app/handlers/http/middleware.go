@@ -424,12 +424,12 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 				_, alreadySent := messagesByUser[player.ID]
 				if !alreadySent {
 					message := models.Message{
-						MessageStr: messageStr,
-						TargetUid:   player.ID,
-						MeetingId:   meetingId,
+						MessageStr:   messageStr,
+						TargetUid:    player.ID,
+						MeetingId:    meetingId,
 						TournamentId: tournamentId,
-						CreateAt:    time.Now().Unix(),
-						IsRead:      false,
+						CreateAt:     time.Now().Unix(),
+						IsRead:       false,
 					}
 
 					messages = append(messages, message)
@@ -441,12 +441,13 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 			_, alreadySent := messagesByUser[teamOwnerId]
 			if !alreadySent {
 				ownerMessage := models.Message{
-					MessageStr: messageStr,
-					TargetUid:   teamOwnerId,
-					MeetingId:   meetingId,
+					MessageStr:   messageStr,
+					TargetUid:    teamOwnerId,
+					SourceUid:    0,
+					MeetingId:    meetingId,
 					TournamentId: tournamentId,
-					CreateAt:    time.Now().Unix(),
-					IsRead:      false,
+					CreateAt:     time.Now().Unix(),
+					IsRead:       false,
 				}
 				messages = append(messages, ownerMessage)
 				messagesByUser[teamOwnerId] = true
@@ -459,6 +460,7 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 			TargetUid:   ctx.Get("member").(uint),
 			SourceUid:   ctx.Get("uid").(uint),
 			MeetingId:   0,
+			TeamId:      ctx.Get("tid").(uint),
 			CreateAt:    time.Now().Unix(),
 			IsRead:      false,
 		}

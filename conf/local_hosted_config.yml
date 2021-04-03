@@ -9,6 +9,7 @@ api: {
   profileURL: /profile,
   sessionsUrl: /sessions,
   teamsURL: /teams,
+  sportsURL: /sports,
   tournamentsURL: /tournaments,
   meetingsURL: /meetings,
   skillsURL: /skills,

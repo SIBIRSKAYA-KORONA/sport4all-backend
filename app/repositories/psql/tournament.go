@@ -151,8 +151,6 @@ func (tournamentStore *TournamentStore) GetAllTeams(tournamentId uint) (*models.
 		return nil, errors.ErrTournamentNotFound
 	}
 
-
-
 	return &tournamentTeams, nil
 }
 
@@ -187,4 +185,3 @@ func (tournamentStore *TournamentStore) GetTournamentForFeeds(offset, maxTournam
 	}
 	return &tournaments, nil
 }
-
