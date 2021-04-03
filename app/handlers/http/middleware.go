@@ -32,7 +32,7 @@ type Middleware interface {
 	CheckMeetingStatus(status models.EventStatus) echo.MiddlewareFunc
 	CheckTeamInMeeting(echo.HandlerFunc) echo.HandlerFunc
 	CheckPlayerInTeam() echo.MiddlewareFunc
-	NotificationMiddleware(echo.HandlerFunc) echo.HandlerFunc
+	NotificationMiddleware(models.MessageType) echo.MiddlewareFunc
 }
 
 type MiddlewareImpl struct {
@@ -40,6 +40,7 @@ type MiddlewareImpl struct {
 	teamUseCase       useCases.TeamUseCase
 	tournamentUseCase useCases.TournamentUseCase
 	mettingUseCase    useCases.MeetingUseCase
+	messageUseCase    useCases.MessageUseCase
 	origins           map[string]struct{}
 
 	attachURL string
@@ -52,6 +53,7 @@ func CreateMiddleware(sessionUseCase useCases.SessionUseCase,
 	teamUseCase useCases.TeamUseCase,
 	tournamentUseCase useCases.TournamentUseCase,
 	meetingUseCase useCases.MeetingUseCase,
+	messageUseCase useCases.MessageUseCase,
 	origins map[string]struct{},
 	attachURL string,
 	channel *amqp.Channel,
@@ -61,6 +63,7 @@ func CreateMiddleware(sessionUseCase useCases.SessionUseCase,
 		teamUseCase:       teamUseCase,
 		tournamentUseCase: tournamentUseCase,
 		mettingUseCase:    meetingUseCase,
+		messageUseCase:    messageUseCase,
 		origins:           origins,
 		attachURL:         attachURL,
 		channel:           channel,
@@ -237,6 +240,7 @@ func (mw *MiddlewareImpl) CheckTournamentPermissionByMeeting(role models.Tournam
 			}
 
 			ctx.Set("tournamentId", meeting.TournamentId)
+			ctx.Set("meetingId", meetingID)
 
 			ok, err := mw.tournamentUseCase.CheckUserForTournamentRole(meeting.TournamentId, userID, role)
 			if err != nil {
@@ -341,43 +345,116 @@ func (mw *MiddlewareImpl) CheckPlayerInTeam() echo.MiddlewareFunc {
 	}
 }
 
-func (mw *MiddlewareImpl) NotificationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(ctx echo.Context) error {
-		err := next(ctx)
-		status := ctx.Response().Status
-		if err != nil || status != http.StatusOK {
-			logger.Error("error:", err, " status:", status)
-			return err
-		}
+func (mw *MiddlewareImpl) NotificationMiddleware(messageType models.MessageType) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(ctx echo.Context) error {
+			err := next(ctx)
+			status := ctx.Response().Status
+			if err != nil || status != http.StatusOK {
+				logger.Error("error:", err, " status:", status)
+				return err
+			}
 
-		// тестовый пример
-		meeting := models.Message{
-			MessageType: "Some",
-			SourceUid:   ctx.Get("uid").(uint),
-			TargetUid:   ctx.Get("member").(uint),
-			Tid:         ctx.Get("tid").(uint),
-			Mid:         1,
-		}
+			messages := mw.fillMessageByType(ctx, messageType)
+			//logger.Info(len(*messages))
 
-		encoded, err := serializer.JSON().Marshal(&meeting)
-		if err != nil {
-			logger.Error(err)
-			return ctx.NoContent(http.StatusInternalServerError)
-		}
+			if err := mw.messageUseCase.Create(messages); err != nil {
+				logger.Error(err)
+			}
 
-		err = mw.channel.Publish(
-			"",            // exchange
-			mw.queue.Name, // routing key
-			false,         // mandatory
-			false,         // immediate
-			amqp.Publishing{
-				ContentType: "application/json",
-				Body:        encoded,
-			})
-		if err != nil {
-			logger.Error(err)
-		}
+			encoded, err := serializer.JSON().Marshal(&messages)
+			if err != nil {
+				logger.Error(err)
+				return ctx.NoContent(http.StatusInternalServerError)
+			}
 
-		return next(ctx)
+			err = mw.channel.Publish(
+				"",            // exchange
+				mw.queue.Name, // routing key
+				false,         // mandatory
+				false,         // immediate
+				amqp.Publishing{
+					ContentType: "application/json",
+					Body:        encoded,
+				})
+			if err != nil {
+				logger.Error(err)
+			}
+
+			return next(ctx)
+		}
 	}
+}
+
+func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, messageType models.MessageType) *[]models.Message {
+	var messages []models.Message
+
+	switch messageType {
+
+	// -----------------------------------------------------------
+	case models.MeetingStatusChanged:
+		// получаем встречу
+		teams, err := mw.tournamentUseCase.GetAllTeams(ctx.Get("tournamentId").(uint))
+		if err != nil {
+			logger.Error(err)
+			return nil
+		}
+
+		messagesByUser := make(map[uint]bool)
+		status := ctx.Get("status").(uint)
+
+		var messageType models.MessageType
+		if status == 2 {
+			messageType = models.MeetingStarted
+		} else if status == 3 {
+			messageType = models.MeetingFinished
+		}
+
+		meetingId := ctx.Get("meetingId").(uint)
+		// собираем всех игроков, которым будем отправлять уведомление
+		for teamID, _ := range *teams {
+			for _, player := range (*teams)[teamID].Players {
+				_, alreadySent := messagesByUser[player.ID]
+				if !alreadySent {
+					message := models.Message{
+						MessageType: messageType,
+						TargetUid:   player.ID,
+						MeetingId:   meetingId,
+						CreateAt:    time.Now().Unix(),
+						IsRead:      false,
+					}
+
+					messages = append(messages, message)
+					messagesByUser[player.ID] = true
+				}
+			}
+
+			teamOwnerId := (*teams)[teamID].OwnerId
+			_, alreadySent := messagesByUser[teamOwnerId]
+			if !alreadySent {
+				ownerMessage := models.Message{
+					MessageType: messageType,
+					TargetUid:   teamOwnerId,
+					MeetingId:   meetingId,
+					CreateAt:    time.Now().Unix(),
+					IsRead:      false,
+				}
+				messages = append(messages, ownerMessage)
+				messagesByUser[teamOwnerId] = true
+			}
+		}
+
+	case models.AddedToTeam:
+		message := models.Message{
+			MessageType: models.AddedToTeam,
+			TargetUid:   ctx.Get("member").(uint),
+			SourceUid:   ctx.Get("uid").(uint),
+			MeetingId:   0,
+			CreateAt:    time.Now().Unix(),
+			IsRead:      false,
+		}
+		messages = append(messages, message)
+	}
+
+	return &messages
 }

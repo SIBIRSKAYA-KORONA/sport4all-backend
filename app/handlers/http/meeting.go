@@ -29,7 +29,7 @@ func CreateMeetingsHandler(meetingsURL string, router *echo.Group, useCase useca
 	// --- CRUD ---
 	meeting.POST("", handler.Create, mw.CheckAuth)
 	meeting.GET("/:mid", handler.GetByID)
-	meeting.PUT("/:mid", handler.Update, mw.CheckTournamentPermissionByMeeting(models.TournamentOrganizer))
+	meeting.PUT("/:mid", handler.Update, mw.CheckTournamentPermissionByMeeting(models.TournamentOrganizer), mw.NotificationMiddleware(models.MeetingStatusChanged))
 
 	// --- Управление командами во встрече ---
 	meeting.POST("/:mid/teams/:tid", handler.AssignTeam, mw.CheckMeetingStatus(models.RegistrationEvent))
@@ -90,6 +90,9 @@ func (meetingHandler *MeetingHandler) Update(ctx echo.Context) error {
 	if _, err := fmt.Sscan(ctx.Param("mid"), &meeting.ID); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
+
+	// отрефакторить потом
+	ctx.Set("status", uint(meeting.Status))
 
 	if err := meetingHandler.UseCase.Update(&meeting); err != nil {
 		logger.Error(err)

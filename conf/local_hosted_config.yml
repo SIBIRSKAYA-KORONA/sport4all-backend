@@ -13,6 +13,7 @@ api: {
   meetingsURL: /meetings,
   skillsURL: /skills,
   attachURL: /attachments,
+  messageURL: /messages
 }
 
 server: {
@@ -21,6 +22,7 @@ server: {
 
 cors: {
   allowed_origins: [
+      http://localhost:8001,
       http://localhost:8080,
   ]
 }

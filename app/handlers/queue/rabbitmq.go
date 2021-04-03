@@ -75,9 +75,11 @@ func (receiver *RabbitMQReceiver) Run(ctx context.Context) {
 
 	go func() {
 		for d := range msgs {
-			var message models.Message
-			serializer.JSON().Unmarshal(d.Body, &message)
-			receiver.messageBuff <- &message
+			var messages []models.Message
+			serializer.JSON().Unmarshal(d.Body, &messages)
+			for id, _ := range messages {
+				receiver.messageBuff <- &messages[id]
+			}
 			logger.Info("Received a message")
 		}
 	}()
