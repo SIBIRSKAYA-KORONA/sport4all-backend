@@ -66,6 +66,10 @@ type User struct {
 	Stats []Stats `json:"stats" gorm:"foreignkey:playerId" faker:"-"`
 
 	Avatar Attach `json:"avatar" gorm:"foreignKey:userId"`
+
+	Skills []Skill `json:"skills,omitempty" gorm:"many2many:user_skills;"`
+
+	SkillsApprovals []SkillApprove `json:"-" gorm:"many2many:user_skill_approvals;"`
 }
 
 // swagger:model Users

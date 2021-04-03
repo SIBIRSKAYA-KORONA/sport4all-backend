@@ -59,7 +59,20 @@ func (userStore *UserStore) IsValidPassword(password string, hashPassword []byte
 	return hasher.IsEqualPassword(password, hashPassword)
 }
 
-func (userStore *UserStore) GetUserStats(uid uint) ([]models.Stats, error) {
+func (userStore *UserStore) GetUserSkills(uid uint) (*[]models.Skill, error) {
+	var skills []models.Skill
+	if err := userStore.db.Model(&models.User{ID: uid}).
+		Preload("Approvals").
+		Preload("Approvals.Users").
+		Related(&skills, "Skills").Error; err != nil {
+		logger.Error(err)
+		return nil, errors.ErrUserNotFound
+	}
+
+	return &skills, nil
+}
+
+func (userStore *UserStore) GetUserStats(uid uint) (*[]models.Stats, error) {
 	var stats []models.Stats
 	if err := userStore.db.Model(&models.User{ID: uid}).
 		Related(&stats, "playerId").Error; err != nil {
@@ -67,5 +80,5 @@ func (userStore *UserStore) GetUserStats(uid uint) ([]models.Stats, error) {
 		return nil, errors.ErrUserNotFound
 	}
 
-	return stats, nil
+	return &stats, nil
 }

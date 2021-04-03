@@ -67,7 +67,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) GetByID(tid uint) (*models.Tourn
 
 func (tournamentUseCase *TournamentUseCaseImpl) GetTournamentByUser(uid uint) (*models.UserTournament, error) {
 	userTournament := new(models.UserTournament)
-	tournament, err := tournamentUseCase.tournamentRepo.GetTournamentByUser(uid)
+	tournament, err := tournamentUseCase.tournamentRepo.GetTournamentByUserOwner(uid)
 	if err != nil {
 		logger.Error(err)
 	}

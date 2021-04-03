@@ -11,6 +11,7 @@ api: {
   teamsURL: /teams,
   tournamentsURL: /tournaments,
   meetingsURL: /meetings,
+  skillsURL: /skills,
   attachURL: /attachments,
   messageURL: /messages
 }
