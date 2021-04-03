@@ -435,7 +435,7 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, messageType models
 				ownerMessage := models.Message{
 					MessageType: messageType,
 					TargetUid:   teamOwnerId,
-					SourceUid: 0,
+					SourceUid:   0,
 					MeetingId:   meetingId,
 					CreateAt:    time.Now().Unix(),
 					IsRead:      false,
