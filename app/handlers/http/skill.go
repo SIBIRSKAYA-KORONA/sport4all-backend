@@ -27,7 +27,7 @@ func CreateSkillHandler(url string, router *echo.Group, useCase usecases.SkillUs
 
 	group.POST("/:uid", handler.Create, mw.CheckAuth)
 	group.GET("/search", handler.GetByNamePart)
-	group.POST("/:sid/approve", handler.CreateApprove, mw.CheckAuth)
+	group.POST("/:sid/approve/:uid", handler.CreateApprove, mw.CheckAuth)
 	// group.DELETE("/:sid", handler.Delete, mw.CheckAuth)
 	// group.DELETE("/:sid/approve", handler.DeleteApprove, mw.CheckAuth)
 }
@@ -89,7 +89,35 @@ func (skillHandler *SkillHandler) Delete(ctx echo.Context) error {
 }
 
 func (skillHandler *SkillHandler) CreateApprove(ctx echo.Context) error {
-	return ctx.String(http.StatusInternalServerError, "not implemets")
+	var sid uint
+	if _, err := fmt.Sscan(ctx.Param("sid"), &sid); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	var uid uint
+	if _, err := fmt.Sscan(ctx.Param("uid"), &sid); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	body := ctx.Get("body").([]byte)
+	var approve models.SkillApprove
+	if err := serializer.JSON().Unmarshal(body, &approve); err != nil {
+		logger.Error(err)
+		return ctx.String(http.StatusBadRequest, err.Error())
+	}
+	approve.SkillId = &sid
+	ownerId := ctx.Get("uid").(uint)
+
+	if err := skillHandler.UseCase.CreateApprove(uid, ownerId, &approve); err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	resp, err := serializer.JSON().Marshal(&approve)
+	if err != nil {
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
 }
 
 func (skillHandler *SkillHandler) DeleteApprove(ctx echo.Context) error {
