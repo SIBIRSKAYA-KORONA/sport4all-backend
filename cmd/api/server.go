@@ -57,7 +57,7 @@ func (server *Server) Run() {
 	// postgresClient.DropTableIfExists(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{},
 	//&models.Stats{}, &models.Attach{})
 	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Tournament{}, &models.Meeting{},
-		&models.Stats{}, &models.Attach{})
+		&models.Stats{}, &models.Attach{}, &models.Message{})
 
 	/* RabbitMQ */
 	conn, err := amqp.Dial(server.settings.RabbitMQConnAddress)
@@ -92,6 +92,7 @@ func (server *Server) Run() {
 	tournamentRepo := psqlRepos.CreateTournamentRepository(postgresClient)
 	meetingRepo := psqlRepos.CreateMeetingRepository(postgresClient)
 	attachRepo := amazonS3Repos.CreateAttachRepository(postgresClient, s3session, server.settings.S3Bucket)
+	messageRepo := psqlRepos.CreateMessageRepository(postgresClient)
 
 	/* USE CASES */
 	sesUseCase := useCases.CreateSessionUseCase(sessionRepo, usrRepo)
@@ -100,6 +101,7 @@ func (server *Server) Run() {
 	tournamentUseCase := useCases.CreateTournamentUseCase(usrRepo, tournamentRepo, teamRepo, meetingRepo)
 	meetingUseCase := useCases.CreateMeetingUseCase(meetingRepo, tournamentRepo)
 	attachUseCase := useCases.CreateAttachUseCase(attachRepo)
+	messageUseCase := useCases.CreateMessageUseCase(messageRepo)
 
 	/* HANDLERS */
 	origins := make(map[string]struct{})
@@ -107,7 +109,7 @@ func (server *Server) Run() {
 		origins[key] = struct{}{}
 	}
 
-	mw := httpHandlers.CreateMiddleware(sesUseCase, teamUseCase, tournamentUseCase, meetingUseCase, origins,
+	mw := httpHandlers.CreateMiddleware(sesUseCase, teamUseCase, tournamentUseCase, meetingUseCase, messageUseCase, origins,
 		server.settings.BaseURL+server.settings.AttachURL, ch, queue)
 
 	router := echo.New()
@@ -123,6 +125,7 @@ func (server *Server) Run() {
 	httpHandlers.CreateTournamentHandler(server.settings.TournamentsURL, rootGroup, tournamentUseCase, mw)
 	httpHandlers.CreateMeetingsHandler(server.settings.MeetingsURL, rootGroup, meetingUseCase, mw)
 	httpHandlers.CreateAttachHandler(server.settings.AttachURL, rootGroup, attachUseCase, mw)
+	httpHandlers.CreateMessageHandler(server.settings.MessageURL, rootGroup, messageUseCase, mw)
 
 	logger.Info("start server on address: ", server.settings.ServerAddress,
 		", log file: ", server.settings.LogFile, ", log level: ", server.settings.LogLevel)

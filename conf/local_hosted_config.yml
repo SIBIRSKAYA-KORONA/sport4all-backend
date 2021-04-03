@@ -12,6 +12,7 @@ api: {
   tournamentsURL: /tournaments,
   meetingsURL: /meetings,
   attachURL: /attachments,
+  messageURL: /messages
 }
 
 server: {
