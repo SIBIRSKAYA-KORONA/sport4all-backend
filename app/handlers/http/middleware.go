@@ -404,9 +404,9 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, messageType models
 		status := ctx.Get("status").(uint)
 
 		var messageType models.MessageType
-		if status == 2 {
+		if status == uint(models.InProgressEvent) {
 			messageType = models.MeetingStarted
-		} else if status == 3 {
+		} else if status == uint(models.FinishedEvent) {
 			messageType = models.MeetingFinished
 		}
 
