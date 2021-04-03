@@ -43,8 +43,7 @@ func (teamStore *TeamStore) GetByID(tid uint) (*models.Team, error) {
 	if err := teamStore.db.Model(team).Select("id, name, surname, nickname, link_on_avatar").
 		Related(&team.Players, "Players").
 		Order("id").Error; err != nil {
-		logger.Error(err)
-		return nil, errors.ErrInternal
+		logger.Warn(err)
 	}
 
 	return team, nil
@@ -77,7 +76,7 @@ func (teamStore *TeamStore) IsTeamPlayer(teamID uint, userID uint) (bool, error)
 }
 
 func (teamStore *TeamStore) GetTeamsByUser(uid uint, role models.Role) (*models.Teams, error) {
-	userTeams := new(models.Teams)
+	var userTeams models.Teams
 
 	foreignKey := ""
 	switch role {
@@ -94,11 +93,11 @@ func (teamStore *TeamStore) GetTeamsByUser(uid uint, role models.Role) (*models.
 		return nil, errors.ErrTeamNotFound
 	}
 
-	for i := range *userTeams {
-		(*userTeams)[i].Players = nil
+	for i := range userTeams {
+		userTeams[i].Players = nil
 	}
 
-	return userTeams, nil
+	return &userTeams, nil
 }
 
 func (teamStore *TeamStore) GetAllTournaments(tid uint) (*models.Tournaments, error) {
@@ -107,6 +106,13 @@ func (teamStore *TeamStore) GetAllTournaments(tid uint) (*models.Tournaments, er
 		Related(&tournamentTeams, "Tournaments").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
+	}
+
+	for idx := range tournamentTeams {
+		if err := teamStore.db.Where("tournament_id = ?", tournamentTeams[idx].ID).
+			First(&tournamentTeams[idx].Avatar).Error; err != nil {
+			logger.Warn("tournament", tournamentTeams[idx].ID, " avatar not found: ", err)
+		}
 	}
 
 	return &tournamentTeams, nil
@@ -131,8 +137,7 @@ func (teamStore *TeamStore) InviteMember(tid uint, user *models.User, role model
 
 	// TODO: обработать значение role (Антон)
 	if err := teamStore.db.Model(&team).Association("Players").Append(user).Error; err != nil {
-		logger.Error(err)
-		return errors.ErrInternal
+		logger.Warn(err)
 	}
 
 	return nil
@@ -156,7 +161,7 @@ func (teamStore *TeamStore) DeleteMember(tid uint, uid uint) error {
 
 	if err := teamStore.db.Model(&team).Association("Players").Delete(models.User{ID: uid}).Error; err != nil {
 		logger.Error(err)
-		return errors.ErrInternal
+		return errors.ErrTeamNotFound
 	}
 
 	return nil
