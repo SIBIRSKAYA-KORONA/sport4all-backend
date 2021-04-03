@@ -459,6 +459,7 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 			TargetUid:   ctx.Get("member").(uint),
 			SourceUid:   ctx.Get("uid").(uint),
 			MeetingId:   0,
+			TeamId:      ctx.Get("tid").(uint),
 			CreateAt:    time.Now().Unix(),
 			IsRead:      false,
 		}

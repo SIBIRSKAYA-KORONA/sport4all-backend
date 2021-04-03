@@ -107,7 +107,7 @@ func (tournamentHandler *TournamentHandler) Update(ctx echo.Context) error {
 	}
 
 	// заменить на миддлвару
-	ctx.Set("status", tournament.Status)
+	ctx.Set("status", uint(tournament.Status))
 	ctx.Set("tournamentId", tournament.ID)
 
 	if err := tournamentHandler.UseCase.Update(&tournament); err != nil {
