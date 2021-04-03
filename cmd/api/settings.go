@@ -17,6 +17,7 @@ type Settings struct {
 	TeamsURL       string
 	TournamentsURL string
 	MeetingsURL    string
+	SkillsURL      string
 	AttachURL      string
 
 	ServerAddress string
@@ -64,6 +65,7 @@ func InitSettings(configFilePath string) Settings {
 		TeamsURL:       viper.GetString("api.teamsURL"),
 		TournamentsURL: viper.GetString("api.tournamentsURL"),
 		MeetingsURL:    viper.GetString("api.meetingsURL"),
+		SkillsURL:      viper.GetString("api.skillsURL"),
 		AttachURL:      viper.GetString("api.attachURL"),
 
 		ServerAddress: viper.GetString("server.address"),

@@ -12,8 +12,8 @@ type SkillUseCaseImpl struct {
 	userRepo  repositories.UserRepository
 }
 
-func CreateSkillUseCase(skillRepo repositories.SkillRepository) usecases.SkillUseCase {
-	return &SkillUseCaseImpl{skillRepo: skillRepo}
+func CreateSkillUseCase(skillRepo repositories.SkillRepository, userRepo repositories.UserRepository) usecases.SkillUseCase {
+	return &SkillUseCaseImpl{skillRepo: skillRepo, userRepo: userRepo}
 }
 
 func (skillUseCaseImpl *SkillUseCaseImpl) Create(approvedUid, approvalUid uint, skill *models.Skill) error {

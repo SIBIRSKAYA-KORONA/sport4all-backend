@@ -85,18 +85,20 @@ func (server *Server) Run() {
 	/* REPOS */
 	sessionRepo := redisRepos.CreateSessionRepository(redisPool, server.settings.RedisExpiresKeySec)
 
-	usrRepo := psqlRepos.CreateUserRepository(postgresClient)
+	userRepo := psqlRepos.CreateUserRepository(postgresClient)
 	teamRepo := psqlRepos.CreateTeamRepository(postgresClient)
 	tournamentRepo := psqlRepos.CreateTournamentRepository(postgresClient)
 	meetingRepo := psqlRepos.CreateMeetingRepository(postgresClient)
+	skillRepo := psqlRepos.CreateSkillRepository(postgresClient)
 	attachRepo := amazonS3Repos.CreateAttachRepository(postgresClient, s3session, server.settings.S3Bucket)
 
 	/* USE CASES */
-	sesUseCase := useCases.CreateSessionUseCase(sessionRepo, usrRepo)
-	usrUseCase := useCases.CreateUserUseCase(sessionRepo, usrRepo)
-	teamUseCase := useCases.CreateTeamUseCase(teamRepo, usrRepo)
-	tournamentUseCase := useCases.CreateTournamentUseCase(usrRepo, tournamentRepo, teamRepo, meetingRepo)
+	sesUseCase := useCases.CreateSessionUseCase(sessionRepo, userRepo)
+	usrUseCase := useCases.CreateUserUseCase(sessionRepo, userRepo)
+	teamUseCase := useCases.CreateTeamUseCase(teamRepo, userRepo)
+	tournamentUseCase := useCases.CreateTournamentUseCase(userRepo, tournamentRepo, teamRepo, meetingRepo)
 	meetingUseCase := useCases.CreateMeetingUseCase(meetingRepo, tournamentRepo)
+	skillUseCase := useCases.CreateSkillUseCase(skillRepo, userRepo)
 	attachUseCase := useCases.CreateAttachUseCase(attachRepo)
 
 	/* HANDLERS */
@@ -120,6 +122,7 @@ func (server *Server) Run() {
 	httpHandlers.CreateTeamHandler(server.settings.TeamsURL, rootGroup, teamUseCase, mw)
 	httpHandlers.CreateTournamentHandler(server.settings.TournamentsURL, rootGroup, tournamentUseCase, mw)
 	httpHandlers.CreateMeetingsHandler(server.settings.MeetingsURL, rootGroup, meetingUseCase, mw)
+	httpHandlers.CreateSkillHandler(server.settings.SkillsURL, rootGroup, skillUseCase, mw)
 	httpHandlers.CreateAttachHandler(server.settings.AttachURL, rootGroup, attachUseCase, mw)
 
 	logger.Info("start server on address: ", server.settings.ServerAddress,
