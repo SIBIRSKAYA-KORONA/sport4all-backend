@@ -33,6 +33,7 @@ func CreateTournamentHandler(tournamentsURL string, router *echo.Group, useCase 
 	tournaments.DELETE("/:tournamentId/teams/:tid", handler.RemoveTeam, mw.CheckTournamentPermission(models.TournamentOrganizer))
 	tournaments.GET("/:tournamentId/teams", handler.GetAllTeams)
 	tournaments.GET("/:tournamentId/meetings", handler.GetAllMeetings)
+	tournaments.GET("/feeds?offset=10", handler.GetTournamentForFeeds)
 }
 
 func (tournamentHandler *TournamentHandler) Create(ctx echo.Context) error {
@@ -176,6 +177,26 @@ func (tournamentHandler *TournamentHandler) GetAllMeetings(ctx echo.Context) err
 	}
 
 	resp, err := serializer.JSON().Marshal(&meetings)
+	if err != nil {
+		logger.Error(err)
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
+}
+
+func (tournamentHandler *TournamentHandler) GetTournamentForFeeds(ctx echo.Context) error {
+	var offset uint
+	if _, err := fmt.Sscan(ctx.QueryParam("offset"), &offset); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	tournaments, err := tournamentHandler.UseCase.GetTournamentForFeeds(offset, 10)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	resp, err := serializer.JSON().Marshal(&tournaments)
 	if err != nil {
 		logger.Error(err)
 		return ctx.NoContent(http.StatusInternalServerError)

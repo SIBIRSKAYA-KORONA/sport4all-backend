@@ -16,4 +16,5 @@ type TournamentRepository interface {
 	IsTournamentOrganizer(tournamentID uint, userID uint) (bool, error)
 	IsTournamentPlayer(tournamentID uint, userID uint) (bool, error)
 	IsTeamInTournament(tournamentId uint, teamId uint) (bool, error)
+	GetTournamentForFeeds(offset, maxTournament uint) (*[]models.Tournament, error)
 }
