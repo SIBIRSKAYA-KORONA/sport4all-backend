@@ -5,7 +5,7 @@ type Skill struct {
 	ID uint `json:"id" gorm:"primary_key"`
 
 	// example: Go
-	Name string `json:"name" gorm:"unique;index" faker:"name"`
+	Name string `json:"name" gorm:"unique;index"`
 
 	Users []User `json:"users" gorm:"many2many:user_skills;"`
 
@@ -17,12 +17,17 @@ func (skill *Skill) TableName() string {
 }
 
 type SkillApprove struct {
-	// example: 10
 	ID uint `json:"id" gorm:"primary_key"`
 
-	SkillId *uint `json:"skillId" gorm:"index"`
+	SkillId uint `json:"skillId" gorm:"index"`
 
-	Users []User `json:"userSkillApprovals" gorm:"many2many:user_skill_approvals;"`
+	FromUid uint `json:"fromUid"`
+
+	ToUid uint `json:"-"`
+
+	ToUser *User `json:"toUser" gorm:"-"`
+
+	CreateAt int64 `json:"createAt"`
 }
 
 func (approve *SkillApprove) TableName() string {

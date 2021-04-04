@@ -40,7 +40,7 @@ type Tournament struct {
 	// example: 1234
 	Created int64 `json:"created" gorm:"autoCreateTime"`
 
-	Sport string `json:"sport" gorm:"index"`
+	SportName string `json:"sport" gorm:"index"`
 
 	Teams []Teams `json:"teams,omitempty" gorm:"many2many:team_tournament;" faker:"-"`
 

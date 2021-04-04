@@ -41,7 +41,7 @@ func (teamStore *TeamStore) GetByID(tid uint) (*models.Team, error) {
 	}
 
 	if err := teamStore.db.Model(team).Select("id, name, surname, nickname, link_on_avatar").
-		Related(&team.Players, "Players").
+		Related(&team.Players, "players").
 		Order("id").Error; err != nil {
 		logger.Warn(err)
 	}
@@ -81,7 +81,7 @@ func (teamStore *TeamStore) GetTeamsByUser(uid uint, role models.Role) (*models.
 	foreignKey := ""
 	switch role {
 	case models.Player:
-		foreignKey = "TeamPlayer"
+		foreignKey = "teamPlayer"
 	case models.Owner:
 		foreignKey = "owner_id"
 	default:
@@ -103,7 +103,7 @@ func (teamStore *TeamStore) GetTeamsByUser(uid uint, role models.Role) (*models.
 func (teamStore *TeamStore) GetAllTournaments(tid uint) (*models.Tournaments, error) {
 	var tournamentTeams models.Tournaments
 	if err := teamStore.db.Model(&models.Team{ID: tid}).
-		Related(&tournamentTeams, "Tournaments").Error; err != nil {
+		Related(&tournamentTeams, "tournaments").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
 	}
