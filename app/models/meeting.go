@@ -24,15 +24,15 @@ type Meeting struct {
 
 	TournamentId uint `json:"tournamentId" gorm:"index"`
 
-	Stats []Stats `json:"stats" gorm:"foreignkey:meetingId"`
+	Stats []Stats `json:"stats" gorm:"foreignKey:meetingId"`
 
 	NextMeetingID *uint `json:"nextMeetingID"`
 
-	PrevMeetings []Meeting `json:"prevMeetings,omitempty" gorm:"foreignkey:nextMeetingID" faker:"-"`
+	PrevMeetings []Meeting `json:"prevMeetings,omitempty" gorm:"foreignKey:nextMeetingID" faker:"-"`
 
 	Teams []Team `json:"teams,omitempty" gorm:"many2many:team_meetings;" faker:"-"`
 
-	Attachments []Attach `json:"attachments,omitempty" gorm:"foreignkey:meetingId" faker:"-"`
+	Attachments []Attach `json:"attachments,omitempty" gorm:"foreignKey:meetingId" faker:"-"`
 }
 
 // swagger:model Teams

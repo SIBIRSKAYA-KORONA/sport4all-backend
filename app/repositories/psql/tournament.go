@@ -146,7 +146,7 @@ func (tournamentStore *TournamentStore) GetAllTeams(tournamentId uint) (*models.
 	var tournamentTeams models.Teams
 	if err := tournamentStore.db.Model(&models.Tournament{ID: tournamentId}).
 		Preload("Players").
-		Related(&tournamentTeams, "Teams").Error; err != nil {
+		Related(&tournamentTeams, "teams").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTournamentNotFound
 	}
@@ -157,7 +157,7 @@ func (tournamentStore *TournamentStore) GetAllTeams(tournamentId uint) (*models.
 func (tournamentStore *TournamentStore) GetAllMeetings(tournamentId uint) (*models.Meetings, error) {
 	var tournamentMeetings models.Meetings
 	if err := tournamentStore.db.Model(&models.Tournament{ID: tournamentId}).Preload("Teams").
-		Related(&tournamentMeetings, "Meetings").Error; err != nil {
+		Related(&tournamentMeetings, "meetings").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTournamentNotFound
 	}

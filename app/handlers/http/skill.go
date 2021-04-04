@@ -33,8 +33,8 @@ func CreateSkillHandler(url string, router *echo.Group, useCase usecases.SkillUs
 }
 
 func (skillHandler *SkillHandler) Create(ctx echo.Context) error {
-	var uid uint
-	if _, err := fmt.Sscan(ctx.Param("uid"), &uid); err != nil {
+	var toUid uint
+	if _, err := fmt.Sscan(ctx.Param("uid"), &toUid); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
@@ -45,9 +45,8 @@ func (skillHandler *SkillHandler) Create(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, err.Error())
 	}
 
-	ownerId := ctx.Get("uid").(uint)
-
-	if err := skillHandler.UseCase.Create(uid, ownerId, &skill); err != nil {
+	fromUid := ctx.Get("uid").(uint)
+	if err := skillHandler.UseCase.Create(toUid, fromUid, &skill); err != nil {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
@@ -94,21 +93,20 @@ func (skillHandler *SkillHandler) CreateApprove(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	var uid uint
-	if _, err := fmt.Sscan(ctx.Param("uid"), &uid); err != nil {
-		return ctx.NoContent(http.StatusBadRequest)
-	}
-
 	body := ctx.Get("body").([]byte)
 	var approve models.SkillApprove
 	if err := serializer.JSON().Unmarshal(body, &approve); err != nil {
 		logger.Error(err)
 		return ctx.String(http.StatusBadRequest, err.Error())
 	}
-	approve.SkillId = &sid
-	ownerId := ctx.Get("uid").(uint)
 
-	if err := skillHandler.UseCase.CreateApprove(uid, ownerId, &approve); err != nil {
+	if _, err := fmt.Sscan(ctx.Param("uid"), &approve.ToUid); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+	approve.SkillId = sid
+	approve.FromUid = ctx.Get("uid").(uint)
+
+	if err := skillHandler.UseCase.CreateApprove(&approve); err != nil {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}

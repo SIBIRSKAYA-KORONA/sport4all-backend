@@ -10,7 +10,7 @@ type Sport struct {
 	// example: https://someurl
 	Avatar Attach `json:"avatar" gorm:"unique"`
 
-	Tournament []Tournament `json:"tournament,omitempty" gorm:"foreignKey:sport"`
+	Tournament []Tournament `json:"tournament,omitempty" gorm:"foreignKey:sportName"`
 }
 
 func (sport *Sport) TableName() string {

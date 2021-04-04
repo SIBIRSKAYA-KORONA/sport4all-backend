@@ -16,12 +16,12 @@ func CreateSkillUseCase(skillRepo repositories.SkillRepository, userRepo reposit
 	return &SkillUseCaseImpl{skillRepo: skillRepo, userRepo: userRepo}
 }
 
-func (skillUseCaseImpl *SkillUseCaseImpl) Create(approvedUid, approvalUid uint, skill *models.Skill) error {
-	if _, err := skillUseCaseImpl.userRepo.GetByID(approvedUid); err != nil {
+func (skillUseCaseImpl *SkillUseCaseImpl) Create(toUid, fromUid uint, skill *models.Skill) error {
+	if _, err := skillUseCaseImpl.userRepo.GetByID(toUid); err != nil {
 		return err
 	}
 
-	if err := skillUseCaseImpl.skillRepo.Create(approvedUid, approvalUid, skill); err != nil {
+	if err := skillUseCaseImpl.skillRepo.Create(toUid, fromUid, skill); err != nil {
 		logger.Error(err)
 		return err
 	}
@@ -39,12 +39,12 @@ func (skillUseCaseImpl *SkillUseCaseImpl) GetByNamePart(namePart string, limit u
 	return skills, nil
 }
 
-func (skillUseCaseImpl *SkillUseCaseImpl) CreateApprove(approvedUid, approvalUid uint, approve *models.SkillApprove) error {
-	if _, err := skillUseCaseImpl.userRepo.GetByID(approvedUid); err != nil {
+func (skillUseCaseImpl *SkillUseCaseImpl) CreateApprove(approve *models.SkillApprove) error {
+	if _, err := skillUseCaseImpl.userRepo.GetByID(approve.ToUid); err != nil {
 		return err
 	}
 
-	if err := skillUseCaseImpl.skillRepo.CreateApprove(approvedUid, approvalUid, approve); err != nil {
+	if err := skillUseCaseImpl.skillRepo.CreateApprove(approve); err != nil {
 		logger.Error(err)
 		return err
 	}
