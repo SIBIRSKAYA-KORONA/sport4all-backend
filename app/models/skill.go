@@ -7,9 +7,9 @@ type Skill struct {
 	// example: Go
 	Name string `json:"name" gorm:"unique;index"`
 
-	Users []User `json:"users" gorm:"many2many:user_skills;"`
+	Users []User `json:"users,omitempty" gorm:"many2many:user_skills;"`
 
-	Approvals []SkillApprove `json:"approvals" gorm:"foreignKey:skillId;"`
+	Approvals []SkillApprove `json:"approvals,omitempty" gorm:"foreignKey:skillId;"`
 }
 
 func (skill *Skill) TableName() string {
