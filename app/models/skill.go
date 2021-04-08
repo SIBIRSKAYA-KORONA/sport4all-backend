@@ -21,11 +21,11 @@ type SkillApprove struct {
 
 	SkillId uint `json:"skillId" gorm:"index"`
 
-	FromUid uint `json:"fromUid"`
+	FromUid uint `json:"-"`
 
-	ToUid uint `json:"-"`
+	FromUser *User `json:"fromUser" gorm:"-"`
 
-	ToUser *User `json:"toUser" gorm:"-"`
+	ToUid uint `json:"toUid"`
 
 	CreateAt int64 `json:"createAt"`
 }

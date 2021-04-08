@@ -70,7 +70,7 @@ func (userStore *UserStore) GetUserSkills(uid uint) (*[]models.Skill, error) {
 
 	for i := range skills {
 		for j := range skills[i].Approvals {
-			skills[i].Approvals[j].ToUser, _ = userStore.GetByID(skills[i].Approvals[j].ToUid)
+			skills[i].Approvals[j].FromUser, _ = userStore.GetByID(skills[i].Approvals[j].FromUid)
 		}
 	}
 
