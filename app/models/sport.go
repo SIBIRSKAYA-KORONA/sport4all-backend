@@ -17,5 +17,5 @@ type Sport struct {
 }
 
 func (sport *Sport) TableName() string {
-	return "sport"
+	return "sports"
 }
