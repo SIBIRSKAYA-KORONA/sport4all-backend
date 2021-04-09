@@ -113,6 +113,9 @@ func (tournamentStore *TournamentStore) Update(tournament *models.Tournament) er
 	if tournament.About != "" {
 		oldTournament.About = tournament.About
 	}
+	if tournament.SportName != "" {
+		oldTournament.SportName = tournament.SportName
+	}
 
 	if err = tournamentStore.db.Save(oldTournament).Error; err != nil {
 		logger.Error(err)

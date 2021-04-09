@@ -8,7 +8,7 @@ type Sport struct {
 	About string `json:"about"`
 
 	// example: https://someurl
-	Avatar Attach `json:"avatar" gorm:"unique"`
+	Avatar Attach `json:"avatar" gorm:"foreignKey:sportName"`
 
 	Tournament []Tournament `json:"tournament,omitempty" gorm:"foreignKey:sportName"`
 }
