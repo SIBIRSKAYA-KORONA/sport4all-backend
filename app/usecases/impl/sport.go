@@ -13,9 +13,16 @@ type SportUseCaseImpl struct {
 
 var (
 	baseSports = map[string]bool{
-		"Basketball": true,
-		"Football":   true,
-		"Hockey":     true,
+		"Basketball":    true,
+		"Football":      true,
+		"Hockey":        true,
+		"Table tennis":  true,
+		"Tennis":        true,
+		"Billiards":     true,
+		"Chess":         true,
+		"Checkers":      true,
+		"Mini football": true,
+		"Curling":       true,
 	}
 )
 
