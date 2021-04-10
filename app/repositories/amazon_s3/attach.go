@@ -47,9 +47,9 @@ func (s3Store *AttachStore) Create(attach *models.Attach) error {
 	return nil
 }
 
-func (s3Store *AttachStore) GetByEntityID(id uint, entityName string) (*[]models.Attach, error) {
+func (s3Store *AttachStore) GetByEntityID(attach *models.Attach) (*[]models.Attach, error) {
 	var attachments []models.Attach
-	if err := s3Store.db.Where(entityName+" = ?", id).Find(&attachments).Error; err != nil {
+	if err := s3Store.db.Where(attach).Find(&attachments).Error; err != nil {
 		logger.Error(err)
 		return nil, err
 	}

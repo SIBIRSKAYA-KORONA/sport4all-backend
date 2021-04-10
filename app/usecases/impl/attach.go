@@ -16,20 +16,8 @@ func CreateAttachUseCase(attachRepo repositories.AttachRepository) usecases.Atta
 }
 
 func (attachUseCase *AttachUseCaseImpl) Create(attach *models.Attach) error {
-	entityID := uint(0)
-	entityName := ""
-	if attach.TeamId != nil {
-		entityName = "team_id"
-	} else if attach.UserId != nil {
-		entityName = "user_id"
-	} else if attach.TournamentId != nil {
-		entityName = "tournament_id"
-	} else {
-		entityName = "meeting_id"
-	}
-
 	if attach.MeetingId == nil {
-		attachments, err := attachUseCase.attachRepo.GetByEntityID(entityID, entityName)
+		attachments, err := attachUseCase.attachRepo.GetByEntityID(attach)
 		if err == nil {
 			for _, value := range *attachments {
 				_ = attachUseCase.attachRepo.Delete(value.Key)
