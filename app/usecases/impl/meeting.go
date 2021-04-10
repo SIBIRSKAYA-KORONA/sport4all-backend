@@ -66,7 +66,7 @@ func (meetingUseCase *MeetingUseCaseImpl) Update(meeting *models.Meeting) error 
 			logger.Warn(err)
 			return err
 		}
-		if tournament.System == models.OlympicSystem && meeting.NextMeetingID != nil {
+		if tournament.System == models.OlympicSystem && old.NextMeetingID != nil {
 			stat, err := meetingUseCase.meetingRepo.GetMeetingTeamStat(meeting.ID)
 			if err != nil || len(*stat) != 2 {
 				logger.Warn(err)
@@ -76,7 +76,7 @@ func (meetingUseCase *MeetingUseCaseImpl) Update(meeting *models.Meeting) error 
 			if (*stat)[0].Score < (*stat)[1].Score {
 				winnerTeamId = (*stat)[1].TeamId
 			}
-			if err = meetingUseCase.meetingRepo.AssignTeam(*meeting.NextMeetingID, winnerTeamId); err != nil {
+			if err = meetingUseCase.meetingRepo.AssignTeam(*old.NextMeetingID, winnerTeamId); err != nil {
 				logger.Warn(err)
 				return err
 			}
