@@ -36,7 +36,7 @@ func CreateMeetingsHandler(meetingsURL string, router *echo.Group, useCase useca
 	meeting.POST("/:mid/teams/:tid", handler.AssignTeam, mw.CheckMeetingStatus(models.RegistrationEvent))
 
 	// --- Статистика ---
-	meeting.GET("/:mid/stat", handler.GetMeetingStat, mw.CheckAuth)
+	meeting.GET("/:mid/stat", handler.GetMeetingStat)
 	meeting.PUT("/:mid/teams/:tid/stat", handler.UpdateTeamStat, mw.CheckMeetingStatus(models.InProgressEvent), mw.CheckTeamInMeeting)
 	meeting.PUT("/:mid/teams/:tid/players/:uid/stat", handler.UpdatePlayerStat, mw.CheckMeetingStatus(models.InProgressEvent), mw.CheckPlayerInTeam())
 }
