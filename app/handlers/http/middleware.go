@@ -390,7 +390,7 @@ func (mw *MiddlewareImpl) getMessageStr(entity models.MessageEntity, status mode
 }
 
 func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.MessageTrigger, entity models.MessageEntity) *[]models.Message {
-	var messages []models.Message
+	messages := make([]models.Message, 0)
 
 	switch trigger {
 
