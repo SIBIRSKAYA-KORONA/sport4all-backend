@@ -1,6 +1,7 @@
 package psql
 
 import (
+	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -120,7 +121,8 @@ func (teamStore *TeamStore) GetAllTournaments(tid uint) (*models.Tournaments, er
 
 func (teamStore *TeamStore) GetTeamsByNamePart(namePart string, limit uint) (*models.Teams, error) {
 	teams := new(models.Teams)
-	if err := teamStore.db.Limit(limit).Where("name LIKE ?", namePart+"%").Find(&teams).Error; err != nil {
+	if err := teamStore.db.Limit(limit).Where("LOWER(name) LIKE ?", "%"+strings.ToLower(namePart)+"%").
+		Find(&teams).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
 	}
@@ -180,9 +182,9 @@ func (teamStore *TeamStore) GetUsersForInvite(tid uint, nicknamePart string, lim
 		teamOwnerAndPlayersIDs = append(teamOwnerAndPlayersIDs, player.ID)
 	}
 
-	if err = teamStore.db.Select("id, name, surname, nickname, link_on_avatar").
+	if err = teamStore.db.Select("id, name, surname, nickname").
 		Limit(limit).
-		Where("nickname LIKE ?", nicknamePart+"%").
+		Where("LOWER(nickname) LIKE ?", "%"+strings.ToLower(nicknamePart)+"%").
 		Not("id", teamOwnerAndPlayersIDs).
 		Find(&users).Error; err != nil {
 		logger.Error(err)
