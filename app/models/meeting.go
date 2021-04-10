@@ -24,9 +24,9 @@ type Meeting struct {
 
 	TournamentId uint `json:"tournamentId" gorm:"index"`
 
-	Stats []Stats `json:"stats" gorm:"foreignKey:meetingId"`
+	Stats []Stats `json:"stats,omitempty" gorm:"foreignKey:meetingId"`
 
-	NextMeetingID *uint `json:"nextMeetingID"`
+	NextMeetingID *uint `json:"nextMeetingID,omitempty"`
 
 	PrevMeetings []Meeting `json:"prevMeetings,omitempty" gorm:"foreignKey:nextMeetingID" faker:"-"`
 
