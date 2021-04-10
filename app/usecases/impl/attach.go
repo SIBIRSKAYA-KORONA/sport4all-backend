@@ -16,8 +16,20 @@ func CreateAttachUseCase(attachRepo repositories.AttachRepository) usecases.Atta
 }
 
 func (attachUseCase *AttachUseCaseImpl) Create(attach *models.Attach) error {
+	if attach.MeetingId == nil {
+		attachments, err := attachUseCase.attachRepo.GetByEntityID(&models.Attach{
+			UserId:       attach.UserId,
+			TeamId:       attach.TeamId,
+			TournamentId: attach.TournamentId})
+		if err == nil {
+			for _, value := range *attachments {
+				_ = attachUseCase.attachRepo.Delete(value.Key)
+			}
+		}
+	}
+
 	if err := attachUseCase.attachRepo.Create(attach); err != nil {
-		logger.Info(err)
+		logger.Error(err)
 		return err
 	}
 
@@ -26,7 +38,7 @@ func (attachUseCase *AttachUseCaseImpl) Create(attach *models.Attach) error {
 
 func (attachUseCase *AttachUseCaseImpl) Delete(key string) error {
 	if err := attachUseCase.attachRepo.Delete(key); err != nil {
-		logger.Info(err)
+		logger.Error(err)
 		return err
 	}
 
