@@ -52,11 +52,15 @@ func (meetingUseCase *MeetingUseCaseImpl) Update(meeting *models.Meeting) error 
 			logger.Error(err)
 			return err
 		}
-	case models.FinishedEvent:
+	case models.InProgressEvent, models.FinishedEvent:
 		if err = meetingUseCase.meetingRepo.Update(&models.Meeting{ID: meeting.ID, Status: meeting.Status}); err != nil {
 			logger.Error(err)
 			return err
 		}
+		if meeting.Status == models.InProgressEvent {
+			return nil
+		}
+
 		tournament, err := meetingUseCase.tournamentRepo.GetByID(old.TournamentId)
 		if err != nil {
 			logger.Warn(err)
@@ -78,7 +82,7 @@ func (meetingUseCase *MeetingUseCaseImpl) Update(meeting *models.Meeting) error 
 			}
 		}
 	default:
-		return errors.ErrTournamentStatusNotAcceptable
+		return errors.ErrMeetingStatusNotAcceptable
 	}
 
 	return nil
