@@ -52,26 +52,27 @@ func (meetingUseCase *MeetingUseCaseImpl) Update(meeting *models.Meeting) error 
 			logger.Error(err)
 			return err
 		}
-	case models.InProgressEvent, models.FinishedEvent:
+	case models.InProgressEvent:
 		if err = meetingUseCase.meetingRepo.Update(&models.Meeting{ID: meeting.ID, Status: meeting.Status}); err != nil {
 			logger.Error(err)
 			return err
 		}
-		if meeting.Status == models.InProgressEvent {
-			return nil
+	case models.FinishedEvent:
+		stat, err := meetingUseCase.meetingRepo.GetMeetingTeamStat(meeting.ID)
+		if err != nil || len(*stat) != 2 {
+			logger.Error(err)
+			return errors.ErrMeetingStatusNotAcceptable
 		}
-
+		if err = meetingUseCase.meetingRepo.Update(&models.Meeting{ID: meeting.ID, Status: meeting.Status}); err != nil {
+			logger.Error(err)
+			return err
+		}
 		tournament, err := meetingUseCase.tournamentRepo.GetByID(old.TournamentId)
 		if err != nil {
 			logger.Warn(err)
 			return err
 		}
 		if tournament.System == models.OlympicSystem && old.NextMeetingID != nil {
-			stat, err := meetingUseCase.meetingRepo.GetMeetingTeamStat(meeting.ID)
-			if err != nil || len(*stat) != 2 {
-				logger.Warn(err)
-				return err
-			}
 			winnerTeamId := (*stat)[0].TeamId
 			if (*stat)[0].Score < (*stat)[1].Score {
 				winnerTeamId = (*stat)[1].TeamId

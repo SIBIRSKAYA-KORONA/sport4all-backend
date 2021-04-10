@@ -39,7 +39,7 @@ type MiddlewareImpl struct {
 	sessionUseCase    useCases.SessionUseCase
 	teamUseCase       useCases.TeamUseCase
 	tournamentUseCase useCases.TournamentUseCase
-	mettingUseCase    useCases.MeetingUseCase
+	meetingUseCase    useCases.MeetingUseCase
 	messageUseCase    useCases.MessageUseCase
 	origins           map[string]struct{}
 
@@ -62,7 +62,7 @@ func CreateMiddleware(sessionUseCase useCases.SessionUseCase,
 		sessionUseCase:    sessionUseCase,
 		teamUseCase:       teamUseCase,
 		tournamentUseCase: tournamentUseCase,
-		mettingUseCase:    meetingUseCase,
+		meetingUseCase:    meetingUseCase,
 		messageUseCase:    messageUseCase,
 		origins:           origins,
 		attachURL:         attachURL,
@@ -233,7 +233,7 @@ func (mw *MiddlewareImpl) CheckTournamentPermissionByMeeting(role models.Tournam
 			}
 			userID := ctx.Get("uid").(uint)
 
-			meeting, err := mw.mettingUseCase.GetByID(meetingID)
+			meeting, err := mw.meetingUseCase.GetByID(meetingID)
 			if err != nil {
 				logger.Error(err)
 				return ctx.String(errors.ResolveErrorToCode(err), err.Error())
@@ -265,7 +265,7 @@ func (mw *MiddlewareImpl) CheckMeetingStatus(status models.EventStatus) echo.Mid
 				return ctx.NoContent(http.StatusBadRequest)
 			}
 
-			meeting, err := mw.mettingUseCase.GetByID(meetingId)
+			meeting, err := mw.meetingUseCase.GetByID(meetingId)
 			if err != nil {
 				logger.Error(err)
 				return ctx.String(errors.ResolveErrorToCode(err), err.Error())
@@ -304,7 +304,7 @@ func (mw *MiddlewareImpl) CheckTeamInMeeting(next echo.HandlerFunc) echo.Handler
 			return ctx.NoContent(http.StatusBadRequest)
 		}
 
-		result, err := mw.mettingUseCase.IsTeamInMeeting(meetingId, teamId)
+		result, err := mw.meetingUseCase.IsTeamInMeeting(meetingId, teamId)
 		if err != nil {
 			logger.Error(err)
 			return ctx.String(errors.ResolveErrorToCode(err), err.Error())
@@ -380,7 +380,7 @@ func (mw *MiddlewareImpl) NotificationMiddleware(trigger models.MessageTrigger, 
 				logger.Error(err)
 			}
 
-			return next(ctx)
+			return nil
 		}
 	}
 }
