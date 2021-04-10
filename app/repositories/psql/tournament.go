@@ -168,7 +168,7 @@ func (tournamentStore *TournamentStore) GetAllMeetings(tournamentId uint) (*mode
 	for i := range tournamentMeetings {
 		if tournamentMeetings[i].Status > models.RegistrationEvent {
 			if err := tournamentStore.db.Find(&tournamentMeetings[i].Stats,
-				"player_id = null and meeting_id = ?", tournamentMeetings[i].ID).Error; err != nil {
+				"player_id is null and meeting_id = ?", tournamentMeetings[i].ID).Error; err != nil {
 				logger.Warn("not found meeting ", tournamentMeetings[i].ID, " stat: ", err)
 			}
 		}
