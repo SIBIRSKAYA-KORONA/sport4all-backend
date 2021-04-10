@@ -1,12 +1,16 @@
 package models
 
-type TournamentSystem uint
 type TournamentRole uint
 
 const (
 	TournamentOrganizer TournamentRole = iota
 	TournamentPlayer
 	TournamentMember // обобщающая роль (и организатор, и игроки, и т.д.
+)
+
+var (
+	OlympicSystem  = "olympic"
+	CircularSystem = "circular"
 )
 
 //var StringToRole = map[string]Role{
