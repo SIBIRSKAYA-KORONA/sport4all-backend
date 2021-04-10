@@ -228,13 +228,21 @@ func (tournamentUseCase *TournamentUseCaseImpl) GetAllMeetings(tournamentId uint
 	return meetings, nil
 }
 
-func generateOlympicMeshImpl(root *models.Meeting, deep int) {
+func (tournamentUseCase *TournamentUseCaseImpl) generateOlympicMeshImpl(root *models.Meeting, deep int, teams *models.Teams) {
 	root.Status = models.RegistrationEvent
 	root.Round = uint(deep)
 	root.Group = 0
 
 	deep--
 	if deep <= 0 {
+		numTeams := len(*teams)
+		if numTeams >= 2 {
+			root.Teams = append(root.Teams, (*teams)[0], (*teams)[numTeams-1])
+			*teams = (*teams)[1 : numTeams-1]
+		} else if numTeams == 1 {
+			root.Teams = append(root.Teams, (*teams)[0])
+			*teams = nil
+		}
 		return
 	}
 
@@ -242,7 +250,10 @@ func generateOlympicMeshImpl(root *models.Meeting, deep int) {
 	for idx := range root.PrevMeetings {
 		root.PrevMeetings[idx].NextMeetingID = &root.ID
 		root.PrevMeetings[idx].TournamentId = root.TournamentId
-		generateOlympicMeshImpl(&root.PrevMeetings[idx], deep)
+		tournamentUseCase.generateOlympicMeshImpl(&root.PrevMeetings[idx], deep, teams)
+		if deep == 1 && len(root.PrevMeetings[idx].Teams) == 1 {
+			root.Teams = root.PrevMeetings[idx].Teams
+		}
 	}
 }
 
@@ -253,7 +264,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) generateOlympicMesh(tournamentId
 	}
 
 	root := &models.Meeting{TournamentId: tournamentId, NextMeetingID: nil}
-	generateOlympicMeshImpl(root, int(math.Ceil(math.Log2(float64(len(*teams))))))
+	tournamentUseCase.generateOlympicMeshImpl(root, int(math.Ceil(math.Log2(float64(len(*teams))))), teams)
 
 	if err = tournamentUseCase.meetingRepo.Create(root); err != nil {
 		logger.Error(err)
