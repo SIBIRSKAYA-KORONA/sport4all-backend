@@ -11,11 +11,11 @@ import (
 )
 
 type TournamentUseCaseImpl struct {
-	userRepo          repositories.UserRepository
-	tournamentRepo    repositories.TournamentRepository
-	teamRepo          repositories.TeamRepository
-	meetingRepo       repositories.MeetingRepository
-	tournamentSystems map[string]func(uint) error
+	userRepo                 repositories.UserRepository
+	tournamentRepo           repositories.TournamentRepository
+	teamRepo                 repositories.TeamRepository
+	meetingRepo              repositories.MeetingRepository
+	tournamentSystemsCreator map[string]func(uint) error
 }
 
 func CreateTournamentUseCase(userRepo repositories.UserRepository, tournamentRepo repositories.TournamentRepository,
@@ -28,16 +28,16 @@ func CreateTournamentUseCase(userRepo repositories.UserRepository, tournamentRep
 		meetingRepo:    meetingRepo,
 	}
 
-	impl.tournamentSystems = map[string]func(uint) error{
-		"olympic":  impl.generateOlympicMesh,
-		"circular": impl.generateCircularMesh,
+	impl.tournamentSystemsCreator = map[string]func(uint) error{
+		models.OlympicSystem:  impl.generateOlympicMesh,
+		models.CircularSystem: impl.generateCircularMesh,
 	}
 
 	return impl
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) Create(tournament *models.Tournament) error {
-	if _, ok := tournamentUseCase.tournamentSystems[tournament.System]; !ok {
+	if _, ok := tournamentUseCase.tournamentSystemsCreator[tournament.System]; !ok {
 		return errors.ErrTournamentSystemNotAcceptable
 	}
 
@@ -132,7 +132,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) Update(tournament *models.Tourna
 			return err
 		}
 	case models.InProgressEvent:
-		generateMesh, ok := tournamentUseCase.tournamentSystems[oldTournament.System]
+		generateMesh, ok := tournamentUseCase.tournamentSystemsCreator[oldTournament.System]
 		if !ok {
 			return errors.ErrTournamentSystemNotAcceptable
 		}
@@ -215,11 +215,21 @@ func (tournamentUseCase *TournamentUseCaseImpl) GetAllMeetings(tournamentId uint
 		return nil, err
 	}
 
+	for i := range *meetings {
+		if (*meetings)[i].Status > models.RegistrationEvent {
+			stat, err := tournamentUseCase.meetingRepo.GetMeetingTeamStat((*meetings)[i].ID)
+			if err != nil {
+				logger.Warn(err)
+			}
+			(*meetings)[i].Stats = *stat
+		}
+	}
+
 	return meetings, nil
 }
 
 func generateOlympicMeshImpl(root *models.Meeting, deep int) {
-	root.Status = models.NotStartedEvent
+	root.Status = models.RegistrationEvent
 	root.Round = uint(deep)
 	root.Group = 0
 
@@ -288,12 +298,12 @@ func (tournamentUseCase *TournamentUseCaseImpl) generateCircularMesh(tournamentI
 	for i := 0; i < numTeams; i++ {
 		for j := 0; j < i; j++ {
 			meetings = append(meetings, models.Meeting{
+				Status:       models.RegistrationEvent,
 				Group:        0,
 				Round:        tournamentUseCase.calcCircularRound(i+1, j+1, numRound),
 				TournamentId: tournamentId,
 				Teams:        []models.Team{(*teams)[i], (*teams)[j]},
 			})
-			// TODO: добавить поддержку групп, next, prev meetings
 		}
 	}
 	logger.Debug("generate circular mesh tournamentId: ", tournamentId, " , with ", len(meetings), " meetings")
@@ -311,6 +321,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) generateCircularMesh(tournamentI
 				return err
 			}
 	*/
+
 	return nil
 }
 

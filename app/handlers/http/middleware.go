@@ -39,7 +39,7 @@ type MiddlewareImpl struct {
 	sessionUseCase    useCases.SessionUseCase
 	teamUseCase       useCases.TeamUseCase
 	tournamentUseCase useCases.TournamentUseCase
-	mettingUseCase    useCases.MeetingUseCase
+	meetingUseCase    useCases.MeetingUseCase
 	messageUseCase    useCases.MessageUseCase
 	origins           map[string]struct{}
 
@@ -62,7 +62,7 @@ func CreateMiddleware(sessionUseCase useCases.SessionUseCase,
 		sessionUseCase:    sessionUseCase,
 		teamUseCase:       teamUseCase,
 		tournamentUseCase: tournamentUseCase,
-		mettingUseCase:    meetingUseCase,
+		meetingUseCase:    meetingUseCase,
 		messageUseCase:    messageUseCase,
 		origins:           origins,
 		attachURL:         attachURL,
@@ -233,7 +233,7 @@ func (mw *MiddlewareImpl) CheckTournamentPermissionByMeeting(role models.Tournam
 			}
 			userID := ctx.Get("uid").(uint)
 
-			meeting, err := mw.mettingUseCase.GetByID(meetingID)
+			meeting, err := mw.meetingUseCase.GetByID(meetingID)
 			if err != nil {
 				logger.Error(err)
 				return ctx.String(errors.ResolveErrorToCode(err), err.Error())
@@ -265,7 +265,7 @@ func (mw *MiddlewareImpl) CheckMeetingStatus(status models.EventStatus) echo.Mid
 				return ctx.NoContent(http.StatusBadRequest)
 			}
 
-			meeting, err := mw.mettingUseCase.GetByID(meetingId)
+			meeting, err := mw.meetingUseCase.GetByID(meetingId)
 			if err != nil {
 				logger.Error(err)
 				return ctx.String(errors.ResolveErrorToCode(err), err.Error())
@@ -304,7 +304,7 @@ func (mw *MiddlewareImpl) CheckTeamInMeeting(next echo.HandlerFunc) echo.Handler
 			return ctx.NoContent(http.StatusBadRequest)
 		}
 
-		result, err := mw.mettingUseCase.IsTeamInMeeting(meetingId, teamId)
+		result, err := mw.meetingUseCase.IsTeamInMeeting(meetingId, teamId)
 		if err != nil {
 			logger.Error(err)
 			return ctx.String(errors.ResolveErrorToCode(err), err.Error())
@@ -356,31 +356,25 @@ func (mw *MiddlewareImpl) NotificationMiddleware(trigger models.MessageTrigger, 
 			}
 
 			messages := mw.fillMessageByType(ctx, trigger, entity)
-
-			if err := mw.messageUseCase.Create(messages); err != nil {
+			if err = mw.messageUseCase.Create(messages); err != nil {
 				logger.Error(err)
 			}
 
-			encoded, err := serializer.JSON().Marshal(&messages)
+			encoded, err := serializer.JSON().Marshal(messages)
 			if err != nil {
 				logger.Error(err)
 				return ctx.NoContent(http.StatusInternalServerError)
 			}
 
-			err = mw.channel.Publish(
-				"",            // exchange
-				mw.queue.Name, // routing key
-				false,         // mandatory
-				false,         // immediate
+			if err = mw.channel.Publish("", mw.queue.Name, false, false,
 				amqp.Publishing{
 					ContentType: "application/json",
 					Body:        encoded,
-				})
-			if err != nil {
+				}); err != nil {
 				logger.Error(err)
 			}
 
-			return next(ctx)
+			return nil
 		}
 	}
 }
@@ -390,7 +384,7 @@ func (mw *MiddlewareImpl) getMessageStr(entity models.MessageEntity, status mode
 }
 
 func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.MessageTrigger, entity models.MessageEntity) *[]models.Message {
-	var messages []models.Message
+	messages := make([]models.Message, 0)
 
 	switch trigger {
 
@@ -399,12 +393,12 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 		teams, err := mw.tournamentUseCase.GetAllTeams(tournamentId)
 		if err != nil {
 			logger.Error(err)
-			return nil
+			return &messages
 		}
 
 		status := models.EventStatus(ctx.Get("status").(uint))
 		if status != models.InProgressEvent && status != models.FinishedEvent {
-			return nil
+			return &messages
 		}
 
 		messageStr := mw.getMessageStr(entity, status)

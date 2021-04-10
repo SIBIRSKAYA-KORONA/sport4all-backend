@@ -38,10 +38,52 @@ func (meetingUseCase *MeetingUseCaseImpl) GetByID(mid uint) (*models.Meeting, er
 }
 
 func (meetingUseCase *MeetingUseCaseImpl) Update(meeting *models.Meeting) error {
-	// TODO: валидация состояния матча (по аналогии с турниром) в mv (Тим)
-	if err := meetingUseCase.meetingRepo.Update(meeting); err != nil {
-		logger.Error(err)
+	old, err := meetingUseCase.GetByID(meeting.ID)
+	if err != nil {
 		return err
+	}
+	if old.Status > models.NotStartedEvent && meeting.Status <= old.Status {
+		return errors.ErrMeetingStatusNotAcceptable
+	}
+
+	switch meeting.Status {
+	case models.UnknownEvent, models.NotStartedEvent, models.RegistrationEvent:
+		if err = meetingUseCase.meetingRepo.Update(meeting); err != nil {
+			logger.Error(err)
+			return err
+		}
+	case models.InProgressEvent:
+		if err = meetingUseCase.meetingRepo.Update(&models.Meeting{ID: meeting.ID, Status: meeting.Status}); err != nil {
+			logger.Error(err)
+			return err
+		}
+	case models.FinishedEvent:
+		stat, err := meetingUseCase.meetingRepo.GetMeetingTeamStat(meeting.ID)
+		if err != nil || len(*stat) != 2 {
+			logger.Error(err)
+			return errors.ErrMeetingStatusNotAcceptable
+		}
+		if err = meetingUseCase.meetingRepo.Update(&models.Meeting{ID: meeting.ID, Status: meeting.Status}); err != nil {
+			logger.Error(err)
+			return err
+		}
+		tournament, err := meetingUseCase.tournamentRepo.GetByID(old.TournamentId)
+		if err != nil {
+			logger.Warn(err)
+			return err
+		}
+		if tournament.System == models.OlympicSystem && old.NextMeetingID != nil {
+			winnerTeamId := (*stat)[0].TeamId
+			if (*stat)[0].Score < (*stat)[1].Score {
+				winnerTeamId = (*stat)[1].TeamId
+			}
+			if err = meetingUseCase.meetingRepo.AssignTeam(*old.NextMeetingID, winnerTeamId); err != nil {
+				logger.Warn(err)
+				return err
+			}
+		}
+	default:
+		return errors.ErrMeetingStatusNotAcceptable
 	}
 
 	return nil
@@ -64,7 +106,7 @@ func (meetingUseCase *MeetingUseCaseImpl) AssignTeam(mid uint, tid uint) error {
 		return errors.ErrTeamNotFound
 	}
 
-	if err := meetingUseCase.meetingRepo.AssignTeam(mid, tid); err != nil {
+	if err = meetingUseCase.meetingRepo.AssignTeam(mid, tid); err != nil {
 		logger.Error(err)
 		return err
 	}

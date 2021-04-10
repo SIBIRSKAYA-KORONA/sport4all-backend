@@ -17,6 +17,7 @@ func CreateMeetingRepository(db *gorm.DB) repositories.MeetingRepository {
 }
 
 func (meetingStore *MeetingStore) Create(meeting *models.Meeting) error {
+	meeting.Status = models.RegistrationEvent
 	if err := meetingStore.db.Create(meeting).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrConflict
@@ -140,6 +141,16 @@ func (meetingStore *MeetingStore) UpdateTeamStat(stat *models.Stats) error {
 	}
 
 	return nil
+}
+
+func (meetingStore *MeetingStore) GetMeetingTeamStat(mid uint) (*[]models.Stats, error) {
+	var stats []models.Stats
+	if err := meetingStore.db.Find(&stats, "player_id is null and meeting_id = ?", mid).Error; err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+
+	return &stats, nil
 }
 
 func (meetingStore *MeetingStore) GetMeetingStat(mid uint) (*[]models.Stats, error) {
