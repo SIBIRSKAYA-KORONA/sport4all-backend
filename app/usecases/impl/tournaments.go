@@ -229,7 +229,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) GetAllMeetings(tournamentId uint
 }
 
 func generateOlympicMeshImpl(root *models.Meeting, deep int) {
-	root.Status = models.NotStartedEvent
+	root.Status = models.RegistrationEvent
 	root.Round = uint(deep)
 	root.Group = 0
 
@@ -298,6 +298,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) generateCircularMesh(tournamentI
 	for i := 0; i < numTeams; i++ {
 		for j := 0; j < i; j++ {
 			meetings = append(meetings, models.Meeting{
+				Status:       models.RegistrationEvent,
 				Group:        0,
 				Round:        tournamentUseCase.calcCircularRound(i+1, j+1, numRound),
 				TournamentId: tournamentId,
