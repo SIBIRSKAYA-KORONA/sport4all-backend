@@ -356,27 +356,21 @@ func (mw *MiddlewareImpl) NotificationMiddleware(trigger models.MessageTrigger, 
 			}
 
 			messages := mw.fillMessageByType(ctx, trigger, entity)
-
-			if err := mw.messageUseCase.Create(messages); err != nil {
+			if err = mw.messageUseCase.Create(messages); err != nil {
 				logger.Error(err)
 			}
 
-			encoded, err := serializer.JSON().Marshal(&messages)
+			encoded, err := serializer.JSON().Marshal(messages)
 			if err != nil {
 				logger.Error(err)
 				return ctx.NoContent(http.StatusInternalServerError)
 			}
 
-			err = mw.channel.Publish(
-				"",            // exchange
-				mw.queue.Name, // routing key
-				false,         // mandatory
-				false,         // immediate
+			if err = mw.channel.Publish("", mw.queue.Name, false, false,
 				amqp.Publishing{
 					ContentType: "application/json",
 					Body:        encoded,
-				})
-			if err != nil {
+				}); err != nil {
 				logger.Error(err)
 			}
 
@@ -399,12 +393,12 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 		teams, err := mw.tournamentUseCase.GetAllTeams(tournamentId)
 		if err != nil {
 			logger.Error(err)
-			return nil
+			return &messages
 		}
 
 		status := models.EventStatus(ctx.Get("status").(uint))
 		if status != models.InProgressEvent && status != models.FinishedEvent {
-			return nil
+			return &messages
 		}
 
 		messageStr := mw.getMessageStr(entity, status)
