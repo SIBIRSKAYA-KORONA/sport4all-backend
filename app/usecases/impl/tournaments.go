@@ -251,7 +251,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) generateOlympicMeshImpl(root *mo
 		root.PrevMeetings[idx].NextMeetingID = &root.ID
 		root.PrevMeetings[idx].TournamentId = root.TournamentId
 		tournamentUseCase.generateOlympicMeshImpl(&root.PrevMeetings[idx], deep, teams)
-		if deep == 2 && len(root.PrevMeetings[idx].Teams) == 1 {
+		if deep == 1 && len(root.PrevMeetings[idx].Teams) == 1 {
 			root.Teams = root.PrevMeetings[idx].Teams
 		}
 	}
