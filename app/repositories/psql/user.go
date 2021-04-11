@@ -1,6 +1,7 @@
 package psql
 
 import (
+	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -28,6 +29,31 @@ func (userStore *UserStore) Create(usr *models.User) error {
 		return errors.ErrConflict
 	}
 
+	return nil
+}
+
+func (userStore *UserStore) Update(user *models.User) error {
+	var oldUser models.User
+	if err := userStore.db.Where("id = ?", user.ID).First(&oldUser).Error; err != nil {
+		logger.Error(err)
+		return errors.ErrUserNotFound
+	}
+	if user.Name != "" {
+		oldUser.Name = user.Name
+	}
+	if user.Surname != "" {
+		oldUser.Surname = user.Surname
+	}
+	if user.Nickname != "" {
+		oldUser.Nickname = user.Nickname
+	}
+	if user.About != "" {
+		oldUser.About = user.About
+	}
+	if err := userStore.db.Save(oldUser).Error; err != nil {
+		logger.Error(err)
+		return errors.ErrUserNotFound
+	}
 	return nil
 }
 
@@ -86,4 +112,24 @@ func (userStore *UserStore) GetUserStats(uid uint) (*[]models.Stats, error) {
 	}
 
 	return &stats, nil
+}
+
+func (userStore *UserStore) SearchUsers(uid *uint, nicknamePart string, limit uint) (*[]models.User, error) {
+	var users []models.User
+
+	query := userStore.db.Select("id, name, surname, nickname").
+		Limit(limit).
+		Where("LOWER(nickname) LIKE ?", "%"+strings.ToLower(nicknamePart)+"%").
+		Preload("Avatar")
+
+	if uid != nil {
+		query = query.Not("id", *uid)
+	}
+
+	if err := query.Find(&users).Error; err != nil {
+		logger.Error(err)
+		return nil, errors.ErrUserNotFound
+	}
+
+	return &users, nil
 }

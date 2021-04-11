@@ -53,6 +53,10 @@ func (meetingStore *MeetingStore) GetByID(mid uint) (*models.Meeting, error) {
 		logger.Warn(err)
 	}
 
+	for id, team := range meeting.Teams {
+		meetingStore.db.Where("team_id = ?", team.ID).Find(&meeting.Teams[id].Avatar)
+	}
+
 	if err := meetingStore.db.Model(meeting).
 		Related(&meeting.Attachments, "attachments").
 		Order("id").Error; err != nil {

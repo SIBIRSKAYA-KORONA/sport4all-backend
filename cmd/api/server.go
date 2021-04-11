@@ -121,7 +121,7 @@ func (server *Server) Run() {
 	rootGroup := router.Group(server.settings.BaseURL)
 
 	httpHandlers.CreateSessionHandler(server.settings.SessionsURL, rootGroup, sesUseCase, mw)
-	httpHandlers.CreateUserHandler(server.settings.SettingsURL, server.settings.ProfileURL, rootGroup, usrUseCase, mw)
+	httpHandlers.CreateUserHandler(server.settings.SettingsURL, server.settings.ProfileURL, rootGroup, usrUseCase, sesUseCase, mw)
 	httpHandlers.CreateTeamHandler(server.settings.TeamsURL, rootGroup, teamUseCase, mw)
 	httpHandlers.CreateSportHandler(server.settings.SportsURL, rootGroup, sportUseCase, mw)
 	httpHandlers.CreateTournamentHandler(server.settings.TournamentsURL, rootGroup, tournamentUseCase, mw)

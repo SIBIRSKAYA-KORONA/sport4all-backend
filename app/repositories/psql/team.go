@@ -41,7 +41,7 @@ func (teamStore *TeamStore) GetByID(tid uint) (*models.Team, error) {
 		logger.Warn("team avatar not found: ", err)
 	}
 
-	if err := teamStore.db.Model(team).Select("id, name, surname, nickname, link_on_avatar").
+	if err := teamStore.db.Model(team).Select("id, name, surname, nickname").
 		Related(&team.Players, "players").
 		Order("id").Error; err != nil {
 		logger.Warn(err)
@@ -89,7 +89,9 @@ func (teamStore *TeamStore) GetTeamsByUser(uid uint, role models.Role) (*models.
 		return nil, errors.ErrInternal
 	}
 
-	if err := teamStore.db.Model(&models.User{ID: uid}).Related(&userTeams, foreignKey).Error; err != nil {
+	if err := teamStore.db.Model(&models.User{ID: uid}).
+		Preload("Avatar").
+		Related(&userTeams, foreignKey).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
 	}
@@ -122,11 +124,12 @@ func (teamStore *TeamStore) GetAllTournaments(tid uint) (*models.Tournaments, er
 func (teamStore *TeamStore) GetTeamsByNamePart(namePart string, limit uint) (*models.Teams, error) {
 	teams := new(models.Teams)
 	if err := teamStore.db.Limit(limit).Where("LOWER(name) LIKE ?", "%"+strings.ToLower(namePart)+"%").
+		Preload("Avatar").
 		Find(&teams).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
 	}
-
+	
 	return teams, nil
 }
 

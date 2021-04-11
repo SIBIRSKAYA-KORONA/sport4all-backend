@@ -154,6 +154,10 @@ func (tournamentStore *TournamentStore) GetAllTeams(tournamentId uint) (*models.
 		return nil, errors.ErrTournamentNotFound
 	}
 
+	for id, team := range tournamentTeams {
+		tournamentStore.db.Where("team_id = ?", team.ID).Find(&tournamentTeams[id].Avatar)
+	}
+
 	return &tournamentTeams, nil
 }
 

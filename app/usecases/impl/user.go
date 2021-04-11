@@ -30,6 +30,15 @@ func (userUseCase *UserUseCaseImpl) Create(user *models.User) (*models.Session, 
 	return ses, nil
 }
 
+func (userUseCase *UserUseCaseImpl) Update(user *models.User) error {
+	err := userUseCase.userRepo.Update(user)
+	if err != nil {
+		logger.Error(err)
+		return err
+	}
+	return nil
+}
+
 func (userUseCase *UserUseCaseImpl) GetByID(uid uint) (*models.User, error) {
 	usr, err := userUseCase.userRepo.GetByID(uid)
 	if err != nil {
@@ -66,4 +75,14 @@ func (userUseCase *UserUseCaseImpl) GetUserStats(uid uint) (*[]models.Stats, err
 	}
 
 	return stats, nil
+}
+
+func (userUseCase *UserUseCaseImpl) SearchUsers(uid *uint, nicknamePart string, limit uint) (*[]models.User, error) {
+	users, err := userUseCase.userRepo.SearchUsers(uid, nicknamePart, limit)
+	if err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+
+	return users, nil
 }
