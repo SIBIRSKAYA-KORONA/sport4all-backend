@@ -1,10 +1,10 @@
 package models
 
-type MessageEntity uint
+type Entity uint
 type MessageTrigger uint
 
 const (
-	MeetingEntity MessageEntity = iota
+	MeetingEntity Entity = iota
 	TournamentEntity
 	TeamEntity
 )
@@ -14,7 +14,7 @@ const (
 	AddToTeam
 )
 
-var EntityToStr = map[MessageEntity]string{
+var EntityToStr = map[Entity]string{
 	MeetingEntity:    "meeting",
 	TournamentEntity: "tournament",
 	TeamEntity:       "team",

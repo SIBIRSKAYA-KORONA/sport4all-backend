@@ -21,6 +21,7 @@ type Settings struct {
 	SkillsURL      string
 	AttachURL      string
 	MessageURL     string
+	InviteURL      string
 
 	ServerAddress string
 
@@ -71,6 +72,7 @@ func InitSettings(configFilePath string) Settings {
 		SkillsURL:      viper.GetString("api.skillsURL"),
 		AttachURL:      viper.GetString("api.attachURL"),
 		MessageURL:     viper.GetString("api.messageURL"),
+		InviteURL:      viper.GetString("api.inviteURL"),
 
 		ServerAddress: viper.GetString("server.address"),
 

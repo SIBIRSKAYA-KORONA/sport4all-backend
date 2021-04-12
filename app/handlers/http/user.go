@@ -16,20 +16,20 @@ import (
 )
 
 type UserHandler struct {
-	UseCase     usecases.UserUseCase
+	UseCase        usecases.UserUseCase
 	SessionUseCase usecases.SessionUseCase
-	SettingsURL string
-	ProfileURL  string
+	SettingsURL    string
+	ProfileURL     string
 }
 
 func CreateUserHandler(settingsURL string, profileURL string, router *echo.Group, useCase usecases.UserUseCase,
 	sessionUseCase usecases.SessionUseCase,
 	mw Middleware) {
 	handler := &UserHandler{
-		UseCase:     useCase,
+		UseCase:        useCase,
 		SessionUseCase: sessionUseCase,
-		SettingsURL: settingsURL,
-		ProfileURL:  profileURL,
+		SettingsURL:    settingsURL,
+		ProfileURL:     profileURL,
 	}
 
 	profile := router.Group(handler.ProfileURL)

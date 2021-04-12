@@ -32,7 +32,7 @@ type Middleware interface {
 	CheckMeetingStatus(status models.EventStatus) echo.MiddlewareFunc
 	CheckTeamInMeeting(echo.HandlerFunc) echo.HandlerFunc
 	CheckPlayerInTeam() echo.MiddlewareFunc
-	NotificationMiddleware(models.MessageTrigger, models.MessageEntity) echo.MiddlewareFunc
+	NotificationMiddleware(models.MessageTrigger, models.Entity) echo.MiddlewareFunc
 }
 
 type MiddlewareImpl struct {
@@ -345,7 +345,7 @@ func (mw *MiddlewareImpl) CheckPlayerInTeam() echo.MiddlewareFunc {
 	}
 }
 
-func (mw *MiddlewareImpl) NotificationMiddleware(trigger models.MessageTrigger, entity models.MessageEntity) echo.MiddlewareFunc {
+func (mw *MiddlewareImpl) NotificationMiddleware(trigger models.MessageTrigger, entity models.Entity) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			err := next(ctx)
@@ -379,11 +379,11 @@ func (mw *MiddlewareImpl) NotificationMiddleware(trigger models.MessageTrigger, 
 	}
 }
 
-func (mw *MiddlewareImpl) getMessageStr(entity models.MessageEntity, status models.EventStatus) string {
+func (mw *MiddlewareImpl) getMessageStr(entity models.Entity, status models.EventStatus) string {
 	return models.EntityToStr[entity] + "_" + models.StatusToStr[status]
 }
 
-func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.MessageTrigger, entity models.MessageEntity) *[]models.Message {
+func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.MessageTrigger, entity models.Entity) *[]models.Message {
 	messages := make([]models.Message, 0)
 
 	switch trigger {

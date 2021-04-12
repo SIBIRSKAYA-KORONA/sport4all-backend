@@ -14,7 +14,8 @@ api: {
   meetingsURL: /meetings,
   skillsURL: /skills,
   attachURL: /attachments,
-  messageURL: /messages
+  messageURL: /messages,
+  inviteURL: /invites
 }
 
 server: {

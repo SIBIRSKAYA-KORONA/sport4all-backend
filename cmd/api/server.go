@@ -55,7 +55,7 @@ func (server *Server) Run() {
 	}
 
 	postgresClient.AutoMigrate(&models.User{}, &models.Team{}, &models.Sport{}, &models.Tournament{}, &models.Meeting{},
-		&models.Stats{}, &models.Attach{}, &models.Message{}, &models.Skill{}, &models.SkillApprove{})
+		&models.Stats{}, &models.Attach{}, &models.Message{}, &models.Skill{}, &models.SkillApprove{}, &models.Invite{})
 
 	/* RabbitMQ */
 	conn, err := amqp.Dial(server.settings.RabbitMQConnAddress)
@@ -92,6 +92,7 @@ func (server *Server) Run() {
 	skillRepo := psqlRepos.CreateSkillRepository(postgresClient)
 	attachRepo := amazonS3Repos.CreateAttachRepository(postgresClient, s3session, server.settings.S3Bucket)
 	messageRepo := psqlRepos.CreateMessageRepository(postgresClient)
+	inviteRepo := psqlRepos.CreateInviteRepository(postgresClient)
 
 	/* USE CASES */
 	sesUseCase := useCases.CreateSessionUseCase(sessionRepo, userRepo)
@@ -103,6 +104,7 @@ func (server *Server) Run() {
 	skillUseCase := useCases.CreateSkillUseCase(skillRepo, userRepo)
 	attachUseCase := useCases.CreateAttachUseCase(attachRepo)
 	messageUseCase := useCases.CreateMessageUseCase(messageRepo)
+	inviteUseCase := useCases.CreateInviteUseCase(inviteRepo, teamRepo, tournamentRepo)
 
 	/* HANDLERS */
 	origins := make(map[string]struct{})
@@ -129,6 +131,7 @@ func (server *Server) Run() {
 	httpHandlers.CreateSkillHandler(server.settings.SkillsURL, rootGroup, skillUseCase, mw)
 	httpHandlers.CreateAttachHandler(server.settings.AttachURL, rootGroup, attachUseCase, mw)
 	httpHandlers.CreateMessageHandler(server.settings.MessageURL, rootGroup, messageUseCase, mw)
+	httpHandlers.CreateInviteHandler(server.settings.InviteURL, rootGroup, inviteUseCase, mw)
 
 	logger.Info("start server on address: ", server.settings.ServerAddress,
 		", log file: ", server.settings.LogFile, ", log level: ", server.settings.LogLevel)
