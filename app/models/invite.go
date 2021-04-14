@@ -17,6 +17,7 @@ type Invite struct {
 	TeamId       uint        `json:"team_id" gorm:"index"`
 	Team         *Team       `json:"team,omitempty" gorm:"-"`
 	TournamentId *uint       `json:"tournament_id,omitempty" gorm:"index"`
+	Tournament   *Tournament `json:"tournament,omitempty" gorm:"-"`
 	Type         string      `json:"type"`
 	State        InviteState `json:"state"`
 }

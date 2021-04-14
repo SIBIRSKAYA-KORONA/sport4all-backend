@@ -93,6 +93,14 @@ func (inviteStore *InviteStore) GetTeamInvites(teamId uint, state models.InviteS
 			Preload("Avatar").First(invites[id].User).Error; err != nil {
 			logger.Error(err)
 		}
+
+		if invites[id].TournamentId != nil {
+			invites[id].Tournament = &models.Tournament{}
+			if err := inviteStore.db.Where("id = ?", *invites[id].TournamentId).
+				Preload("Avatar").First(invites[id].Tournament).Error; err != nil {
+				logger.Error(err)
+			}
+		}
 	}
 	return &invites, nil
 }
