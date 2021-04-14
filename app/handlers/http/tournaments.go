@@ -195,7 +195,7 @@ func (tournamentHandler *TournamentHandler) GetTournamentForFeeds(ctx echo.Conte
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	tournaments, err := tournamentHandler.UseCase.GetTournamentForFeeds(offset, 10)
+	tournaments, err := tournamentHandler.UseCase.GetTournamentForFeeds(offset)
 	if err != nil {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())

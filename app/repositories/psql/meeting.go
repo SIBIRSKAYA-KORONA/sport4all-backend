@@ -1,6 +1,8 @@
 package psql
 
 import (
+	"time"
+
 	"github.com/jinzhu/gorm"
 	"sport4all/app/models"
 	"sport4all/app/repositories"
@@ -139,6 +141,7 @@ func (meetingStore *MeetingStore) IsTeamInMeeting(mid uint, tid uint) (bool, err
 }
 
 func (meetingStore *MeetingStore) UpdateTeamStat(stat *models.Stats) error {
+	stat.Created = time.Now().Unix()
 	if err := meetingStore.db.Create(stat).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrConflict

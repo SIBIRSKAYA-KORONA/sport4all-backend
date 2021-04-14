@@ -15,5 +15,5 @@ type TournamentUseCase interface {
 	GetAllMeetings(tournamentId uint) (*models.Meetings, error)
 	CheckUserForTournamentRole(tournamentId uint, uid uint, role models.TournamentRole) (bool, error)
 	IsTeamInTournament(tournamentId uint, teamId uint) (bool, error)
-	GetTournamentForFeeds(offset, maxTournament uint) (*[]models.Tournament, error)
+	GetTournamentForFeeds(offset uint) (*[]models.Tournament, error)
 }

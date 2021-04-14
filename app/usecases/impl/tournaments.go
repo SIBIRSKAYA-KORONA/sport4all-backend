@@ -336,8 +336,8 @@ func (tournamentUseCase *TournamentUseCaseImpl) generateCircularMesh(tournamentI
 	return nil
 }
 
-func (tournamentUseCase *TournamentUseCaseImpl) GetTournamentForFeeds(offset, maxTournament uint) (*[]models.Tournament, error) {
-	result, err := tournamentUseCase.tournamentRepo.GetTournamentForFeeds(offset, maxTournament)
+func (tournamentUseCase *TournamentUseCaseImpl) GetTournamentForFeeds(offset uint) (*[]models.Tournament, error) {
+	result, err := tournamentUseCase.tournamentRepo.GetTournamentForFeeds(offset)
 	if err != nil {
 		logger.Error(err)
 		return nil, err

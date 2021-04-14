@@ -43,9 +43,6 @@ func CreateUserHandler(settingsURL string, profileURL string, router *echo.Group
 	settings.GET("", handler.GetByID, mw.CheckAuth)
 	settings.PUT("", handler.Update, mw.CheckAuth)
 	settings.DELETE("", handler.Delete, mw.CheckAuth)
-
-	// TODO: remove it
-	settings.GET("/:uid/stats", handler.GetUserStats)
 }
 
 func (userHandler *UserHandler) Create(ctx echo.Context) error {

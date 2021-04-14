@@ -11,6 +11,9 @@ type Stats struct {
 	// more stats
 	// ...
 
+	// example: 1234
+	Created int64 `json:"created" gorm:"autoCreateTime"`
+
 	// example: 4
 	MeetingId uint `json:"meetingId" gorm:"not null;index"`
 
