@@ -12,5 +12,5 @@ type UserRepository interface {
 	IsValidPassword(password string, hashPassword []byte) bool
 	GetUserSkills(uid uint) (*[]models.Skill, error)
 	GetUserStats(uid uint) (*[]models.Stats, error)
-	SearchUsers(uid *uint, nicknamePart string, limit uint) (*[]models.User, error)
+	SearchUsers(uid *uint, namePart string, limit uint) (*[]models.User, error)
 }

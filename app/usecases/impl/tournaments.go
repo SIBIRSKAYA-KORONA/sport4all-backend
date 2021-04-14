@@ -102,6 +102,15 @@ func (tournamentUseCase *TournamentUseCaseImpl) GetTournamentByUser(uid uint) (*
 	return userTournament, nil
 }
 
+func (tournamentUseCase *TournamentUseCaseImpl) GetTournamentsByNamePart(namePart string, limit uint) (*models.Tournaments, error) {
+	tournaments, err := tournamentUseCase.tournamentRepo.GetTournamentsByNamePart(namePart, limit)
+	if err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+	return tournaments, nil
+}
+
 func (tournamentUseCase *TournamentUseCaseImpl) CheckUserForTournamentRole(tournamentId uint,
 	uid uint, role models.TournamentRole) (bool, error) {
 

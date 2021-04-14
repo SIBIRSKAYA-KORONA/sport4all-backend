@@ -77,8 +77,15 @@ func (userUseCase *UserUseCaseImpl) GetUserStats(uid uint) (*[]models.Stats, err
 	return stats, nil
 }
 
-func (userUseCase *UserUseCaseImpl) SearchUsers(uid *uint, nicknamePart string, limit uint) (*[]models.User, error) {
-	users, err := userUseCase.userRepo.SearchUsers(uid, nicknamePart, limit)
+func (userUseCase *UserUseCaseImpl) SearchUsers(sid string, namePart string, limit uint) (*[]models.User, error) {
+	var uid *uint = nil
+	if len(sid) != 0 {
+		if tmpUid, sessionErr := userUseCase.sessionRepo.Get(sid); sessionErr == nil {
+			uid = &tmpUid
+		}
+	}
+
+	users, err := userUseCase.userRepo.SearchUsers(uid, namePart, limit)
 	if err != nil {
 		logger.Error(err)
 		return nil, err

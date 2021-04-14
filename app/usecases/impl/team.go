@@ -76,12 +76,12 @@ func (teamUseCase *TeamUseCaseImpl) GetAllTournaments(tid uint) (*models.Tournam
 }
 
 func (teamUseCase *TeamUseCaseImpl) GetTeamsByNamePart(namePart string, limit uint) (*models.Teams, error) {
-	users, err := teamUseCase.teamRepo.GetTeamsByNamePart(namePart, limit)
+	teams, err := teamUseCase.teamRepo.GetTeamsByNamePart(namePart, limit)
 	if err != nil {
 		logger.Error(err)
 		return nil, err
 	}
-	return users, nil
+	return teams, nil
 }
 
 func (teamUseCase *TeamUseCaseImpl) GetUsersForInvite(tid uint, nicknamePart string, limit uint) (*models.Users, error) {

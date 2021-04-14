@@ -32,19 +32,12 @@ func (teamStore *TeamStore) Create(team *models.Team) error {
 
 func (teamStore *TeamStore) GetByID(tid uint) (*models.Team, error) {
 	team := new(models.Team)
-	if err := teamStore.db.Where("id = ?", tid).First(&team).Error; err != nil {
+	if err := teamStore.db.Where("id = ?", tid).
+		Preload("Avatar").
+		Preload("Players").
+		First(&team).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
-	}
-
-	if err := teamStore.db.Where("team_id = ?", tid).First(&team.Avatar).Error; err != nil {
-		logger.Warn("team avatar not found: ", err)
-	}
-
-	if err := teamStore.db.Model(team).Select("id, name, surname, nickname").
-		Related(&team.Players, "players").
-		Order("id").Error; err != nil {
-		logger.Warn(err)
 	}
 
 	return team, nil
@@ -86,7 +79,7 @@ func (teamStore *TeamStore) GetTeamsByUser(uid uint, role models.Role) (*models.
 	case models.Player:
 		foreignKey = "teamPlayer"
 	case models.Owner:
-		foreignKey = "owner_id"
+		foreignKey = "ownerId"
 	default:
 		return nil, errors.ErrInternal
 	}
@@ -108,16 +101,10 @@ func (teamStore *TeamStore) GetTeamsByUser(uid uint, role models.Role) (*models.
 func (teamStore *TeamStore) GetAllTournaments(tid uint) (*models.Tournaments, error) {
 	var tournamentTeams models.Tournaments
 	if err := teamStore.db.Model(&models.Team{ID: tid}).
+		Preload("Avatar").
 		Related(&tournamentTeams, "tournaments").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTeamNotFound
-	}
-
-	for idx := range tournamentTeams {
-		if err := teamStore.db.Where("tournament_id = ?", tournamentTeams[idx].ID).
-			First(&tournamentTeams[idx].Avatar).Error; err != nil {
-			logger.Warn("tournament", tournamentTeams[idx].ID, " avatar not found: ", err)
-		}
 	}
 
 	return &tournamentTeams, nil
@@ -125,7 +112,9 @@ func (teamStore *TeamStore) GetAllTournaments(tid uint) (*models.Tournaments, er
 
 func (teamStore *TeamStore) GetTeamsByNamePart(namePart string, limit uint) (*models.Teams, error) {
 	teams := new(models.Teams)
-	if err := teamStore.db.Limit(limit).Where("LOWER(name) LIKE ?", "%"+strings.ToLower(namePart)+"%").
+	if err := teamStore.db.
+		Order("name").Limit(limit).
+		Where("LOWER(name) LIKE ?", "%"+strings.ToLower(namePart)+"%").
 		Preload("Avatar").
 		Find(&teams).Error; err != nil {
 		logger.Error(err)
@@ -191,6 +180,7 @@ func (teamStore *TeamStore) GetUsersForInvite(tid uint, nicknamePart string, lim
 		Limit(limit).
 		Where("LOWER(nickname) LIKE ?", "%"+strings.ToLower(nicknamePart)+"%").
 		Not("id", teamOwnerAndPlayersIDs).
+		Preload("Avatar").
 		Find(&users).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrUserNotFound

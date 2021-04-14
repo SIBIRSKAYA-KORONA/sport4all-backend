@@ -11,5 +11,5 @@ type UserUseCase interface {
 	GetByNickname(nickname string) (*models.User, error)
 	GetUserSkills(uid uint) (*[]models.Skill, error)
 	GetUserStats(uid uint) (*[]models.Stats, error)
-	SearchUsers(uid *uint, nicknamePart string, limit uint) (*[]models.User, error)
+	SearchUsers(sid string, namePart string, limit uint) (*[]models.User, error)
 }

@@ -39,30 +39,11 @@ func (meetingStore *MeetingStore) CreateBatch(meetings *[]models.Meeting) error 
 
 func (meetingStore *MeetingStore) GetByID(mid uint) (*models.Meeting, error) {
 	meeting := new(models.Meeting)
-	if err := meetingStore.db.Where("id = ?", mid).First(&meeting).Error; err != nil {
+	if err := meetingStore.db.Where("id = ?", mid).
+		Preload("Attachments").Preload("Teams.Players").Preload("Teams.Avatar").
+		First(&meeting).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrMeetingNotFound
-	}
-
-	if err := meetingStore.db.Where("meeting_id = ?", mid).Find(&meeting.Attachments).Error; err != nil {
-		logger.Warn("meeting attachments not found: ", err)
-	}
-
-	if err := meetingStore.db.Model(meeting).
-		Preload("Players").
-		Related(&meeting.Teams, "teams").
-		Order("id").Error; err != nil {
-		logger.Warn(err)
-	}
-
-	for id, team := range meeting.Teams {
-		meetingStore.db.Where("team_id = ?", team.ID).Find(&meeting.Teams[id].Avatar)
-	}
-
-	if err := meetingStore.db.Model(meeting).
-		Related(&meeting.Attachments, "attachments").
-		Order("id").Error; err != nil {
-		logger.Warn(err)
 	}
 
 	return meeting, nil

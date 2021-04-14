@@ -114,12 +114,15 @@ func (userStore *UserStore) GetUserStats(uid uint) (*[]models.Stats, error) {
 	return &stats, nil
 }
 
-func (userStore *UserStore) SearchUsers(uid *uint, nicknamePart string, limit uint) (*[]models.User, error) {
+func (userStore *UserStore) SearchUsers(uid *uint, namePart string, limit uint) (*[]models.User, error) {
 	var users []models.User
 
+	lowerName := "%" + strings.ToLower(namePart) + "%"
 	query := userStore.db.Select("id, name, surname, nickname").
-		Limit(limit).
-		Where("LOWER(nickname) LIKE ?", "%"+strings.ToLower(nicknamePart)+"%").
+		Order("name, surname, nickname").Limit(limit).
+		Where("LOWER(name) LIKE ?", lowerName).
+		Or("LOWER(surname) LIKE ?", lowerName).
+		Or("LOWER(nickname) LIKE ?", lowerName).
 		Preload("Avatar")
 
 	if uid != nil {

@@ -28,6 +28,7 @@ func CreateTournamentHandler(tournamentsURL string, router *echo.Group, useCase 
 	tournaments.POST("", handler.Create, mw.CheckAuth)
 	tournaments.GET("", handler.GetTournamentByUser)
 	tournaments.GET("/:tournamentId", handler.GetByID)
+	tournaments.GET("/search", handler.GetTournamentsByNamePart)
 	tournaments.PUT("/:tournamentId", handler.Update, mw.CheckAuth,
 		mw.NotificationMiddleware(models.EventStatusChanged, models.TournamentEntity))
 	tournaments.PUT("/:tournamentId/teams/:tid", handler.AddTeam, mw.CheckTournamentPermission(models.TournamentOrganizer))
@@ -182,6 +183,31 @@ func (tournamentHandler *TournamentHandler) GetAllMeetings(ctx echo.Context) err
 	}
 
 	resp, err := serializer.JSON().Marshal(&meetings)
+	if err != nil {
+		logger.Error(err)
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
+}
+
+func (tournamentHandler *TournamentHandler) GetTournamentsByNamePart(ctx echo.Context) error {
+	namePart := ctx.QueryParam("name")
+	if namePart == "" {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	var limit uint
+	if _, err := fmt.Sscan(ctx.QueryParam("limit"), &limit); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	tournaments, err := tournamentHandler.UseCase.GetTournamentsByNamePart(namePart, limit)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	resp, err := serializer.JSON().Marshal(&tournaments)
 	if err != nil {
 		logger.Error(err)
 		return ctx.NoContent(http.StatusInternalServerError)
