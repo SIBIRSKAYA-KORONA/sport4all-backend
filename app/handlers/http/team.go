@@ -28,7 +28,7 @@ func CreateTeamHandler(teamsURL string, router *echo.Group, useCase usecases.Tea
 
 	// --- CRUD ---
 	teams.POST("", handler.Create, mw.CheckAuth)
-	teams.GET("", handler.GetTeamsByUser, mw.CheckAuth)
+	teams.GET("", handler.GetTeamsByUser)
 	teams.GET("/:tid", handler.GetByID)
 	teams.GET("/:tid/tournaments", handler.GetAllTournaments)
 
@@ -68,7 +68,11 @@ func (teamHandler *TeamHandler) Create(ctx echo.Context) error {
 }
 
 func (teamHandler *TeamHandler) GetTeamsByUser(ctx echo.Context) error {
-	uid := ctx.Get("uid").(uint)
+	var uid uint
+	if _, err := fmt.Sscan(ctx.QueryParam("userId"), &uid); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
 	role, exist := models.StringToRole[ctx.QueryParam("role")]
 	if !exist {
 		return ctx.NoContent(http.StatusBadRequest)

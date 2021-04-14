@@ -48,7 +48,7 @@ func (messageStore *MessageStore) DeleteAll(uid uint) error {
 
 func (messageStore *MessageStore) GetAll(uid uint) (*[]models.Message, bool) {
 	var messages []models.Message
-	err := messageStore.db.Order("create_at").Where("target_uid = ?", uid).Find(&messages).Error
+	err := messageStore.db.Order("create_at desc").Where("target_uid = ?", uid).Find(&messages).Error
 	if err != nil {
 		logger.Error(err)
 		return nil, false

@@ -180,9 +180,9 @@ func (tournamentStore *TournamentStore) IsTeamInTournament(tournamentId uint, te
 	return true, nil
 }
 
-func (tournamentStore *TournamentStore) GetTournamentForFeeds(offset, maxTournament uint) (*[]models.Tournament, error) {
+func (tournamentStore *TournamentStore) GetTournamentForFeeds(offset uint) (*[]models.Tournament, error) {
 	var tournaments []models.Tournament
-	if err := tournamentStore.db.Limit(maxTournament).Offset(offset).Find(&tournaments).Order("id").Error; err != nil {
+	if err := tournamentStore.db.Order("created desc").Offset(offset).Find(&tournaments).Error; err != nil {
 		logger.Error(err)
 		return nil, err
 	}
