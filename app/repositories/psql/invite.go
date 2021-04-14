@@ -71,7 +71,8 @@ func (inviteStore *InviteStore) GetUserInvites(uid uint) (*[]models.Invite, bool
 	}
 
 	for id := range invites {
-		if err := inviteStore.db.Where("id = ?", invites[id].TeamId).Preload("Avatar").First(&invites[id].Team).Error; err != nil {
+		invites[id].Team = &models.Team{}
+		if err := inviteStore.db.Where("id = ?", invites[id].TeamId).Preload("Avatar").First(invites[id].Team).Error; err != nil {
 			logger.Error(err)
 		}
 	}
@@ -87,8 +88,26 @@ func (inviteStore *InviteStore) GetTeamInvites(teamId uint, state models.InviteS
 	}
 
 	for id := range invites {
+		invites[id].User = &models.User{}
 		if err := inviteStore.db.Where("id = ?", *invites[id].InvitedId).
-			Preload("Avatar").First(&invites[id].User).Error; err != nil {
+			Preload("Avatar").First(invites[id].User).Error; err != nil {
+			logger.Error(err)
+		}
+	}
+	return &invites, nil
+}
+
+func (inviteStore *InviteStore) GetTournamentInvites(tournamentId uint, state models.InviteState) (*[]models.Invite, error) {
+	var invites []models.Invite
+	if err := inviteStore.db.Where("tournament_id = ? AND state = ?", tournamentId, state).Find(&invites).Error; err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+
+	for id := range invites {
+		invites[id].Team = &models.Team{}
+		if err := inviteStore.db.Where("id = ?", invites[id].TeamId).
+			Preload("Avatar").First(invites[id].Team).Error; err != nil {
 			logger.Error(err)
 		}
 	}
