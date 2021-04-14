@@ -46,7 +46,8 @@ func (tournamentStore *TournamentStore) GetByID(tid uint) (*models.Tournament, e
 
 func (tournamentStore *TournamentStore) GetTournamentByUserOwner(uid uint) (*models.Tournaments, error) {
 	var ownerTournaments models.Tournaments
-	if err := tournamentStore.db.Model(&models.User{ID: uid}).Preload("Avatar").
+	if err := tournamentStore.db.Model(&models.User{ID: uid}).
+		Order("id desc").Preload("Avatar").
 		Related(&ownerTournaments, "ownerId").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTournamentNotFound
@@ -189,7 +190,7 @@ func (tournamentStore *TournamentStore) IsTeamInTournament(tournamentId uint, te
 
 func (tournamentStore *TournamentStore) GetTournamentForFeeds(offset uint) (*[]models.Tournament, error) {
 	var tournaments []models.Tournament
-	if err := tournamentStore.db.Order("created desc").Offset(offset).Limit(10).
+	if err := tournamentStore.db.Offset(offset).Limit(10).Order("id desc").
 		Preload("Avatar").Find(&tournaments).Error; err != nil {
 		logger.Error(err)
 		return nil, err
