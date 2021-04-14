@@ -189,7 +189,7 @@ func (tournamentStore *TournamentStore) IsTeamInTournament(tournamentId uint, te
 
 func (tournamentStore *TournamentStore) GetTournamentForFeeds(offset uint) (*[]models.Tournament, error) {
 	var tournaments []models.Tournament
-	if err := tournamentStore.db.Order("created desc").Offset(offset).
+	if err := tournamentStore.db.Order("created").Offset(offset).Limit(10).
 		Preload("Avatar").Find(&tournaments).Error; err != nil {
 		logger.Error(err)
 		return nil, err

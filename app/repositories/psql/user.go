@@ -59,13 +59,9 @@ func (userStore *UserStore) Update(user *models.User) error {
 
 func (userStore *UserStore) GetByID(uid uint) (*models.User, error) {
 	usr := new(models.User)
-	if err := userStore.db.Where("id = ?", uid).First(&usr).Error; err != nil {
+	if err := userStore.db.Where("id = ?", uid).Preload("Avatar").First(&usr).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrUserNotFound
-	}
-
-	if err := userStore.db.Where("user_id = ?", uid).First(&usr.Avatar).Error; err != nil {
-		logger.Warn("user avatar not found: ", err)
 	}
 
 	return usr, nil
@@ -73,7 +69,7 @@ func (userStore *UserStore) GetByID(uid uint) (*models.User, error) {
 
 func (userStore *UserStore) GetByNickname(nickname string) (*models.User, error) {
 	usr := new(models.User)
-	if err := userStore.db.Where("nickname = ?", nickname).First(&usr).Error; err != nil {
+	if err := userStore.db.Where("nickname = ?", nickname).Preload("Avatar").First(&usr).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrUserNotFound
 	}
@@ -105,7 +101,7 @@ func (userStore *UserStore) GetUserSkills(uid uint) (*[]models.Skill, error) {
 
 func (userStore *UserStore) GetUserStats(uid uint) (*[]models.Stats, error) {
 	var stats []models.Stats
-	if err := userStore.db.Model(&models.User{ID: uid}).Order("stats.created desc").
+	if err := userStore.db.Model(&models.User{ID: uid}).Order("stats.created").
 		Related(&stats, "playerId").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrUserNotFound
