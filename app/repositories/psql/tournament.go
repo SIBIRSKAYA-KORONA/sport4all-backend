@@ -44,7 +44,7 @@ func (tournamentStore *TournamentStore) GetByID(tid uint) (*models.Tournament, e
 	return tournament, nil
 }
 
-func (tournamentStore *TournamentStore) GetTournamentByUserOwner(uid uint) (*models.Tournaments, error) {
+func (tournamentStore *TournamentStore) GetTournamentsByUserOwner(uid uint) (*models.Tournaments, error) {
 	var ownerTournaments models.Tournaments
 	if err := tournamentStore.db.Model(&models.User{ID: uid}).
 		Order("id desc").Preload("Avatar").

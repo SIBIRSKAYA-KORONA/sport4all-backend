@@ -26,7 +26,7 @@ func CreateTournamentHandler(tournamentsURL string, router *echo.Group, useCase 
 
 	tournaments := router.Group(handler.TournamentsURL)
 	tournaments.POST("", handler.Create, mw.CheckAuth)
-	tournaments.GET("", handler.GetTournamentByUser)
+	tournaments.GET("", handler.GetTournamentsByUser)
 	tournaments.GET("/:tournamentId", handler.GetByID)
 	tournaments.GET("/search", handler.GetTournamentsByNamePart)
 	tournaments.PUT("/:tournamentId", handler.Update, mw.CheckAuth,
@@ -60,13 +60,13 @@ func (tournamentHandler *TournamentHandler) Create(ctx echo.Context) error {
 	return ctx.String(http.StatusOK, string(resp))
 }
 
-func (tournamentHandler *TournamentHandler) GetTournamentByUser(ctx echo.Context) error {
+func (tournamentHandler *TournamentHandler) GetTournamentsByUser(ctx echo.Context) error {
 	var userId uint
 	if _, err := fmt.Sscan(ctx.QueryParam("userId"), &userId); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	userTournament, err := tournamentHandler.UseCase.GetTournamentByUser(userId)
+	userTournament, err := tournamentHandler.UseCase.GetTournamentsByUser(userId)
 	if err != nil {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
