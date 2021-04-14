@@ -31,6 +31,7 @@ func CreateInviteHandler(inviteURL string, router *echo.Group, useCase usecases.
 	invites.POST("/:iid", handler.Update, mw.CheckAuth)
 	invites.GET("", handler.GetUserInvites, mw.CheckAuth)
 	invites.GET("/teams/:tid", handler.GetTeamInvites, mw.CheckAuth)
+	invites.GET("/tournaments/:tournamentId", handler.GetTournamentInvites, mw.CheckAuth)
 }
 func (inviteHandler *InviteHandler) MakeCreateRoute(entity models.Entity) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
@@ -69,7 +70,7 @@ func (inviteHandler *InviteHandler) Update(ctx echo.Context) error {
 
 	updatedInvite.ID = iid
 
-	if err := inviteHandler.UseCase.Update(uid, &updatedInvite, models.TeamEntity); err != nil {
+	if err := inviteHandler.UseCase.Update(uid, &updatedInvite); err != nil {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
@@ -124,3 +125,33 @@ func (inviteHandler *InviteHandler) GetTeamInvites(ctx echo.Context) error {
 	}
 	return ctx.String(http.StatusOK, string(resp))
 }
+
+func (inviteHandler *InviteHandler) GetTournamentInvites(ctx echo.Context) error {
+	stateStr := ctx.QueryParam("state")
+	state, has := stringToState[stateStr]
+	if !has {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	var tournamentId uint
+	if _, err := fmt.Sscan(ctx.Param("tournamentId"), &tournamentId); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	invites, err := inviteHandler.UseCase.GetTournamentInvites(tournamentId, state)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	resp, err := serializer.JSON().Marshal(&invites)
+	if err != nil {
+		logger.Error(err)
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
+}
+
+
+
+

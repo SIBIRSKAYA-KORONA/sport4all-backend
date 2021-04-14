@@ -101,7 +101,7 @@ func (userStore *UserStore) GetUserSkills(uid uint) (*[]models.Skill, error) {
 
 func (userStore *UserStore) GetUserStats(uid uint) (*[]models.Stats, error) {
 	var stats []models.Stats
-	if err := userStore.db.Model(&models.User{ID: uid}).Order("stats.created desc").
+	if err := userStore.db.Model(&models.User{ID: uid}).Order("id desc").
 		Related(&stats, "playerId").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrUserNotFound
