@@ -151,7 +151,3 @@ func (inviteHandler *InviteHandler) GetTournamentInvites(ctx echo.Context) error
 	}
 	return ctx.String(http.StatusOK, string(resp))
 }
-
-
-
-
