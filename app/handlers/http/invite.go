@@ -26,9 +26,9 @@ func CreateInviteHandler(inviteURL string, router *echo.Group, useCase usecases.
 
 	invites := router.Group(handler.InviteURL)
 
-	invites.POST("", handler.MakeCreateRoute(models.TeamEntity), mw.CheckAuth)
+	invites.POST("/teams", handler.MakeCreateRoute(models.TeamEntity), mw.CheckAuth)
 	invites.POST("/tournaments", handler.MakeCreateRoute(models.TournamentEntity), mw.CheckAuth)
-	invites.POST("/:iid", handler.Update, mw.CheckAuth)
+	invites.PUT("/:iid", handler.Update, mw.CheckAuth)
 	invites.GET("", handler.GetUserInvites, mw.CheckAuth)
 	invites.GET("/teams/:tid", handler.GetTeamInvites, mw.CheckAuth)
 	invites.GET("/tournaments/:tournamentId", handler.GetTournamentInvites, mw.CheckAuth)
