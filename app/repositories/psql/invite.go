@@ -65,9 +65,16 @@ func (inviteStore *InviteStore) Update(uid uint, invite *models.Invite) (*models
 
 func (inviteStore *InviteStore) GetUserInvites(uid uint) (*[]models.Invite, bool) {
 	var invites []models.Invite
-	if err := inviteStore.db.Where("invited_id = ?", uid).Preload("Team.Avatar").Find(&invites).Error; err != nil {
+	if err := inviteStore.db.Where("invited_id = ?", uid).Find(&invites).Error; err != nil {
 		logger.Error(err)
 		return nil, false
+	}
+
+	for id := range invites {
+		invites[id].Team = &models.Team{}
+		if err := inviteStore.db.Where("id = ?", invites[id].TeamId).Preload("Avatar").First(invites[id].Team).Error; err != nil {
+			logger.Error(err)
+		}
 	}
 
 	return &invites, true
@@ -75,25 +82,42 @@ func (inviteStore *InviteStore) GetUserInvites(uid uint) (*[]models.Invite, bool
 
 func (inviteStore *InviteStore) GetTeamInvites(teamId uint, state models.InviteState) (*[]models.Invite, error) {
 	var invites []models.Invite
-	if err := inviteStore.db.Where("team_id = ? AND state = ?", teamId, state).
-		Preload("User.Avatar").
-		Preload("Tournament.Avatar").
-		Find(&invites).Error; err != nil {
+	if err := inviteStore.db.Where("team_id = ? AND state = ?", teamId, state).Find(&invites).Error; err != nil {
 		logger.Error(err)
 		return nil, err
 	}
 
+	for id := range invites {
+		invites[id].User = &models.User{}
+		if err := inviteStore.db.Where("id = ?", *invites[id].InvitedId).
+			Preload("Avatar").First(invites[id].User).Error; err != nil {
+			logger.Error(err)
+		}
+
+		if invites[id].TournamentId != nil {
+			invites[id].Tournament = &models.Tournament{}
+			if err := inviteStore.db.Where("id = ?", *invites[id].TournamentId).
+				Preload("Avatar").First(invites[id].Tournament).Error; err != nil {
+				logger.Error(err)
+			}
+		}
+	}
 	return &invites, nil
 }
 
 func (inviteStore *InviteStore) GetTournamentInvites(tournamentId uint, state models.InviteState) (*[]models.Invite, error) {
 	var invites []models.Invite
-	if err := inviteStore.db.Where("tournament_id = ? AND state = ?", tournamentId, state).
-		Preload("Team.Avatar").
-		Find(&invites).Error; err != nil {
+	if err := inviteStore.db.Where("tournament_id = ? AND state = ?", tournamentId, state).Find(&invites).Error; err != nil {
 		logger.Error(err)
 		return nil, err
 	}
-
+  
+	for id := range invites {
+		invites[id].Team = &models.Team{}
+		if err := inviteStore.db.Where("id = ?", invites[id].TeamId).
+			Preload("Avatar").First(invites[id].Team).Error; err != nil {
+			logger.Error(err)
+		}
+	}
 	return &invites, nil
 }
