@@ -33,8 +33,8 @@ func (userStore *UserStore) Create(usr *models.User) error {
 }
 
 func (userStore *UserStore) Update(user *models.User) error {
-	var oldUser models.User
-	if err := userStore.db.Where("id = ?", user.ID).First(&oldUser).Error; err != nil {
+	oldUser, err := userStore.GetByID(user.ID)
+	if err != nil {
 		logger.Error(err)
 		return errors.ErrUserNotFound
 	}

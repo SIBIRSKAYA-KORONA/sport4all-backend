@@ -11,6 +11,7 @@ const (
 type Invite struct {
 	ID           uint        `json:"id" gorm:"primary_key"`
 	CreatorId    uint        `json:"creator_id" gorm:"not null, index"`
+	CreateAt     int64       `json:"createAt,omitempty" gorm:"not null"`
 	InvitedId    *uint       `json:"invited_id,omitempty" gorm:"index"`
 	User         *User       `json:"user,omitempty" gorm:"-"`
 	AssignedId   uint        `json:"assigned_id" gorm:"index"`

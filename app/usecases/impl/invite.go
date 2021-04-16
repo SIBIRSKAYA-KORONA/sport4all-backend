@@ -119,27 +119,25 @@ func (inviteUseCase *InviteUseCaseImpl) Update(uid uint, invite *models.Invite) 
 		return err
 	}
 
-	if updatedInvite != nil {
-		if updatedInvite.State == models.Accepted {
-			var entity models.Entity
-			if updatedInvite.TournamentId != nil {
-				entity = models.TournamentEntity
-			} else if updatedInvite.InvitedId != nil {
-				entity = models.TeamEntity
-			}
+	if updatedInvite != nil && updatedInvite.State == models.Accepted {
+		var entity models.Entity
+		if updatedInvite.TournamentId != nil {
+			entity = models.TournamentEntity
+		} else if updatedInvite.InvitedId != nil {
+			entity = models.TeamEntity
+		}
 
-			if entity == models.TeamEntity {
-				if err := inviteUseCase.teamRepo.InviteMember(updatedInvite.TeamId,
-					&models.User{ID: *updatedInvite.InvitedId}, models.Player); err != nil {
-					logger.Error(err)
-					return err
-				}
-			} else if entity == models.TournamentEntity {
-				if err := inviteUseCase.tournamentRepo.AddTeam(*updatedInvite.TournamentId,
-					updatedInvite.TeamId); err != nil {
-					logger.Error(err)
-					return err
-				}
+		if entity == models.TeamEntity {
+			if err := inviteUseCase.teamRepo.InviteMember(updatedInvite.TeamId,
+				&models.User{ID: *updatedInvite.InvitedId}, models.Player); err != nil {
+				logger.Error(err)
+				return err
+			}
+		} else if entity == models.TournamentEntity {
+			if err := inviteUseCase.tournamentRepo.AddTeam(*updatedInvite.TournamentId,
+				updatedInvite.TeamId); err != nil {
+				logger.Error(err)
+				return err
 			}
 		}
 	}

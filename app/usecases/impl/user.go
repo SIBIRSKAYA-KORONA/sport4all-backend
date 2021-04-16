@@ -31,8 +31,7 @@ func (userUseCase *UserUseCaseImpl) Create(user *models.User) (*models.Session, 
 }
 
 func (userUseCase *UserUseCaseImpl) Update(user *models.User) error {
-	err := userUseCase.userRepo.Update(user)
-	if err != nil {
+	if err := userUseCase.userRepo.Update(user); err != nil {
 		logger.Error(err)
 		return err
 	}
