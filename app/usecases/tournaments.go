@@ -7,7 +7,8 @@ import (
 type TournamentUseCase interface {
 	Create(tournament *models.Tournament) error
 	GetByID(tournamentId uint) (*models.Tournament, error)
-	GetTournamentByUser(uid uint) (*models.UserTournament, error)
+	GetTournamentsByUser(uid uint) (*models.UserTournament, error)
+	GetTournamentsByNamePart(namePart string, limit uint) (*models.Tournaments, error)
 	Update(meeting *models.Tournament) error
 	AddTeam(tournamentId uint, teamId uint) error
 	RemoveTeam(tournamentId uint, teamId uint) error
@@ -15,5 +16,5 @@ type TournamentUseCase interface {
 	GetAllMeetings(tournamentId uint) (*models.Meetings, error)
 	CheckUserForTournamentRole(tournamentId uint, uid uint, role models.TournamentRole) (bool, error)
 	IsTeamInTournament(tournamentId uint, teamId uint) (bool, error)
-	GetTournamentForFeeds(offset, maxTournament uint) (*[]models.Tournament, error)
+	GetTournamentForFeeds(offset uint) (*[]models.Tournament, error)
 }

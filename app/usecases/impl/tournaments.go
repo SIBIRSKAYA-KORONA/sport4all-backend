@@ -65,9 +65,9 @@ func (tournamentUseCase *TournamentUseCaseImpl) GetByID(tid uint) (*models.Tourn
 	return tournament, nil
 }
 
-func (tournamentUseCase *TournamentUseCaseImpl) GetTournamentByUser(uid uint) (*models.UserTournament, error) {
+func (tournamentUseCase *TournamentUseCaseImpl) GetTournamentsByUser(uid uint) (*models.UserTournament, error) {
 	userTournament := new(models.UserTournament)
-	tournament, err := tournamentUseCase.tournamentRepo.GetTournamentByUserOwner(uid)
+	tournament, err := tournamentUseCase.tournamentRepo.GetTournamentsByUserOwner(uid)
 	if err != nil {
 		logger.Error(err)
 	}
@@ -96,10 +96,19 @@ func (tournamentUseCase *TournamentUseCaseImpl) GetTournamentByUser(uid uint) (*
 		if err != nil {
 			logger.Error(err)
 		}
-		userTournament.Owner = append(userTournament.Owner, *tournament...)
+		userTournament.TeamOwner = append(userTournament.TeamOwner, *tournament...)
 	}
 
 	return userTournament, nil
+}
+
+func (tournamentUseCase *TournamentUseCaseImpl) GetTournamentsByNamePart(namePart string, limit uint) (*models.Tournaments, error) {
+	tournaments, err := tournamentUseCase.tournamentRepo.GetTournamentsByNamePart(namePart, limit)
+	if err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+	return tournaments, nil
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) CheckUserForTournamentRole(tournamentId uint,
@@ -336,8 +345,8 @@ func (tournamentUseCase *TournamentUseCaseImpl) generateCircularMesh(tournamentI
 	return nil
 }
 
-func (tournamentUseCase *TournamentUseCaseImpl) GetTournamentForFeeds(offset, maxTournament uint) (*[]models.Tournament, error) {
-	result, err := tournamentUseCase.tournamentRepo.GetTournamentForFeeds(offset, maxTournament)
+func (tournamentUseCase *TournamentUseCaseImpl) GetTournamentForFeeds(offset uint) (*[]models.Tournament, error) {
+	result, err := tournamentUseCase.tournamentRepo.GetTournamentForFeeds(offset)
 	if err != nil {
 		logger.Error(err)
 		return nil, err

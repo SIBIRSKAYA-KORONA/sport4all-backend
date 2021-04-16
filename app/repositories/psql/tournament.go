@@ -1,6 +1,7 @@
 package psql
 
 import (
+	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -33,34 +34,40 @@ func (tournamentStore *TournamentStore) Create(tournament *models.Tournament) er
 
 func (tournamentStore *TournamentStore) GetByID(tid uint) (*models.Tournament, error) {
 	tournament := new(models.Tournament)
-	if err := tournamentStore.db.Where("id = ?", tid).First(&tournament).Error; err != nil {
+	if err := tournamentStore.db.Where("id = ?", tid).
+		Preload("Avatar").
+		First(&tournament).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTournamentNotFound
-	}
-
-	if err := tournamentStore.db.Where("tournament_id = ?", tid).First(&tournament.Avatar).Error; err != nil {
-		logger.Warn("tournament avatar not found: ", err)
 	}
 
 	return tournament, nil
 }
 
-func (tournamentStore *TournamentStore) GetTournamentByUserOwner(uid uint) (*models.Tournaments, error) {
+func (tournamentStore *TournamentStore) GetTournamentsByUserOwner(uid uint) (*models.Tournaments, error) {
 	var ownerTournaments models.Tournaments
 	if err := tournamentStore.db.Model(&models.User{ID: uid}).
-		Related(&ownerTournaments, "owner_id").Error; err != nil {
+		Order("id desc").Preload("Avatar").
+		Related(&ownerTournaments, "ownerId").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTournamentNotFound
 	}
 
-	for idx := range ownerTournaments {
-		if err := tournamentStore.db.Where("tournament_id = ?", ownerTournaments[idx].ID).
-			First(&ownerTournaments[idx].Avatar).Error; err != nil {
-			logger.Warn("tournament", ownerTournaments[idx].ID, " avatar not found: ", err)
-		}
+	return &ownerTournaments, nil
+}
+
+func (tournamentStore *TournamentStore) GetTournamentsByNamePart(namePart string, limit uint) (*models.Tournaments, error) {
+	tournaments := new(models.Tournaments)
+	if err := tournamentStore.db.
+		Order("name").Limit(limit).
+		Where("LOWER(name) LIKE ?", "%"+strings.ToLower(namePart)+"%").
+		Preload("Avatar").
+		Find(&tournaments).Error; err != nil {
+		logger.Error(err)
+		return nil, errors.ErrTeamNotFound
 	}
 
-	return &ownerTournaments, nil
+	return tournaments, nil
 }
 
 func (tournamentStore *TournamentStore) IsTournamentOrganizer(tournamentID uint, userID uint) (bool, error) {
@@ -149,6 +156,7 @@ func (tournamentStore *TournamentStore) GetAllTeams(tournamentId uint) (*models.
 	var tournamentTeams models.Teams
 	if err := tournamentStore.db.Model(&models.Tournament{ID: tournamentId}).
 		Preload("Players").
+		Preload("Avatar").
 		Related(&tournamentTeams, "teams").Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrTournamentNotFound
@@ -180,9 +188,10 @@ func (tournamentStore *TournamentStore) IsTeamInTournament(tournamentId uint, te
 	return true, nil
 }
 
-func (tournamentStore *TournamentStore) GetTournamentForFeeds(offset, maxTournament uint) (*[]models.Tournament, error) {
+func (tournamentStore *TournamentStore) GetTournamentForFeeds(offset uint) (*[]models.Tournament, error) {
 	var tournaments []models.Tournament
-	if err := tournamentStore.db.Limit(maxTournament).Offset(offset).Find(&tournaments).Order("id").Error; err != nil {
+	if err := tournamentStore.db.Order("id desc").Offset(offset).Limit(10).
+		Preload("Avatar").Find(&tournaments).Error; err != nil {
 		logger.Error(err)
 		return nil, err
 	}

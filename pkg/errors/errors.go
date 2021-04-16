@@ -40,6 +40,9 @@ var (
 
 	// ошибки, связанные с навыками
 	ErrSkillNotFound = errors.New("skill not found")
+
+	// ошибки, связанные с приглашениями
+	ErrInviteNotFound = errors.New("invite not found")
 )
 
 var errorToCodeMap = map[error]int{
@@ -77,6 +80,9 @@ var errorToCodeMap = map[error]int{
 
 	// ошибки, связанные с навыками
 	ErrSkillNotFound: http.StatusNotFound,
+
+	// ошибки, связанные с приглашениями
+	ErrInviteNotFound: http.StatusNotFound,
 }
 
 func ResolveErrorToCode(err error) (code int) {

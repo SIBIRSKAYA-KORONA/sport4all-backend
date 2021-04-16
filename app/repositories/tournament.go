@@ -7,7 +7,8 @@ import (
 type TournamentRepository interface {
 	Create(tournament *models.Tournament) error
 	GetByID(tournamentId uint) (*models.Tournament, error)
-	GetTournamentByUserOwner(uid uint) (*models.Tournaments, error)
+	GetTournamentsByUserOwner(uid uint) (*models.Tournaments, error)
+	GetTournamentsByNamePart(namePart string, limit uint) (*models.Tournaments, error)
 	Update(tournament *models.Tournament) error
 	AddTeam(tournamentId uint, teamId uint) error
 	RemoveTeam(tournamentId uint, teamId uint) error
@@ -16,5 +17,5 @@ type TournamentRepository interface {
 	IsTournamentOrganizer(tournamentID uint, userID uint) (bool, error)
 	IsTournamentPlayer(tournamentID uint, userID uint) (bool, error)
 	IsTeamInTournament(tournamentId uint, teamId uint) (bool, error)
-	GetTournamentForFeeds(offset, maxTournament uint) (*[]models.Tournament, error)
+	GetTournamentForFeeds(offset uint) (*[]models.Tournament, error)
 }

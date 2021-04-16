@@ -21,7 +21,8 @@ type UserHandler struct {
 	ProfileURL  string
 }
 
-func CreateUserHandler(settingsURL string, profileURL string, router *echo.Group, useCase usecases.UserUseCase, mw Middleware) {
+func CreateUserHandler(settingsURL string, profileURL string, router *echo.Group, useCase usecases.UserUseCase,
+	mw Middleware) {
 	handler := &UserHandler{
 		UseCase:     useCase,
 		SettingsURL: settingsURL,
@@ -32,15 +33,13 @@ func CreateUserHandler(settingsURL string, profileURL string, router *echo.Group
 	profile.GET("/:nickname", handler.GetByNickname)
 	profile.GET("/:uid/skills", handler.GetUserSkills)
 	profile.GET("/:uid/stats", handler.GetUserStats)
+	profile.GET("/search", handler.SearchUsers)
 
 	settings := router.Group(handler.SettingsURL)
 	settings.POST("", handler.Create)
 	settings.GET("", handler.GetByID, mw.CheckAuth)
 	settings.PUT("", handler.Update, mw.CheckAuth)
 	settings.DELETE("", handler.Delete, mw.CheckAuth)
-
-	// TODO: remove it
-	settings.GET("/:uid/stats", handler.GetUserStats)
 }
 
 func (userHandler *UserHandler) Create(ctx echo.Context) error {
@@ -91,7 +90,18 @@ func (userHandler *UserHandler) GetByID(ctx echo.Context) error {
 }
 
 func (userHandler *UserHandler) Update(ctx echo.Context) error {
-	// TODO:
+	body := ctx.Get("body").([]byte)
+
+	var user models.User
+	if err := serializer.JSON().Unmarshal(body, &user); err != nil {
+		logger.Error(err)
+		return ctx.String(http.StatusInternalServerError, err.Error())
+	}
+
+	if err := userHandler.UseCase.Update(&user); err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
 	return ctx.NoContent(http.StatusOK)
 }
 
@@ -132,6 +142,31 @@ func (userHandler *UserHandler) GetUserStats(ctx echo.Context) error {
 	}
 
 	resp, err := serializer.JSON().Marshal(&stats)
+	if err != nil {
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
+}
+
+func (userHandler *UserHandler) SearchUsers(ctx echo.Context) error {
+	namePart := ctx.QueryParam("name")
+	if namePart == "" {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	var limit uint
+	if _, err := fmt.Sscan(ctx.QueryParam("limit"), &limit); err != nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	var sid string
+	if cookie, cookieErr := ctx.Cookie("session_id"); cookieErr == nil {
+		sid = cookie.Value
+	}
+
+	users, err := userHandler.UseCase.SearchUsers(sid, namePart, limit)
+
+	resp, err := serializer.JSON().Marshal(&users)
 	if err != nil {
 		return ctx.NoContent(http.StatusInternalServerError)
 	}
