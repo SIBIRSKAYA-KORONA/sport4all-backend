@@ -111,7 +111,7 @@ func (inviteStore *InviteStore) GetTournamentInvites(tournamentId uint, state mo
 		logger.Error(err)
 		return nil, err
 	}
-
+  
 	for id := range invites {
 		invites[id].Team = &models.Team{}
 		if err := inviteStore.db.Where("id = ?", invites[id].TeamId).
