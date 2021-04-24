@@ -112,11 +112,11 @@ func (inviteUseCase *InviteUseCaseImpl) createTournamentInvite(uid uint, invite 
 	return nil
 }
 
-func (inviteUseCase *InviteUseCaseImpl) Update(uid uint, invite *models.Invite) error {
+func (inviteUseCase *InviteUseCaseImpl) Update(uid uint, invite *models.Invite) (*models.Invite, error) {
 	updatedInvite, err := inviteUseCase.inviteRepo.Update(uid, invite)
 	if err != nil {
 		logger.Info(err)
-		return err
+		return nil, err
 	}
 
 	if updatedInvite != nil && updatedInvite.State == models.Accepted {
@@ -131,18 +131,18 @@ func (inviteUseCase *InviteUseCaseImpl) Update(uid uint, invite *models.Invite) 
 			if err := inviteUseCase.teamRepo.InviteMember(updatedInvite.TeamId,
 				&models.User{ID: *updatedInvite.InvitedId}, models.Player); err != nil {
 				logger.Error(err)
-				return err
+				return nil, err
 			}
 		} else if entity == models.TournamentEntity {
 			if err := inviteUseCase.tournamentRepo.AddTeam(*updatedInvite.TournamentId,
 				updatedInvite.TeamId); err != nil {
 				logger.Error(err)
-				return err
+				return nil, err
 			}
 		}
 	}
 
-	return nil
+	return updatedInvite, nil
 }
 
 func (inviteUseCase *InviteUseCaseImpl) GetUserInvites(uid uint) (*[]models.Invite, error) {

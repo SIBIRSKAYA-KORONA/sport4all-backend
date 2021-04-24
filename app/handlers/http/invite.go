@@ -26,13 +26,17 @@ func CreateInviteHandler(inviteURL string, router *echo.Group, useCase usecases.
 
 	invites := router.Group(handler.InviteURL)
 
-	invites.POST("/teams", handler.MakeCreateRoute(models.TeamEntity), mw.CheckAuth)
-	invites.POST("/tournaments", handler.MakeCreateRoute(models.TournamentEntity), mw.CheckAuth)
-	invites.PUT("/:iid", handler.Update, mw.CheckAuth)
+	invites.POST("/teams", handler.MakeCreateRoute(models.TeamEntity), mw.CheckAuth,
+		mw.NotificationMiddleware(models.InviteStatusChanged))
+	invites.POST("/tournaments", handler.MakeCreateRoute(models.TournamentEntity), mw.CheckAuth,
+		mw.NotificationMiddleware(models.InviteStatusChanged))
+	invites.PUT("/:iid", handler.Update, mw.CheckAuth,
+		mw.NotificationMiddleware(models.InviteStatusChanged))
 	invites.GET("", handler.GetUserInvites, mw.CheckAuth)
 	invites.GET("/teams/:tid", handler.GetTeamInvites, mw.CheckAuth)
 	invites.GET("/tournaments/:tournamentId", handler.GetTournamentInvites, mw.CheckAuth)
 }
+
 func (inviteHandler *InviteHandler) MakeCreateRoute(entity models.Entity) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		body := ctx.Get("body").([]byte)
@@ -43,12 +47,22 @@ func (inviteHandler *InviteHandler) MakeCreateRoute(entity models.Entity) echo.H
 			return ctx.String(http.StatusBadRequest, err.Error())
 		}
 		invite.CreatorId = uid
+		invite.InviteEntity = entity
 
 		if err := inviteHandler.UseCase.Create(uid, &invite, entity); err != nil {
 			logger.Error(err)
 			return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 		}
 
+		ctx.Set("invite_entity", entity)
+		ctx.Set("invite_type", models.InviteType(invite.Type))
+		ctx.Set("invite_state", invite.State)
+		ctx.Set("assigned", invite.AssignedId)
+		ctx.Set("team_id", invite.TeamId)
+
+		if entity == models.TournamentEntity {
+			ctx.Set("tournament_id", *invite.TournamentId)
+		}
 		return ctx.NoContent(http.StatusOK)
 	}
 }
@@ -62,17 +76,29 @@ func (inviteHandler *InviteHandler) Update(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	var updatedInvite models.Invite
-	if err := serializer.JSON().Unmarshal(body, &updatedInvite); err != nil {
+	var invite models.Invite
+	if err := serializer.JSON().Unmarshal(body, &invite); err != nil {
 		logger.Error(err)
 		return ctx.String(http.StatusBadRequest, err.Error())
 	}
 
-	updatedInvite.ID = iid
+	invite.ID = iid
 
-	if err := inviteHandler.UseCase.Update(uid, &updatedInvite); err != nil {
+	updatedInvite, err := inviteHandler.UseCase.Update(uid, &invite)
+	if err != nil {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	ctx.Set("invite_entity", updatedInvite.InviteEntity)
+	ctx.Set("invite_type", models.InviteType(updatedInvite.Type))
+	ctx.Set("invite_state", updatedInvite.State)
+	ctx.Set("assigned", updatedInvite.AssignedId)
+	ctx.Set("author", updatedInvite.CreatorId)
+	ctx.Set("team_id", updatedInvite.TeamId)
+
+	if updatedInvite.InviteEntity == models.TournamentEntity {
+		ctx.Set("tournament_id", *updatedInvite.TournamentId)
 	}
 
 	return ctx.NoContent(http.StatusOK)

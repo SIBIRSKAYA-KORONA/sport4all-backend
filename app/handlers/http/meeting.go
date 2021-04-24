@@ -30,7 +30,7 @@ func CreateMeetingsHandler(meetingsURL string, router *echo.Group, useCase useca
 	meeting.POST("", handler.Create, mw.CheckAuth)
 	meeting.GET("/:mid", handler.GetByID)
 	meeting.PUT("/:mid", handler.Update, mw.CheckTournamentPermissionByMeeting(models.TournamentOrganizer),
-		mw.NotificationMiddleware(models.EventStatusChanged, models.MeetingEntity))
+		mw.NotificationMiddleware(models.EventStatusChanged))
 
 	// --- Управление командами во встрече ---
 	meeting.POST("/:mid/teams/:tid", handler.AssignTeam, mw.CheckMeetingStatus(models.RegistrationEvent))
@@ -92,8 +92,8 @@ func (meetingHandler *MeetingHandler) Update(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
 
-	// отрефакторить потом
 	ctx.Set("status", uint(meeting.Status))
+	ctx.Set("event_entity", models.MeetingEntity)
 
 	if err := meetingHandler.UseCase.Update(&meeting); err != nil {
 		logger.Error(err)
