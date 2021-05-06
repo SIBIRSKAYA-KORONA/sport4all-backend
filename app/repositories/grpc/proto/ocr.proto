@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package proto;
+
+message Image {
+  string link = 1;
+  int32 player_column = 2;
+  int32 score_column = 3;
+}
+
+message PlayerStat {
+  string name = 1;
+  string surname = 2;
+  int32 score = 3;
+}
+
+message PlayerStats {
+  message PlayerStat {
+    string name = 1;
+    string surname = 2;
+    int32 score = 3;
+  }
+  repeated PlayerStat stats = 1;
+}
+
+service OcrService {
+  rpc GetStatsByImage(Image) returns (PlayerStats);
+}
