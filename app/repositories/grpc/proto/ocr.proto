@@ -3,7 +3,7 @@ syntax = "proto3";
 package proto;
 
 message Image {
-  string link = 1;
+  string path = 1;
   int32 player_column = 2;
   int32 score_column = 3;
 }

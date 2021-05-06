@@ -1,9 +1,13 @@
 package models
 
-type ProtocolImage struct {
-	Link         string
+type LocationInfo struct {
 	PlayerColumn int32
 	ScoreColumn  int32
+}
+
+type ProtocolImage struct {
+	Path string
+	Info LocationInfo
 }
 
 type PlayerStat struct {
@@ -11,3 +15,5 @@ type PlayerStat struct {
 	Surname string
 	Score   int32
 }
+
+var ProtocolTypes = map[string]LocationInfo{"fiba": {1, 21}, "pair": {0, 1}}
