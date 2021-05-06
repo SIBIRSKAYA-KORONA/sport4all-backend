@@ -11,11 +11,12 @@ import (
 type MeetingUseCaseImpl struct {
 	meetingRepo    repositories.MeetingRepository
 	tournamentRepo repositories.TournamentRepository
+	ocrRepo        repositories.OcrRepository
 }
 
 func CreateMeetingUseCase(meetingRepo repositories.MeetingRepository,
-	tournamentRepo repositories.TournamentRepository) usecases.MeetingUseCase {
-	return &MeetingUseCaseImpl{meetingRepo: meetingRepo, tournamentRepo: tournamentRepo}
+	tournamentRepo repositories.TournamentRepository, ocrRepo repositories.OcrRepository) usecases.MeetingUseCase {
+	return &MeetingUseCaseImpl{meetingRepo: meetingRepo, tournamentRepo: tournamentRepo, ocrRepo: ocrRepo}
 }
 
 func (meetingUseCase *MeetingUseCaseImpl) Create(meeting *models.Meeting) error {
@@ -141,4 +142,9 @@ func (meetingUseCase *MeetingUseCaseImpl) GetMeetingStat(mid uint) (*[]models.St
 	}
 
 	return stats, nil
+}
+
+func (meetingUseCase *MeetingUseCaseImpl) ExtractPlayerStatsByImage(mid uint) (*[]models.Stats, error) {
+	// TODO:
+	return nil, nil
 }

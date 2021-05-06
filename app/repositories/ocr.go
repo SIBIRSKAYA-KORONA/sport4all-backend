@@ -1,5 +1,7 @@
 package repositories
 
+import "sport4all/app/models"
+
 type OcrRepository interface {
-	GetTextByImage()
+	GetTextByImage(protocolImage *models.ProtocolImage) (*[]models.PlayerStat, error)
 }

@@ -29,6 +29,10 @@ cors: {
   ]
 }
 
+ocr: {
+  address: localhost:8090,
+}
+
 psql: {
   dbms: postgres,
   host: localhost,
