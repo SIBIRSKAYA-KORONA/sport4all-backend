@@ -32,7 +32,7 @@ type Middleware interface {
 	CheckMeetingStatus(status models.EventStatus) echo.MiddlewareFunc
 	CheckTeamInMeeting(echo.HandlerFunc) echo.HandlerFunc
 	CheckPlayerInTeam() echo.MiddlewareFunc
-	NotificationMiddleware(models.MessageTrigger, models.Entity) echo.MiddlewareFunc
+	NotificationMiddleware(models.MessageTrigger) echo.MiddlewareFunc
 }
 
 type MiddlewareImpl struct {
@@ -345,7 +345,7 @@ func (mw *MiddlewareImpl) CheckPlayerInTeam() echo.MiddlewareFunc {
 	}
 }
 
-func (mw *MiddlewareImpl) NotificationMiddleware(trigger models.MessageTrigger, entity models.Entity) echo.MiddlewareFunc {
+func (mw *MiddlewareImpl) NotificationMiddleware(trigger models.MessageTrigger) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			err := next(ctx)
@@ -355,7 +355,7 @@ func (mw *MiddlewareImpl) NotificationMiddleware(trigger models.MessageTrigger, 
 				return err
 			}
 
-			messages := mw.fillMessageByType(ctx, trigger, entity)
+			messages := mw.fillMessageByType(ctx, trigger)
 			if err = mw.messageUseCase.Create(messages); err != nil {
 				logger.Error(err)
 			}
@@ -383,7 +383,7 @@ func (mw *MiddlewareImpl) getMessageStr(entity models.Entity, status models.Even
 	return models.EntityToStr[entity] + "_" + models.StatusToStr[status]
 }
 
-func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.MessageTrigger, entity models.Entity) *[]models.Message {
+func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.MessageTrigger) *[]models.Message {
 	messages := make([]models.Message, 0)
 
 	switch trigger {
@@ -401,6 +401,7 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 			return &messages
 		}
 
+		entity := ctx.Get("event_entity").(models.Entity)
 		messageStr := mw.getMessageStr(entity, status)
 
 		var meetingId uint
@@ -457,6 +458,46 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 			IsRead:     false,
 		}
 		messages = append(messages, message)
+
+	case models.InviteStatusChanged:
+		inviteType := ctx.Get("invite_type").(models.InviteType)
+		inviteState := ctx.Get("invite_state").(models.InviteState)
+		inviteEntity := ctx.Get("invite_entity").(models.Entity)
+
+		tournamentId := uint(0)
+		teamId := ctx.Get("team_id").(uint)
+
+		if inviteEntity == models.TournamentEntity {
+			tournamentId = ctx.Get("tournament_id").(uint)
+		}
+
+		targetUid := uint(0)
+		sourceUid := uint(0)
+		messageStr := models.EntityToStr[inviteEntity] + "_" + string(inviteType) + "_invite"
+
+		if inviteState == models.Opened {
+			targetUid = ctx.Get("assigned").(uint)
+			sourceUid = ctx.Get("uid").(uint)
+			messageStr += "_created"
+		} else {
+			targetUid = ctx.Get("author").(uint)
+			sourceUid = ctx.Get("uid").(uint)
+			messageStr += "_updated"
+		}
+
+		message := models.Message{
+			MessageStr:   messageStr,
+			TargetUid:    targetUid,
+			SourceUid:    sourceUid,
+			MeetingId:    0,
+			TournamentId: tournamentId,
+			TeamId:       teamId,
+			InviteState:  &inviteState,
+			CreateAt:     time.Now().Unix(),
+			IsRead:       false,
+		}
+		messages = append(messages, message)
+
 	}
 
 	return &messages

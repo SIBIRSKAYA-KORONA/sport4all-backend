@@ -1,11 +1,17 @@
 package models
 
 type InviteState uint
+type InviteType string
 
 const (
 	Opened InviteState = iota
 	Rejected
 	Accepted
+)
+
+const (
+	Direct   InviteType = "direct"
+	Indirect InviteType = "indirect"
 )
 
 type Invite struct {
@@ -21,4 +27,5 @@ type Invite struct {
 	Tournament   *Tournament `json:"tournament,omitempty" gorm:"-"`
 	Type         string      `json:"type"`
 	State        InviteState `json:"state"`
+	InviteEntity Entity      `json:"entity"`
 }

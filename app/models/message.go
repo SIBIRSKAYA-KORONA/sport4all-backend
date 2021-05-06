@@ -12,6 +12,7 @@ const (
 const (
 	EventStatusChanged MessageTrigger = iota
 	AddToTeam
+	InviteStatusChanged
 )
 
 var EntityToStr = map[Entity]string{
@@ -30,11 +31,12 @@ type Message struct {
 	ID         uint   `json:"-" gorm:"primary_key"`
 	MessageStr string `json:"type"`
 
-	SourceUid    uint `json:"source_uid"`
-	TargetUid    uint `json:"target_uid"`
-	TeamId       uint `json:"team_id"`
-	MeetingId    uint `json:"meeting_id"`
-	TournamentId uint `json:"tournament_id"`
+	SourceUid    uint         `json:"source_uid"`
+	TargetUid    uint         `json:"target_uid"`
+	TeamId       uint         `json:"team_id"`
+	MeetingId    uint         `json:"meeting_id"`
+	TournamentId uint         `json:"tournament_id"`
+	InviteState  *InviteState `json:"invite_state,omitempty"`
 
 	CreateAt int64 `json:"createAt,omitempty" gorm:"not null"`
 	IsRead   bool  `json:"isRead,omitempty"`
