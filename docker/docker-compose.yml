@@ -3,7 +3,7 @@ version: "3.9"
 services:
   api:
     image: sport-api
-    container_name: sport-backend-api
+    container_name: sport-api
     environment:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
@@ -16,9 +16,15 @@ services:
     ports:
       - "6060:6060"
 
+  ocr:
+    image: sport-ocr
+    container_name: sport-ocr
+    ports:
+      - "8090:8090"
+
   postgres:
-    container_name: postgres_container
     image: postgres
+    container_name: postgres
     environment:
       POSTGRES_DB: sport4all_db
       POSTGRES_USER: sport4all_user
@@ -35,7 +41,7 @@ services:
       start_period: "3s"
 
   redis:
-    image: "redis:alpine"
+    image: redis:alpine
     #command: redis-server --requirepass sOmE_sEcUrE_pAsS
     command: redis-server
     ports:
@@ -47,8 +53,8 @@ services:
      # - REDIS_REPLICATION_MODE=master
 
   rabbitmq:
-    container_name: rabbitmq
     image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
     #user: "$UID:$GID"
     volumes:
       #- ~/rabbitmq-data/etc/:/etc/rabbitmq/
@@ -62,8 +68,8 @@ services:
       - "15672:15672"
 
   nginx:
-    container_name: nginx
     image: nginx
+    container_name: nginx
     volumes:
       - /home/ubuntu/sport4all-frontend/dist:/etc/sport4all-frontend/dist
       - ../conf/nginx.conf:/etc/nginx/nginx.conf
@@ -75,8 +81,8 @@ services:
       - "443:443"
 
   prometheus:
-    container_name: prometheus_container
     image: prom/prometheus
+    container_name: prometheus
     volumes:
       - $PWD/conf/prometheus.yml:/etc/prometheus/prometheus.yml:Z
     command:
@@ -89,14 +95,14 @@ services:
       - '9090:9090'
 
   node_exporter:
-    container_name: node_exporter_container
     image: prom/node-exporter
+    container_name: node-exporter
     ports:
       - '9100:9100'
 
   grafana:
-    container_name: grafana_container
     image: grafana/grafana
+    container_name: grafana
     user: "$UID:$GID"
     volumes:
       - ~/grafana-storage:/var/lib/grafana
