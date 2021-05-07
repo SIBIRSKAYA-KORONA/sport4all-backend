@@ -185,18 +185,18 @@ func (meetingUseCase *MeetingUseCaseImpl) GetStatsByImage(mid uint,
 		// may be unknown format (1,6)
 		arr := strings.Split(protocolType, ",")
 		if len(arr) < 2 {
-			return nil, errors.ErrInternal // TODO make error
+			return nil, errors.ErrProtocolTypeNotFound
 		}
 
 		tmp, err := strconv.ParseInt(arr[0], 10, 32)
 		if err != nil {
-			return nil, errors.ErrInternal // TODO make error
+			return nil, errors.ErrProtocolTypeNotFound
 		}
 		info.PlayerColumn = int32(tmp)
 
 		tmp, err = strconv.ParseInt(arr[1], 10, 32)
 		if err != nil {
-			return nil, errors.ErrInternal // TODO make error
+			return nil, errors.ErrProtocolTypeNotFound
 		}
 		info.ScoreColumn = int32(tmp)
 	}

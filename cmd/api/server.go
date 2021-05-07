@@ -46,7 +46,7 @@ func (server *Server) Run() {
 
 	/* PostgreSQL */
 	postgresClient, err := gorm.Open(server.settings.PsqlName, server.settings.PsqlData)
-	if err != nil { // delete when unused
+	if err != nil {
 		logger.Fatal(err)
 	}
 	defer common.Close(postgresClient.Close)

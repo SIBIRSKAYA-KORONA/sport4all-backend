@@ -43,6 +43,10 @@ var (
 
 	// ошибки, связанные с приглашениями
 	ErrInviteNotFound = errors.New("invite not found")
+
+	// ошибки, связанные с извлечением текста
+	ErrProtocolTypeNotFound  = errors.New("protocol type not found")
+	ErrOcrServiceUnavailable = errors.New("ocr service unavailable")
 )
 
 var errorToCodeMap = map[error]int{
@@ -83,6 +87,10 @@ var errorToCodeMap = map[error]int{
 
 	// ошибки, связанные с приглашениями
 	ErrInviteNotFound: http.StatusNotFound,
+
+	// ошибки, связанные с извлечением текста
+	ErrProtocolTypeNotFound:  http.StatusNotFound,
+	ErrOcrServiceUnavailable: http.StatusServiceUnavailable,
 }
 
 func ResolveErrorToCode(err error) (code int) {

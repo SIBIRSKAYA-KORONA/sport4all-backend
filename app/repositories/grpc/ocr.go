@@ -30,7 +30,7 @@ func (ocrStore *OcrStore) GetStatsByImage(protocolImage *models.ProtocolImage) (
 
 	if err != nil {
 		logger.Error(err)
-		return nil, errors.ErrInternal // TODO make error
+		return nil, errors.ErrOcrServiceUnavailable
 	}
 
 	for _, stat := range resp.Stats {
