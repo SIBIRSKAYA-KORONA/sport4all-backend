@@ -37,11 +37,12 @@ func CreateMeetingsHandler(meetingsURL string, router *echo.Group, useCase useca
 
 	// --- Статистика ---
 	meeting.GET("/:mid/stat", handler.GetMeetingStat)
-	meeting.PUT("/:mid/teams/:tid/stat", handler.UpdateTeamStat,
+	meeting.PUT("/:mid/teams/:tid/stat", handler.CreateTeamStat,
 		mw.CheckMeetingStatus(models.InProgressEvent), mw.CheckTeamInMeeting)
-	meeting.PUT("/:mid/teams/:tid/players/:uid/stat", handler.UpdatePlayerStat,
+	meeting.PUT("/:mid/teams/:tid/players/:uid/stat", handler.CreatePlayerStat,
 		mw.CheckMeetingStatus(models.InProgressEvent), mw.CheckPlayerInTeam())
 
+	meeting.POST("/:mid/players/stats", handler.CreatePlayersStats, mw.CheckMeetingStatus(models.InProgressEvent))
 	meeting.GET("/:mid/players/stats", handler.GetStatsByImage, mw.CheckMeetingStatus(models.InProgressEvent))
 }
 
@@ -123,6 +124,67 @@ func (meetingHandler *MeetingHandler) AssignTeam(ctx echo.Context) error {
 	return ctx.NoContent(http.StatusOK)
 }
 
+func (meetingHandler *MeetingHandler) CreateTeamStat(ctx echo.Context) error {
+	body := ctx.Get("body").([]byte)
+	var stats models.Stats
+	if err := serializer.JSON().Unmarshal(body, &stats); err != nil {
+		logger.Error(err)
+		return ctx.String(http.StatusBadRequest, err.Error())
+	}
+
+	stats.TeamId = ctx.Get("teamId").(uint)
+	stats.MeetingId = ctx.Get("meetingId").(uint)
+
+	if err := meetingHandler.UseCase.CreateTeamStat(&stats); err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	return ctx.NoContent(http.StatusOK)
+}
+
+func (meetingHandler *MeetingHandler) CreatePlayerStat(ctx echo.Context) error {
+	body := ctx.Get("body").([]byte)
+	var stats models.Stats
+	if err := serializer.JSON().Unmarshal(body, &stats); err != nil {
+		logger.Error(err)
+		return ctx.String(http.StatusBadRequest, err.Error())
+	}
+
+	stats.TeamId = ctx.Get("teamId").(uint)
+	stats.MeetingId = ctx.Get("meetingId").(uint)
+	uid := ctx.Get("playerId").(uint)
+	stats.PlayerId = &uid
+
+	if err := meetingHandler.UseCase.CreateTeamStat(&stats); err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	return ctx.NoContent(http.StatusOK)
+}
+
+func (meetingHandler *MeetingHandler) CreatePlayersStats(ctx echo.Context) error {
+	body := ctx.Get("body").([]byte)
+	var stats []models.Stats
+	if err := serializer.JSON().Unmarshal(body, &stats); err != nil {
+		logger.Error(err)
+		return ctx.String(http.StatusBadRequest, err.Error())
+	}
+
+	mid := ctx.Get("meetingId").(uint)
+	if err := meetingHandler.UseCase.CreatePlayersStats(mid, &stats); err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	resp, err := serializer.JSON().Marshal(&stats)
+	if err != nil {
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
+}
+
 func (meetingHandler *MeetingHandler) GetMeetingStat(ctx echo.Context) error {
 	var mid uint
 	if _, err := fmt.Sscan(ctx.Param("mid"), &mid); err != nil {
@@ -140,46 +202,6 @@ func (meetingHandler *MeetingHandler) GetMeetingStat(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusInternalServerError)
 	}
 	return ctx.String(http.StatusOK, string(resp))
-}
-
-func (meetingHandler *MeetingHandler) UpdateTeamStat(ctx echo.Context) error {
-	body := ctx.Get("body").([]byte)
-	var stats models.Stats
-	if err := serializer.JSON().Unmarshal(body, &stats); err != nil {
-		logger.Error(err)
-		return ctx.String(http.StatusBadRequest, err.Error())
-	}
-
-	stats.TeamId = ctx.Get("teamId").(uint)
-	stats.MeetingId = ctx.Get("meetingId").(uint)
-
-	if err := meetingHandler.UseCase.UpdateTeamStat(&stats); err != nil {
-		logger.Error(err)
-		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
-	}
-
-	return ctx.NoContent(http.StatusOK)
-}
-
-func (meetingHandler *MeetingHandler) UpdatePlayerStat(ctx echo.Context) error {
-	body := ctx.Get("body").([]byte)
-	var stats models.Stats
-	if err := serializer.JSON().Unmarshal(body, &stats); err != nil {
-		logger.Error(err)
-		return ctx.String(http.StatusBadRequest, err.Error())
-	}
-
-	stats.TeamId = ctx.Get("teamId").(uint)
-	stats.MeetingId = ctx.Get("meetingId").(uint)
-	uid := ctx.Get("playerId").(uint)
-	stats.PlayerId = &uid
-
-	if err := meetingHandler.UseCase.UpdateTeamStat(&stats); err != nil {
-		logger.Error(err)
-		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
-	}
-
-	return ctx.NoContent(http.StatusOK)
 }
 
 func (meetingHandler *MeetingHandler) GetStatsByImage(ctx echo.Context) error {

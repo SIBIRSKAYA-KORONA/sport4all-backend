@@ -30,9 +30,12 @@ func (ocrStore *OcrStore) GetStatsByImage(protocolImage *models.ProtocolImage) (
 
 	if err != nil {
 		logger.Error(err)
-		return nil, errors.ErrInternal // TODO
+		return nil, errors.ErrInternal // TODO make error
 	}
-	logger.Info(resp.Stats[0]) // TODO remove it
+
+	for _, stat := range resp.Stats {
+		logger.Info("extracted name: ", stat.Name, ", surname: ", stat.Surname, ", score: ", stat.Score)
+	}
 	stats := make([]models.PlayerStat, len(resp.Stats))
 	for idx, elem := range resp.Stats {
 		stats[idx] = models.PlayerStat{Name: elem.Name, Surname: elem.Surname, Score: elem.Score}

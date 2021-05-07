@@ -9,6 +9,7 @@ import (
 	"sport4all/pkg/math"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type MeetingUseCaseImpl struct {
@@ -128,8 +129,35 @@ func (meetingUseCase *MeetingUseCaseImpl) IsTeamInMeeting(mid uint, tid uint) (b
 	return result, nil
 }
 
-func (meetingUseCase *MeetingUseCaseImpl) UpdateTeamStat(stat *models.Stats) error {
-	if err := meetingUseCase.meetingRepo.UpdateTeamStat(stat); err != nil {
+func (meetingUseCase *MeetingUseCaseImpl) CreateTeamStat(stat *models.Stats) error {
+	if err := meetingUseCase.meetingRepo.CreateTeamStat(stat); err != nil {
+		logger.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func (meetingUseCase *MeetingUseCaseImpl) CreatePlayersStats(mid uint, stats *[]models.Stats) error {
+	created := time.Now().Unix()
+	teamStats := make(map[uint]uint, 0)
+	for idx, stat := range *stats {
+		(*stats)[idx].MeetingId = mid
+		(*stats)[idx].Created = created
+		teamStats[stat.TeamId] += stat.Score
+	}
+
+	for teamId, score := range teamStats {
+		*stats = append(*stats, models.Stats{
+			Score:     score,
+			Created:   created,
+			MeetingId: mid,
+			TeamId:    teamId,
+			PlayerId:  nil,
+		})
+	}
+
+	if err := meetingUseCase.meetingRepo.CreatePlayersStats(stats); err != nil {
 		logger.Error(err)
 		return err
 	}
@@ -157,18 +185,18 @@ func (meetingUseCase *MeetingUseCaseImpl) GetStatsByImage(mid uint,
 		// may be unknown format (1,6)
 		arr := strings.Split(protocolType, ",")
 		if len(arr) < 2 {
-			return nil, errors.ErrInternal // TODO
+			return nil, errors.ErrInternal // TODO make error
 		}
 
 		tmp, err := strconv.ParseInt(arr[0], 10, 32)
 		if err != nil {
-			return nil, errors.ErrInternal // TODO
+			return nil, errors.ErrInternal // TODO make error
 		}
 		info.PlayerColumn = int32(tmp)
 
 		tmp, err = strconv.ParseInt(arr[1], 10, 32)
 		if err != nil {
-			return nil, errors.ErrInternal // TODO
+			return nil, errors.ErrInternal // TODO make error
 		}
 		info.ScoreColumn = int32(tmp)
 	}
