@@ -41,7 +41,6 @@ func (tournamentUseCase *TournamentUseCaseImpl) Create(tournament *models.Tourna
 		return errors.ErrTournamentSystemNotAcceptable
 	}
 
-	// TODO: move it to mv
 	if _, err := tournamentUseCase.userRepo.GetByID(tournament.OwnerId); err != nil {
 		logger.Error(err)
 		return err
@@ -125,7 +124,6 @@ func (tournamentUseCase *TournamentUseCaseImpl) CheckUserForTournamentRole(tourn
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) Update(tournament *models.Tournament) error {
-	// TODO: move it to mv (Антон)
 	oldTournament, err := tournamentUseCase.GetByID(tournament.ID)
 	if err != nil {
 		return err
@@ -163,7 +161,6 @@ func (tournamentUseCase *TournamentUseCaseImpl) Update(tournament *models.Tourna
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) AddTeam(tournamentId uint, teamId uint) error {
-	// TODO: move it to mv (Антон)
 	tournament, err := tournamentUseCase.GetByID(tournamentId)
 	if err != nil {
 		return err
@@ -181,7 +178,6 @@ func (tournamentUseCase *TournamentUseCaseImpl) AddTeam(tournamentId uint, teamI
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) RemoveTeam(tournamentId uint, teamId uint) error {
-	// TODO: move it to mv (Антон)
 	tournament, err := tournamentUseCase.GetByID(tournamentId)
 	if err != nil {
 		return err

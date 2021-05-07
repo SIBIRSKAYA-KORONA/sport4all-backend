@@ -121,9 +121,18 @@ func (meetingStore *MeetingStore) IsTeamInMeeting(mid uint, tid uint) (bool, err
 	return false, nil
 }
 
-func (meetingStore *MeetingStore) UpdateTeamStat(stat *models.Stats) error {
+func (meetingStore *MeetingStore) CreateTeamStat(stat *models.Stats) error {
 	stat.Created = time.Now().Unix()
 	if err := meetingStore.db.Create(stat).Error; err != nil {
+		logger.Error(err)
+		return errors.ErrConflict
+	}
+
+	return nil
+}
+
+func (meetingStore *MeetingStore) CreatePlayersStats(stats *[]models.Stats) error {
+	if err := meetingStore.db.Create(stats).Error; err != nil {
 		logger.Error(err)
 		return errors.ErrConflict
 	}

@@ -1,9 +1,11 @@
 package main
 
 import (
+	"google.golang.org/grpc"
 	httpHandlers "sport4all/app/handlers/http"
 	"sport4all/app/models"
 	amazonS3Repos "sport4all/app/repositories/amazon_s3"
+	grpcRepos "sport4all/app/repositories/grpc"
 	psqlRepos "sport4all/app/repositories/psql"
 	redisRepos "sport4all/app/repositories/redis"
 	useCases "sport4all/app/usecases/impl"
@@ -71,16 +73,17 @@ func (server *Server) Run() {
 	defer common.Close(ch.Close)
 
 	queue, err := ch.QueueDeclare(
-		server.settings.RabbitMQEventQueueId, // name
-		false,                                // durable
-		false,                                // delete when unused
-		false,                                // exclusive
-		false,                                // no-wait
-		nil,                                  // arguments
-	)
+		server.settings.RabbitMQEventQueueId, false, false, false, false, nil)
 	if err != nil {
 		logger.Fatal(err)
 	}
+
+	/*  Grpc */
+	grpcConn, err := grpc.Dial(server.settings.OcrAddress, grpc.WithInsecure())
+	if err != nil {
+		logger.Fatal(err)
+	}
+	defer common.Close(grpcConn.Close)
 
 	/* REPOS */
 	sessionRepo := redisRepos.CreateSessionRepository(redisPool, server.settings.RedisExpiresKeySec)
@@ -93,6 +96,7 @@ func (server *Server) Run() {
 	attachRepo := amazonS3Repos.CreateAttachRepository(postgresClient, s3session, server.settings.S3Bucket)
 	messageRepo := psqlRepos.CreateMessageRepository(postgresClient)
 	inviteRepo := psqlRepos.CreateInviteRepository(postgresClient)
+	ocrRepo := grpcRepos.CreateOcrRepository(grpcConn)
 
 	/* USE CASES */
 	sesUseCase := useCases.CreateSessionUseCase(sessionRepo, userRepo)
@@ -100,7 +104,7 @@ func (server *Server) Run() {
 	teamUseCase := useCases.CreateTeamUseCase(teamRepo, userRepo)
 	sportUseCase := useCases.CreateSportUseCase(sportRepo)
 	tournamentUseCase := useCases.CreateTournamentUseCase(userRepo, tournamentRepo, teamRepo, meetingRepo)
-	meetingUseCase := useCases.CreateMeetingUseCase(meetingRepo, tournamentRepo)
+	meetingUseCase := useCases.CreateMeetingUseCase(meetingRepo, tournamentRepo, ocrRepo)
 	skillUseCase := useCases.CreateSkillUseCase(skillRepo, userRepo)
 	attachUseCase := useCases.CreateAttachUseCase(attachRepo)
 	messageUseCase := useCases.CreateMessageUseCase(messageRepo)
