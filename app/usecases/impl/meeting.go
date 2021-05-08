@@ -9,7 +9,6 @@ import (
 	"sport4all/pkg/math"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type MeetingUseCaseImpl struct {
@@ -139,28 +138,36 @@ func (meetingUseCase *MeetingUseCaseImpl) CreateTeamStat(stat *models.Stats) err
 }
 
 func (meetingUseCase *MeetingUseCaseImpl) CreatePlayersStats(mid uint, stats *[]models.Stats) error {
-	created := time.Now().Unix()
 	teamStats := make(map[uint]uint, 0)
-	for idx, stat := range *stats {
-		(*stats)[idx].MeetingId = mid
-		(*stats)[idx].Created = created
+	for idx := range *stats {
+		stat := (*stats)[idx]
+		stat.MeetingId = mid
 		teamStats[stat.TeamId] += stat.Score
+		if err := meetingUseCase.CreateTeamStat(&stat); err != nil {
+			return err
+		}
 	}
 
 	for teamId, score := range teamStats {
-		*stats = append(*stats, models.Stats{
+		stat := models.Stats{
 			Score:     score,
-			Created:   created,
 			MeetingId: mid,
 			TeamId:    teamId,
 			PlayerId:  nil,
-		})
+		}
+		if err := meetingUseCase.CreateTeamStat(&stat); err != nil {
+			return err
+		}
+		*stats = append(*stats, stat)
 	}
 
-	if err := meetingUseCase.meetingRepo.CreatePlayersStats(stats); err != nil {
-		logger.Error(err)
-		return err
-	}
+	/*
+		TODO: don't work batch create
+		if err := meetingUseCase.meetingRepo.CreatePlayersStats(stats); err != nil {
+			logger.Error(err)
+			return err
+		}
+	*/
 
 	return nil
 }
