@@ -8,7 +8,7 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/jinzhu/gorm v1.9.16
-	github.com/json-iterator/go v1.1.6
+	github.com/json-iterator/go v1.1.11
 	github.com/labstack/echo/v4 v4.1.17
 	github.com/labstack/gommon v0.3.0
 	github.com/microcosm-cc/bluemonday v1.0.4
