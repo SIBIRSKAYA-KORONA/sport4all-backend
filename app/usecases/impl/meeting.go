@@ -138,14 +138,14 @@ func (meetingUseCase *MeetingUseCaseImpl) CreateTeamStat(stat *models.Stats) err
 }
 
 func (meetingUseCase *MeetingUseCaseImpl) CreatePlayersStats(mid uint, stats *[]models.Stats) error {
-	var err error
-
 	teamStats := make(map[uint]uint, 0)
 	for idx := range *stats {
 		stat := (*stats)[idx]
 		stat.MeetingId = mid
 		teamStats[stat.TeamId] += stat.Score
-		err = meetingUseCase.CreateTeamStat(&stat)
+		if err := meetingUseCase.CreateTeamStat(&stat); err != nil {
+			return err
+		}
 	}
 
 	for teamId, score := range teamStats {
@@ -155,7 +155,9 @@ func (meetingUseCase *MeetingUseCaseImpl) CreatePlayersStats(mid uint, stats *[]
 			TeamId:    teamId,
 			PlayerId:  nil,
 		}
-		err = meetingUseCase.CreateTeamStat(&stat)
+		if err := meetingUseCase.CreateTeamStat(&stat); err != nil {
+			return err
+		}
 		*stats = append(*stats, stat)
 	}
 
@@ -167,7 +169,7 @@ func (meetingUseCase *MeetingUseCaseImpl) CreatePlayersStats(mid uint, stats *[]
 		}
 	*/
 
-	return err
+	return nil
 }
 
 func (meetingUseCase *MeetingUseCaseImpl) GetMeetingStat(mid uint) (*[]models.Stats, error) {
