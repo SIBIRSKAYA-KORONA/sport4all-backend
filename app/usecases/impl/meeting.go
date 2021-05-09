@@ -172,7 +172,6 @@ func (meetingUseCase *MeetingUseCaseImpl) CreatePlayersStats(stats *[]models.Sta
 		return err
 	}
 
-
 	for idx := range *stats {
 		stat := (*stats)[idx]
 		if err = meetingUseCase.CreateTeamStat(&stat); err != nil {

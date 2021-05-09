@@ -26,7 +26,7 @@ var (
 	ErrMeetingNotFound                = errors.New("meeting not found")
 	ErrMeetingStatusNotAcceptable     = errors.New("meeting status not acceptable")
 	ErrMeetingTeamsAreAlreadyAssigned = errors.New("teams are already assigned")
-	ErrInvalidStats = errors.New("invalid stats")
+	ErrInvalidStats                   = errors.New("invalid stats")
 
 	// ошибки, связанные с турнирами
 	ErrTournamentNotFound            = errors.New("tournament not found")
@@ -71,7 +71,7 @@ var errorToCodeMap = map[error]int{
 	ErrMeetingNotFound:                http.StatusNotFound,
 	ErrMeetingStatusNotAcceptable:     http.StatusNotAcceptable,
 	ErrMeetingTeamsAreAlreadyAssigned: http.StatusUnavailableForLegalReasons,
-	ErrInvalidStats: http.StatusBadRequest,
+	ErrInvalidStats:                   http.StatusBadRequest,
 
 	// ошибки, связанные с турнирами
 	ErrTournamentNotFound:            http.StatusNotFound,

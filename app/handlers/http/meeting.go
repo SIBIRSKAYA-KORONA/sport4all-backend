@@ -172,8 +172,7 @@ func (meetingHandler *MeetingHandler) CreatePlayersStats(ctx echo.Context) error
 		return ctx.String(http.StatusBadRequest, err.Error())
 	}
 
-	mid := ctx.Get("meetingId").(uint)
-	if err := meetingHandler.UseCase.CreatePlayersStats(mid, &stats); err != nil {
+	if err := meetingHandler.UseCase.CreatePlayersStats(&stats); err != nil {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
