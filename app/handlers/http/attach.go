@@ -41,13 +41,15 @@ func getIdFromValue(value string, ctx echo.Context) *uint {
 
 func (attachHandler *AttachHandler) Create(ctx echo.Context) error {
 	attach := models.Attach{
-		UserId:       getIdFromValue("userId", ctx),
-		TeamId:       getIdFromValue("teamId", ctx),
-		MeetingId:    getIdFromValue("meetingId", ctx),
-		TournamentId: getIdFromValue("tournamentId", ctx),
+		UserId:            getIdFromValue("userId", ctx),
+		TeamId:            getIdFromValue("teamId", ctx),
+		MeetingId:         getIdFromValue("meetingId", ctx),
+		MeetingProtocolId: getIdFromValue("meetingProtocolId", ctx),
+		TournamentId:      getIdFromValue("tournamentId", ctx),
 	}
 
-	if attach.UserId == nil && attach.TeamId == nil && attach.MeetingId == nil && attach.TournamentId == nil {
+	if attach.UserId == nil && attach.TeamId == nil && attach.MeetingId == nil &&
+		attach.MeetingProtocolId == nil && attach.TournamentId == nil {
 		logger.Error("not set entity id")
 		return ctx.String(http.StatusBadRequest, "not set entity id")
 	}

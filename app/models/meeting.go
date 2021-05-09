@@ -33,6 +33,8 @@ type Meeting struct {
 	Teams []Team `json:"teams,omitempty" gorm:"many2many:team_meetings;" faker:"-"`
 
 	Attachments []Attach `json:"attachments,omitempty" gorm:"foreignKey:meetingId" faker:"-"`
+
+	Protocol Attach `json:"protocol" gorm:"foreignKey:meetingProtocolId" faker:"-"`
 }
 
 // swagger:model Teams
