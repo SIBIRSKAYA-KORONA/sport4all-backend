@@ -257,10 +257,5 @@ func (meetingUseCase *MeetingUseCaseImpl) GetStatsByImage(mid uint,
 		}
 	}
 
-	if err = meetingUseCase.calcTeamStats(&stats); err != nil {
-		logger.Error(err)
-		return nil, err
-	}
-
 	return &stats, nil
 }
