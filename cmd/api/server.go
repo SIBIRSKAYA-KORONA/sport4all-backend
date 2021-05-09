@@ -109,6 +109,7 @@ func (server *Server) Run() {
 	attachUseCase := useCases.CreateAttachUseCase(attachRepo)
 	messageUseCase := useCases.CreateMessageUseCase(messageRepo)
 	inviteUseCase := useCases.CreateInviteUseCase(inviteRepo, teamRepo, tournamentRepo)
+	searchUseCase := useCases.CreateSearchUseCase(teamRepo, tournamentRepo, userRepo)
 
 	/* HANDLERS */
 	origins := make(map[string]struct{})
@@ -136,6 +137,7 @@ func (server *Server) Run() {
 	httpHandlers.CreateAttachHandler(server.settings.AttachURL, rootGroup, attachUseCase, mw)
 	httpHandlers.CreateMessageHandler(server.settings.MessageURL, rootGroup, messageUseCase, mw)
 	httpHandlers.CreateInviteHandler(server.settings.InviteURL, rootGroup, inviteUseCase, mw)
+	httpHandlers.CreateSearchHandler(server.settings.SearchURL, rootGroup, searchUseCase, mw)
 
 	logger.Info("start server on address: ", server.settings.ServerAddress,
 		", log file: ", server.settings.LogFile, ", log level: ", server.settings.LogLevel)
