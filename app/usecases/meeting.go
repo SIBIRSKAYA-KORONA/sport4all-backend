@@ -11,7 +11,7 @@ type MeetingUseCase interface {
 	AssignTeam(mid uint, tid uint) error
 	IsTeamInMeeting(mid uint, tid uint) (bool, error)
 	CreateTeamStat(stat *models.Stats) error
-	CreatePlayersStats(mid uint, stats *[]models.Stats) error
+	CreatePlayersStats(stats *[]models.Stats) error
 	GetMeetingStat(mid uint) (*[]models.Stats, error)
 	GetStatsByImage(mid uint, imagePath, protocolType string) (*[]models.Stats, error)
 }
