@@ -16,4 +16,7 @@ type PlayerStat struct {
 	Score   int32
 }
 
-var ProtocolTypes = map[string]LocationInfo{"fiba": {1, 21}, "pair": {0, 1}}
+var ProtocolTypes = map[string]LocationInfo{
+	"fiba":    {1, 21},
+	"classic": {1, 2},
+}
