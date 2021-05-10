@@ -28,7 +28,7 @@ func CreateAttachHandler(attachURL string, router *echo.Group, useCase usecases.
 	attach := router.Group(handler.URL)
 
 	attach.POST("", handler.Create, mw.CheckAuth)
-	// attach.DELETE("", handler.Delete, mw.CheckAuth)
+	attach.DELETE("/:key", handler.Delete, mw.CheckAuth)
 }
 
 func getIdFromValue(value string, ctx echo.Context) *uint {
@@ -41,13 +41,15 @@ func getIdFromValue(value string, ctx echo.Context) *uint {
 
 func (attachHandler *AttachHandler) Create(ctx echo.Context) error {
 	attach := models.Attach{
-		UserId:       getIdFromValue("userId", ctx),
-		TeamId:       getIdFromValue("teamId", ctx),
-		MeetingId:    getIdFromValue("meetingId", ctx),
-		TournamentId: getIdFromValue("tournamentId", ctx),
+		UserId:            getIdFromValue("userId", ctx),
+		TeamId:            getIdFromValue("teamId", ctx),
+		MeetingId:         getIdFromValue("meetingId", ctx),
+		MeetingProtocolId: getIdFromValue("meetingProtocolId", ctx),
+		TournamentId:      getIdFromValue("tournamentId", ctx),
 	}
 
-	if attach.UserId == nil && attach.TeamId == nil && attach.MeetingId == nil && attach.TournamentId == nil {
+	if attach.UserId == nil && attach.TeamId == nil && attach.MeetingId == nil &&
+		attach.MeetingProtocolId == nil && attach.TournamentId == nil {
 		logger.Error("not set entity id")
 		return ctx.String(http.StatusBadRequest, "not set entity id")
 	}
@@ -76,4 +78,13 @@ func (attachHandler *AttachHandler) Create(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusInternalServerError)
 	}
 	return ctx.String(http.StatusOK, string(resp))
+}
+
+func (attachHandler *AttachHandler) Delete(ctx echo.Context) error {
+	key := ctx.Param("key")
+	if err := attachHandler.UseCase.Delete(key); err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+	return ctx.NoContent(http.StatusOK)
 }

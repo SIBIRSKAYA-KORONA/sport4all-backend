@@ -40,7 +40,10 @@ func (meetingStore *MeetingStore) CreateBatch(meetings *[]models.Meeting) error 
 func (meetingStore *MeetingStore) GetByID(mid uint) (*models.Meeting, error) {
 	meeting := new(models.Meeting)
 	if err := meetingStore.db.Where("id = ?", mid).
-		Preload("Attachments").Preload("Teams.Players").Preload("Teams.Avatar").
+		Preload("Attachments").
+		Preload("Protocol").
+		Preload("Teams.Players").
+		Preload("Teams.Avatar").
 		First(&meeting).Error; err != nil {
 		logger.Error(err)
 		return nil, errors.ErrMeetingNotFound

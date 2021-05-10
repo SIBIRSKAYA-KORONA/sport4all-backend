@@ -9,7 +9,6 @@ import (
 	"sport4all/pkg/math"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type MeetingUseCaseImpl struct {
@@ -138,29 +137,56 @@ func (meetingUseCase *MeetingUseCaseImpl) CreateTeamStat(stat *models.Stats) err
 	return nil
 }
 
-func (meetingUseCase *MeetingUseCaseImpl) CreatePlayersStats(mid uint, stats *[]models.Stats) error {
-	created := time.Now().Unix()
-	teamStats := make(map[uint]uint, 0)
-	for idx, stat := range *stats {
-		(*stats)[idx].MeetingId = mid
-		(*stats)[idx].Created = created
-		teamStats[stat.TeamId] += stat.Score
+func (meetingUseCase *MeetingUseCaseImpl) calcTeamStats(stats *[]models.Stats) error {
+	if len(*stats) == 0 {
+		return nil
 	}
 
+	teamStats := make(map[uint]uint, 0)
+	for idx := range *stats {
+		stat := (*stats)[idx]
+		if stat.PlayerId == nil {
+			return errors.ErrInvalidStats
+		}
+		teamStats[stat.TeamId] += stat.Score
+	}
+	mid := (*stats)[0].MeetingId
+
 	for teamId, score := range teamStats {
-		*stats = append(*stats, models.Stats{
+		stat := models.Stats{
 			Score:     score,
-			Created:   created,
 			MeetingId: mid,
 			TeamId:    teamId,
 			PlayerId:  nil,
-		})
+		}
+		*stats = append(*stats, stat)
 	}
 
-	if err := meetingUseCase.meetingRepo.CreatePlayersStats(stats); err != nil {
+	return nil
+}
+
+func (meetingUseCase *MeetingUseCaseImpl) CreatePlayersStats(stats *[]models.Stats) error {
+	err := meetingUseCase.calcTeamStats(stats)
+	if err != nil {
 		logger.Error(err)
 		return err
 	}
+
+	for idx := range *stats {
+		stat := (*stats)[idx]
+		if err = meetingUseCase.CreateTeamStat(&stat); err != nil {
+			logger.Error(err)
+			return err
+		}
+	}
+
+	/*
+		TODO: don't work batch create
+		if err := meetingUseCase.meetingRepo.CreatePlayersStats(stats); err != nil {
+			logger.Error(err)
+			return err
+		}
+	*/
 
 	return nil
 }
@@ -207,20 +233,21 @@ func (meetingUseCase *MeetingUseCaseImpl) GetStatsByImage(mid uint,
 		return nil, err
 	}
 
-	extractedStat, err := meetingUseCase.ocrRepo.GetStatsByImage(&protocolImage)
+	extractedStats, err := meetingUseCase.ocrRepo.GetStatsByImage(&protocolImage)
 	if err != nil {
 		return nil, err
 	}
 
 	stats := make([]models.Stats, 0)
-	for _, extrStat := range *extractedStat {
+	for _, extractedStat := range *extractedStats {
 		for _, team := range meeting.Teams {
-			for _, player := range team.Players {
-				if math.LevenshteinDist(player.Name, extrStat.Name) < 2 &&
-					math.LevenshteinDist(player.Surname, extrStat.Surname) < 2 {
+			for idx := range team.Players {
+				player := team.Players[idx]
+				if math.LevenshteinDist(player.Name, extractedStat.Name) < 2 &&
+					math.LevenshteinDist(player.Surname, extractedStat.Surname) < 2 {
 					stats = append(stats,
 						models.Stats{
-							Score:     uint(extrStat.Score),
+							Score:     uint(extractedStat.Score),
 							MeetingId: mid,
 							TeamId:    team.ID,
 							PlayerId:  &player.ID,

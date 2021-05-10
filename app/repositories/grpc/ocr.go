@@ -34,7 +34,7 @@ func (ocrStore *OcrStore) GetStatsByImage(protocolImage *models.ProtocolImage) (
 	}
 
 	for _, stat := range resp.Stats {
-		logger.Info("extracted name: ", stat.Name, ", surname: ", stat.Surname, ", score: ", stat.Score)
+		logger.Debug("extracted name: ", stat.Name, ", surname: ", stat.Surname, ", score: ", stat.Score)
 	}
 	stats := make([]models.PlayerStat, len(resp.Stats))
 	for idx, elem := range resp.Stats {
