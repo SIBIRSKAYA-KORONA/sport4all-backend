@@ -48,6 +48,9 @@ var (
 	// ошибки, связанные с извлечением текста
 	ErrProtocolTypeNotFound  = errors.New("protocol type not found")
 	ErrOcrServiceUnavailable = errors.New("ocr service unavailable")
+
+	// ошибки, связанные с получением геолокации
+	ErrGeoNotFound = errors.New("geo not found")
 )
 
 var errorToCodeMap = map[error]int{
@@ -93,6 +96,9 @@ var errorToCodeMap = map[error]int{
 	// ошибки, связанные с извлечением текста
 	ErrProtocolTypeNotFound:  http.StatusNotFound,
 	ErrOcrServiceUnavailable: http.StatusServiceUnavailable,
+
+	// ошибки, связанные с получением геолокации
+	ErrGeoNotFound: http.StatusNotFound,
 }
 
 func ResolveErrorToCode(err error) (code int) {

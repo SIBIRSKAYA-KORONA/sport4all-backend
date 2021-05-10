@@ -1,19 +1,19 @@
 package models
 
 type SearchInput struct {
-	UserQuery *UserSearchQuery
-	TeamQuery *TeamSearchQuery
+	UserQuery       *UserSearchQuery
+	TeamQuery       *TeamSearchQuery
 	TournamentQuery *TournamentSearchQuery
 }
 
 type SearchOutput struct {
-	Teams      *Teams `json:"teams,omitempty"`
+	Teams       *Teams       `json:"teams,omitempty"`
 	Tournaments *Tournaments `json:"tournaments,omitempty"`
-	Users  *Users `json:"users,omitempty"`
+	Users       *Users       `json:"users,omitempty"`
 }
 
 type SearchQueryBase struct {
-	Text string
+	Text   string
 	Offset uint
 }
 
@@ -23,7 +23,7 @@ type UserSearchQuery struct {
 }
 
 type TeamSearchQuery struct {
-	Base *SearchQueryBase
+	Base        *SearchQueryBase
 	MemberCount uint
 }
 
@@ -32,6 +32,3 @@ type TournamentSearchQuery struct {
 	// Location string
 	KindOfSport string
 }
-
-
-

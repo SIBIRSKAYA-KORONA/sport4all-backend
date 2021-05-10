@@ -7,6 +7,9 @@ services:
     environment:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - GEO_DB_PATH=./${GEO_DB_FILE}
+    volumes:
+      - ~/${GEO_DB_FILE}:/app/${GEO_DB_FILE}
     ports:
       - "8080:8080"
 

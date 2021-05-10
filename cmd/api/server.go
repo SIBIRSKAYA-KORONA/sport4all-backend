@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/oschwald/geoip2-golang"
 	"google.golang.org/grpc"
 	httpHandlers "sport4all/app/handlers/http"
 	"sport4all/app/models"
@@ -85,6 +86,21 @@ func (server *Server) Run() {
 	}
 	defer common.Close(grpcConn.Close)
 
+	/* GeoDB */
+
+	geoFeatureSupported := true
+	geoDB, err := geoip2.Open(server.settings.GeoDBPath)
+	if err != nil {
+		logger.Info("Failed open geoDB: ", err)
+		geoFeatureSupported = false
+	}
+	defer common.Close(func() error {
+		if geoFeatureSupported {
+			return geoDB.Close()
+		}
+		return nil
+	})
+
 	/* REPOS */
 	sessionRepo := redisRepos.CreateSessionRepository(redisPool, server.settings.RedisExpiresKeySec)
 	userRepo := psqlRepos.CreateUserRepository(postgresClient)
@@ -97,6 +113,7 @@ func (server *Server) Run() {
 	messageRepo := psqlRepos.CreateMessageRepository(postgresClient)
 	inviteRepo := psqlRepos.CreateInviteRepository(postgresClient)
 	ocrRepo := grpcRepos.CreateOcrRepository(grpcConn)
+	searchRepo := psqlRepos.CreateSearchRepository(postgresClient, geoDB)
 
 	/* USE CASES */
 	sesUseCase := useCases.CreateSessionUseCase(sessionRepo, userRepo)
@@ -109,7 +126,7 @@ func (server *Server) Run() {
 	attachUseCase := useCases.CreateAttachUseCase(attachRepo)
 	messageUseCase := useCases.CreateMessageUseCase(messageRepo)
 	inviteUseCase := useCases.CreateInviteUseCase(inviteRepo, teamRepo, tournamentRepo)
-	searchUseCase := useCases.CreateSearchUseCase(teamRepo, tournamentRepo, userRepo)
+	searchUseCase := useCases.CreateSearchUseCase(teamRepo, tournamentRepo, userRepo, searchRepo)
 
 	/* HANDLERS */
 	origins := make(map[string]struct{})
@@ -137,7 +154,7 @@ func (server *Server) Run() {
 	httpHandlers.CreateAttachHandler(server.settings.AttachURL, rootGroup, attachUseCase, mw)
 	httpHandlers.CreateMessageHandler(server.settings.MessageURL, rootGroup, messageUseCase, mw)
 	httpHandlers.CreateInviteHandler(server.settings.InviteURL, rootGroup, inviteUseCase, mw)
-	httpHandlers.CreateSearchHandler(server.settings.SearchURL, rootGroup, searchUseCase, mw)
+	httpHandlers.CreateSearchHandler(server.settings.SearchURL, rootGroup, searchUseCase, geoFeatureSupported, mw)
 
 	logger.Info("start server on address: ", server.settings.ServerAddress,
 		", log file: ", server.settings.LogFile, ", log level: ", server.settings.LogLevel)

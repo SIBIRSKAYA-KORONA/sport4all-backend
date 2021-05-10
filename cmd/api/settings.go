@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/viper"
 )
@@ -22,13 +23,15 @@ type Settings struct {
 	AttachURL      string
 	MessageURL     string
 	InviteURL      string
-	SearchURL string
+	SearchURL      string
 
 	ServerAddress string
 
 	Origins []string
 
 	OcrAddress string
+
+	GeoDBPath string
 
 	PsqlName string
 	PsqlData string
@@ -83,6 +86,8 @@ func InitSettings(configFilePath string) Settings {
 		Origins: viper.GetStringSlice("cors.allowed_origins"),
 
 		OcrAddress: viper.GetString("ocr.address"),
+
+		GeoDBPath: os.Getenv("GEO_DB_PATH"),
 
 		PsqlName: viper.GetString("psql.dbms"),
 		PsqlData: fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=%s", dbHost, dbUser, dbPass, dbName, dbMode),

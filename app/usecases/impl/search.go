@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"net"
 	"sport4all/app/models"
 	"sport4all/app/repositories"
 	"sport4all/app/usecases"
@@ -10,13 +11,25 @@ import (
 type SearchUseCaseImpl struct {
 	teamRepo       repositories.TeamRepository
 	tournamentRepo repositories.TournamentRepository
-	userRepo repositories.UserRepository
+	userRepo       repositories.UserRepository
+	searchRepo     repositories.SearchRepository
 }
 
 func CreateSearchUseCase(teamRepo repositories.TeamRepository,
 	tournamentRepo repositories.TournamentRepository,
-	userRepo repositories.UserRepository) usecases.SearchUseCase {
-	return &SearchUseCaseImpl{teamRepo: teamRepo, tournamentRepo: tournamentRepo, userRepo: userRepo}
+	userRepo repositories.UserRepository,
+	searchRepo repositories.SearchRepository) usecases.SearchUseCase {
+	return &SearchUseCaseImpl{teamRepo: teamRepo, tournamentRepo: tournamentRepo,
+		userRepo: userRepo, searchRepo: searchRepo}
+}
+
+func (searchUseCase *SearchUseCaseImpl) GetGeo(ip net.IP) (*models.Location, error) {
+	location, err := searchUseCase.searchRepo.GetGeo(ip)
+	if err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+	return location, nil
 }
 
 func (searchUseCase *SearchUseCaseImpl) GetResult(uid *uint, input *models.SearchInput) (*models.SearchOutput, error) {

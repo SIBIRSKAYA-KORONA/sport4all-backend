@@ -1,7 +1,9 @@
 package http
 
 import (
+	"net"
 	"net/http"
+	"sport4all/pkg/errors"
 	"sport4all/pkg/logger"
 	"sport4all/pkg/serializer"
 	"strings"
@@ -20,14 +22,38 @@ type SearchHandler struct {
 	SearchURL string
 }
 
-func CreateSearchHandler(searchURL string, router *echo.Group, useCase usecases.SearchUseCase, mw Middleware) {
+func CreateSearchHandler(searchURL string, router *echo.Group, useCase usecases.SearchUseCase, enableGeo bool, mw Middleware) {
 	handler := &SearchHandler{
 		UseCase:   useCase,
 		SearchURL: searchURL,
 	}
 
-	invites := router.Group(handler.SearchURL)
-	invites.GET("", handler.GetResult)
+	search := router.Group(handler.SearchURL)
+	search.GET("", handler.GetResult)
+	if enableGeo {
+		search.GET("/geo", handler.GetGeo)
+	}
+}
+
+func (searchHandler *SearchHandler) GetGeo(ctx echo.Context) error {
+	ctxIP := ctx.RealIP()
+	ip := net.ParseIP(ctxIP)
+	if ip == nil {
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	location, err := searchHandler.UseCase.GetGeo(ip)
+	if err != nil {
+		logger.Error(err)
+		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
+	}
+
+	resp, err := serializer.JSON().Marshal(&location)
+	if err != nil {
+		logger.Error(err)
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	return ctx.String(http.StatusOK, string(resp))
 }
 
 func (searchHandler *SearchHandler) GetResult(ctx echo.Context) error {
@@ -105,7 +131,7 @@ func (searchHandler *SearchHandler) parseTeamQuery(ctx echo.Context, base *model
 }
 func (searchHandler *SearchHandler) parseTournamentQuery(ctx echo.Context, base *models.SearchQueryBase) *models.TournamentSearchQuery {
 	return &models.TournamentSearchQuery{
-		Base: base,
+		Base:        base,
 		KindOfSport: ctx.QueryParam("sportKind"),
 		// Location
 	}

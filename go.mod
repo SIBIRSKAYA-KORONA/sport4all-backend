@@ -12,6 +12,7 @@ require (
 	github.com/labstack/echo/v4 v4.1.17
 	github.com/labstack/gommon v0.3.0
 	github.com/microcosm-cc/bluemonday v1.0.4
+	github.com/oschwald/geoip2-golang v1.5.0
 	github.com/spf13/viper v1.7.1
 	github.com/streadway/amqp v1.0.0
 	go.uber.org/zap v1.16.0
