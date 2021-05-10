@@ -216,6 +216,8 @@ func (tournamentHandler *TournamentHandler) GetTournamentsByNamePart(ctx echo.Co
 }
 
 func (tournamentHandler *TournamentHandler) GetTournamentForFeeds(ctx echo.Context) error {
+	logger.Info("IP check: ", ctx.RealIP())
+
 	var offset uint
 	if _, err := fmt.Sscan(ctx.QueryParam("offset"), &offset); err != nil {
 		return ctx.NoContent(http.StatusBadRequest)
