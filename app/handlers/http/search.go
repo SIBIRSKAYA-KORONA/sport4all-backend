@@ -36,12 +36,15 @@ func CreateSearchHandler(searchURL string, router *echo.Group, useCase usecases.
 }
 
 func (searchHandler *SearchHandler) GetGeo(ctx echo.Context) error {
-	ctxIP := ctx.RealIP()
+	ctxIP := ctx.QueryParam("ip")
+	if ctxIP == "" {
+		ctxIP = ctx.RealIP()
+	}
 	ip := net.ParseIP(ctxIP)
 	if ip == nil {
 		return ctx.NoContent(http.StatusBadRequest)
 	}
-
+	
 	location, err := searchHandler.UseCase.GetGeo(ip)
 	if err != nil {
 		logger.Error(err)
