@@ -5,5 +5,5 @@ import (
 )
 
 type SearchUseCase interface {
-	GetResult(uid uint, input *models.SearchInput) (*models.SearchOutput, error)
+	GetResult(uid *uint, input *models.SearchInput) (*models.SearchOutput, error)
 }

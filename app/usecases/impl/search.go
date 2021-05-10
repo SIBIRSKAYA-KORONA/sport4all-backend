@@ -19,7 +19,7 @@ func CreateSearchUseCase(teamRepo repositories.TeamRepository,
 	return &SearchUseCaseImpl{teamRepo: teamRepo, tournamentRepo: tournamentRepo, userRepo: userRepo}
 }
 
-func (searchUseCase *SearchUseCaseImpl) GetResult(uid uint, input *models.SearchInput) (*models.SearchOutput, error) {
+func (searchUseCase *SearchUseCaseImpl) GetResult(uid *uint, input *models.SearchInput) (*models.SearchOutput, error) {
 	output := new(models.SearchOutput)
 	if input.TeamQuery != nil {
 		teams, err := searchUseCase.teamRepo.GetTeamsByNamePart(input.TeamQuery.Base.Text, 10)
@@ -38,7 +38,7 @@ func (searchUseCase *SearchUseCaseImpl) GetResult(uid uint, input *models.Search
 		}
 	}
 	if input.UserQuery != nil {
-		users, err := searchUseCase.userRepo.SearchUsers(&uid, input.UserQuery.Base.Text, 10)
+		users, err := searchUseCase.userRepo.SearchUsers(uid, input.UserQuery.Base.Text, 10)
 		if err != nil {
 			logger.Error(err)
 		} else {

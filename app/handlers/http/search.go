@@ -31,7 +31,12 @@ func CreateSearchHandler(searchURL string, router *echo.Group, useCase usecases.
 }
 
 func (searchHandler *SearchHandler) GetResult(ctx echo.Context) error {
-	uid := ctx.Get("uid").(uint)
+	var uid *uint
+	if value, ok := ctx.Get("uid").(uint); ok {
+		*uid = value
+	} else {
+		uid = nil
+	}
 	entitiesParam := ctx.QueryParam("entities")
 	entitiesMap := searchHandler.parseEntities(entitiesParam)
 	if len(entitiesMap) == 0 {
