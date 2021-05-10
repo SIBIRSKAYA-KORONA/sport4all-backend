@@ -27,11 +27,16 @@ func (searchStore *SearchStore) GetGeo(ip net.IP) (*models.Location, error) {
 		return nil, errors.ErrGeoNotFound
 	}
 
+	subdivision := ""
+	if len(record.Subdivisions) != 0 {
+		subdivision = record.Subdivisions[0].Names["ru"]
+	}
+
 	location := models.Location{
 		City:        record.City.Names["ru"],
 		Country:     record.Country.Names["ru"],
 		Continent:   record.Continent.Names["ru"],
-		Subdivision: record.Subdivisions[0].Names["ru"],
+		Subdivision: subdivision,
 	}
 
 	return &location, nil
