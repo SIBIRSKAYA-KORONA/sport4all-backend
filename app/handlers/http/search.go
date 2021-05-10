@@ -27,7 +27,7 @@ func CreateSearchHandler(searchURL string, router *echo.Group, useCase usecases.
 	}
 
 	invites := router.Group(handler.SearchURL)
-	invites.GET("", handler.GetResult, mw.CheckAuth)
+	invites.GET("", handler.GetResult)
 }
 
 func (searchHandler *SearchHandler) GetResult(ctx echo.Context) error {
