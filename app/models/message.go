@@ -7,18 +7,28 @@ const (
 	MeetingEntity Entity = iota
 	TournamentEntity
 	TeamEntity
+	UserEntity
 )
 
 const (
 	EventStatusChanged MessageTrigger = iota
 	AddToTeam
 	InviteStatusChanged
+	SkillApproved
 )
 
 var EntityToStr = map[Entity]string{
 	MeetingEntity:    "meeting",
 	TournamentEntity: "tournament",
 	TeamEntity:       "team",
+	UserEntity: "user",
+}
+
+var StrToEntity = map[string]Entity {
+	"meeting": MeetingEntity,
+	"tournament": TournamentEntity,
+	"team": TeamEntity,
+	"user": UserEntity,
 }
 
 var StatusToStr = map[EventStatus]string{

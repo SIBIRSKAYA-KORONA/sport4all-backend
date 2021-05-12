@@ -15,7 +15,8 @@ api: {
   skillsURL: /skills,
   attachURL: /attachments,
   messageURL: /messages,
-  inviteURL: /invites
+  inviteURL: /invites,
+  searchURL: /search,
 }
 
 server: {
