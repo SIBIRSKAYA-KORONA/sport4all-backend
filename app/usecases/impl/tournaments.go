@@ -222,7 +222,7 @@ func (tournamentUseCase *TournamentUseCaseImpl) GetAllMeetings(tournamentId uint
 
 	for i := range *meetings {
 		if (*meetings)[i].Status > models.RegistrationEvent {
-			stat, err := tournamentUseCase.meetingRepo.GetMeetingTeamStat((*meetings)[i].ID)
+			stat, err := tournamentUseCase.meetingRepo.GetMeetingTeamsStats((*meetings)[i].ID)
 			if err != nil {
 				logger.Warn(err)
 			}

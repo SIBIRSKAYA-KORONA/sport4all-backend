@@ -11,9 +11,9 @@ type MeetingRepository interface {
 	Update(meeting *models.Meeting) error
 	AssignTeam(mid uint, tid uint) error
 	IsTeamInMeeting(mid uint, tid uint) (bool, error)
-	CreateTeamStat(stat *models.Stats) error
+	CreateStat(stat *models.Stats) error
 	CreatePlayersStats(stats *[]models.Stats) error
-	GetMeetingTeamStat(mid uint) (*[]models.Stats, error)
+	GetMeetingTeamsStats(mid uint) (*[]models.Stats, error)
 	GetMeetingPlayerStat(mid, tid, uid uint) (*models.Stats, error)
-	GetMeetingStat(mid uint) (*[]models.Stats, error)
+	GetMeetingStats(mid uint) (*[]models.Stats, error)
 }

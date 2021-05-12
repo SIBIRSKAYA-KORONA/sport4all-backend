@@ -124,21 +124,28 @@ func (meetingStore *MeetingStore) IsTeamInMeeting(mid uint, tid uint) (bool, err
 	return false, nil
 }
 
-func (meetingStore *MeetingStore) CreateTeamStat(stat *models.Stats) error {
-	existsStat, err := meetingStore.GetMeetingPlayerStat(stat.MeetingId, stat.TeamId, *stat.PlayerId)
+func (meetingStore *MeetingStore) CreateStat(stat *models.Stats) error {
+	var existsStat *models.Stats
+	var err error
+
+	if stat.PlayerId != nil {
+		existsStat, err = meetingStore.GetMeetingPlayerStat(stat.MeetingId, stat.TeamId, *stat.PlayerId)
+	} else {
+		existsStat, err = meetingStore.GetMeetingTeamStat(stat.MeetingId, stat.TeamId)
+	}
+
 	if err != nil {
 		stat.Created = time.Now().Unix()
-		if err = meetingStore.db.Create(stat).Error; err != nil {
-			logger.Error(err)
-			return errors.ErrConflict
-		}
+		err = meetingStore.db.Create(stat).Error
 	} else {
 		stat.ID = existsStat.ID
 		stat.Created = existsStat.Created
-		if err = meetingStore.db.Update(stat).Error; err != nil {
-			logger.Error(err)
-			return errors.ErrConflict
-		}
+		err = meetingStore.db.Update(stat).Error
+	}
+
+	if err != nil {
+		logger.Error(err)
+		return errors.ErrConflict
 	}
 
 	return nil
@@ -153,7 +160,7 @@ func (meetingStore *MeetingStore) CreatePlayersStats(stats *[]models.Stats) erro
 	return nil
 }
 
-func (meetingStore *MeetingStore) GetMeetingTeamStat(mid uint) (*[]models.Stats, error) {
+func (meetingStore *MeetingStore) GetMeetingTeamsStats(mid uint) (*[]models.Stats, error) {
 	var stats []models.Stats
 	if err := meetingStore.db.Find(&stats, "player_id is null and meeting_id = ?", mid).Error; err != nil {
 		logger.Error(err)
@@ -173,7 +180,17 @@ func (meetingStore *MeetingStore) GetMeetingPlayerStat(mid, tid, uid uint) (*mod
 	return &stat, nil
 }
 
-func (meetingStore *MeetingStore) GetMeetingStat(mid uint) (*[]models.Stats, error) {
+func (meetingStore *MeetingStore) GetMeetingTeamStat(mid, tid uint) (*models.Stats, error) {
+	var stat models.Stats
+	if err := meetingStore.db.First(&stat, "meeting_id = ? and team_id = ? and player_id is null", mid, tid).Error; err != nil {
+		logger.Error(err)
+		return nil, errors.ErrMeetingNotFound
+	}
+
+	return &stat, nil
+}
+
+func (meetingStore *MeetingStore) GetMeetingStats(mid uint) (*[]models.Stats, error) {
 	var stats []models.Stats
 	if err := meetingStore.db.Model(&models.Meeting{ID: mid}).
 		Related(&stats, "meetingId").Error; err != nil {

@@ -62,7 +62,7 @@ func (meetingUseCase *MeetingUseCaseImpl) Update(meeting *models.Meeting) error 
 			return err
 		}
 	case models.FinishedEvent:
-		stat, err := meetingUseCase.meetingRepo.GetMeetingTeamStat(meeting.ID)
+		stat, err := meetingUseCase.meetingRepo.GetMeetingStats(meeting.ID)
 		if err != nil {
 			logger.Error(err)
 			return errors.ErrMeetingStatusNotAcceptable
@@ -129,7 +129,7 @@ func (meetingUseCase *MeetingUseCaseImpl) IsTeamInMeeting(mid uint, tid uint) (b
 }
 
 func (meetingUseCase *MeetingUseCaseImpl) CreateTeamStat(stat *models.Stats) error {
-	if err := meetingUseCase.meetingRepo.CreateTeamStat(stat); err != nil {
+	if err := meetingUseCase.meetingRepo.CreateStat(stat); err != nil {
 		logger.Error(err)
 		return err
 	}
@@ -192,7 +192,7 @@ func (meetingUseCase *MeetingUseCaseImpl) CreatePlayersStats(stats *[]models.Sta
 }
 
 func (meetingUseCase *MeetingUseCaseImpl) GetMeetingStat(mid uint) (*[]models.Stats, error) {
-	stats, err := meetingUseCase.meetingRepo.GetMeetingStat(mid)
+	stats, err := meetingUseCase.meetingRepo.GetMeetingStats(mid)
 	if err != nil {
 		logger.Error(err)
 		return nil, err
