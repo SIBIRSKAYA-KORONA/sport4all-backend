@@ -463,6 +463,18 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 		}
 		messages = append(messages, message)
 
+	case models.SkillApproved:
+		message := models.Message{
+			MessageStr: "skill_approved",
+			TargetUid:  ctx.Get("toUid").(uint),
+			SourceUid:  ctx.Get("uid").(uint),
+			MeetingId:  0,
+			TeamId:     0,
+			CreateAt:   time.Now().Unix(),
+			IsRead:     false,
+		}
+		messages = append(messages, message)
+
 	case models.InviteStatusChanged:
 		inviteType := ctx.Get("invite_type").(models.InviteType)
 		inviteState := ctx.Get("invite_state").(models.InviteState)

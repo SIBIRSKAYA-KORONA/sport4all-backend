@@ -27,7 +27,7 @@ func CreateSkillHandler(url string, router *echo.Group, useCase usecases.SkillUs
 
 	group.POST("/:uid", handler.Create, mw.CheckAuth)
 	group.GET("/search", handler.GetByNamePart)
-	group.POST("/:sid/approve/:uid", handler.CreateApprove, mw.CheckAuth)
+	group.POST("/:sid/approve/:uid", handler.CreateApprove, mw.CheckAuth, mw.NotificationMiddleware(models.SkillApproved))
 	// group.DELETE("/:sid", handler.Delete, mw.CheckAuth)
 	// group.DELETE("/:sid/approve", handler.DeleteApprove, mw.CheckAuth)
 }
@@ -110,6 +110,7 @@ func (skillHandler *SkillHandler) CreateApprove(ctx echo.Context) error {
 		logger.Error(err)
 		return ctx.String(errors.ResolveErrorToCode(err), err.Error())
 	}
+	ctx.Set("toUid", approve.ToUid)
 
 	resp, err := serializer.JSON().Marshal(&approve)
 	if err != nil {

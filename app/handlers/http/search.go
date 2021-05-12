@@ -10,9 +10,6 @@ import (
 
 	"sport4all/app/models"
 	"sport4all/app/usecases"
-	// "sport4all/pkg/errors"
-	// "sport4all/pkg/logger"
-	// "sport4all/pkg/serializer"
 )
 
 type SearchHandler struct {

@@ -14,6 +14,7 @@ const (
 	EventStatusChanged MessageTrigger = iota
 	AddToTeam
 	InviteStatusChanged
+	SkillApproved
 )
 
 var EntityToStr = map[Entity]string{
