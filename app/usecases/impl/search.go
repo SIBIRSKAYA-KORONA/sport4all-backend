@@ -10,7 +10,7 @@ import (
 type SearchUseCaseImpl struct {
 	teamRepo       repositories.TeamRepository
 	tournamentRepo repositories.TournamentRepository
-	userRepo repositories.UserRepository
+	userRepo       repositories.UserRepository
 }
 
 func CreateSearchUseCase(teamRepo repositories.TeamRepository,

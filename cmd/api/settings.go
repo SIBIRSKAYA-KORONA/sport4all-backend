@@ -22,7 +22,7 @@ type Settings struct {
 	AttachURL      string
 	MessageURL     string
 	InviteURL      string
-	SearchURL string
+	SearchURL      string
 
 	ServerAddress string
 

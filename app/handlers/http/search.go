@@ -102,7 +102,7 @@ func (searchHandler *SearchHandler) parseTeamQuery(ctx echo.Context, base *model
 }
 func (searchHandler *SearchHandler) parseTournamentQuery(ctx echo.Context, base *models.SearchQueryBase) *models.TournamentSearchQuery {
 	return &models.TournamentSearchQuery{
-		Base: base,
+		Base:        base,
 		KindOfSport: ctx.QueryParam("sportKind"),
 		// Location
 	}

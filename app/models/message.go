@@ -21,14 +21,14 @@ var EntityToStr = map[Entity]string{
 	MeetingEntity:    "meeting",
 	TournamentEntity: "tournament",
 	TeamEntity:       "team",
-	UserEntity: "user",
+	UserEntity:       "user",
 }
 
-var StrToEntity = map[string]Entity {
-	"meeting": MeetingEntity,
+var StrToEntity = map[string]Entity{
+	"meeting":    MeetingEntity,
 	"tournament": TournamentEntity,
-	"team": TeamEntity,
-	"user": UserEntity,
+	"team":       TeamEntity,
+	"user":       UserEntity,
 }
 
 var StatusToStr = map[EventStatus]string{
