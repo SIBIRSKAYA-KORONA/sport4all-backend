@@ -140,7 +140,7 @@ func (meetingStore *MeetingStore) CreateStat(stat *models.Stats) error {
 	} else {
 		stat.ID = existsStat.ID
 		stat.Created = existsStat.Created
-		err = meetingStore.db.Update(stat).Error
+		err = meetingStore.db.Save(stat).Error
 	}
 
 	if err != nil {
