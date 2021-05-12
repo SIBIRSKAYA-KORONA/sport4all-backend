@@ -62,7 +62,7 @@ func (meetingUseCase *MeetingUseCaseImpl) Update(meeting *models.Meeting) error 
 			return err
 		}
 	case models.FinishedEvent:
-		stat, err := meetingUseCase.meetingRepo.GetMeetingStats(meeting.ID)
+		stat, err := meetingUseCase.meetingRepo.GetMeetingTeamsStats(meeting.ID)
 		if err != nil {
 			logger.Error(err)
 			return errors.ErrMeetingStatusNotAcceptable
