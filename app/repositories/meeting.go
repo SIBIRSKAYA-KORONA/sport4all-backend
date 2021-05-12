@@ -14,5 +14,6 @@ type MeetingRepository interface {
 	CreateTeamStat(stat *models.Stats) error
 	CreatePlayersStats(stats *[]models.Stats) error
 	GetMeetingTeamStat(mid uint) (*[]models.Stats, error)
+	GetMeetingPlayerStat(mid, tid, uid uint) (*models.Stats, error)
 	GetMeetingStat(mid uint) (*[]models.Stats, error)
 }

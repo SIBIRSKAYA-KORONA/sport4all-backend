@@ -125,10 +125,20 @@ func (meetingStore *MeetingStore) IsTeamInMeeting(mid uint, tid uint) (bool, err
 }
 
 func (meetingStore *MeetingStore) CreateTeamStat(stat *models.Stats) error {
-	stat.Created = time.Now().Unix()
-	if err := meetingStore.db.Create(stat).Error; err != nil {
-		logger.Error(err)
-		return errors.ErrConflict
+	existsStat, err := meetingStore.GetMeetingPlayerStat(stat.MeetingId, stat.TeamId, *stat.PlayerId)
+	if err != nil {
+		stat.Created = time.Now().Unix()
+		if err = meetingStore.db.Create(stat).Error; err != nil {
+			logger.Error(err)
+			return errors.ErrConflict
+		}
+	} else {
+		stat.ID = existsStat.ID
+		stat.Created =  existsStat.Created
+		if err = meetingStore.db.Update(existsStat).Error; err != nil {
+			logger.Error(err)
+			return errors.ErrConflict
+		}
 	}
 
 	return nil
@@ -147,10 +157,20 @@ func (meetingStore *MeetingStore) GetMeetingTeamStat(mid uint) (*[]models.Stats,
 	var stats []models.Stats
 	if err := meetingStore.db.Find(&stats, "player_id is null and meeting_id = ?", mid).Error; err != nil {
 		logger.Error(err)
-		return nil, err
+		return nil, errors.ErrMeetingNotFound
 	}
 
 	return &stats, nil
+}
+
+func (meetingStore *MeetingStore) GetMeetingPlayerStat(mid, tid, uid uint) (*models.Stats, error) {
+	var stat models.Stats
+	if err := meetingStore.db.First(&stat, "meeting_id = ? and team_id = ? and player_id = ?", mid, tid, uid).Error; err != nil {
+		logger.Error(err)
+		return nil, errors.ErrMeetingNotFound
+	}
+
+	return &stat, nil
 }
 
 func (meetingStore *MeetingStore) GetMeetingStat(mid uint) (*[]models.Stats, error) {
