@@ -135,7 +135,7 @@ func (meetingStore *MeetingStore) CreateTeamStat(stat *models.Stats) error {
 	} else {
 		stat.ID = existsStat.ID
 		stat.Created = existsStat.Created
-		if err = meetingStore.db.Update(existsStat).Error; err != nil {
+		if err = meetingStore.db.Update(stat).Error; err != nil {
 			logger.Error(err)
 			return errors.ErrConflict
 		}
