@@ -435,33 +435,37 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 			}
 
 			teamOwnerId := (*teams)[teamID].OwnerId
-			_, alreadySent := messagesByUser[teamOwnerId]
-			if !alreadySent {
-				ownerMessage := models.Message{
-					MessageStr:   messageStr,
-					TargetUid:    teamOwnerId,
-					SourceUid:    0,
-					MeetingId:    meetingId,
-					TournamentId: tournamentId,
-					CreateAt:     time.Now().Unix(),
-					IsRead:       false,
+			if ctx.Get("uid").(uint) != teamOwnerId {
+				_, alreadySent := messagesByUser[teamOwnerId]
+				if !alreadySent {
+					ownerMessage := models.Message{
+						MessageStr:   messageStr,
+						TargetUid:    teamOwnerId,
+						SourceUid:    0,
+						MeetingId:    meetingId,
+						TournamentId: tournamentId,
+						CreateAt:     time.Now().Unix(),
+						IsRead:       false,
+					}
+					messages = append(messages, ownerMessage)
+					messagesByUser[teamOwnerId] = true
 				}
-				messages = append(messages, ownerMessage)
-				messagesByUser[teamOwnerId] = true
 			}
 		}
 
 	case models.AddToTeam:
-		message := models.Message{
-			MessageStr: "added_to_team",
-			TargetUid:  ctx.Get("member").(uint),
-			SourceUid:  ctx.Get("uid").(uint),
-			MeetingId:  0,
-			TeamId:     ctx.Get("tid").(uint),
-			CreateAt:   time.Now().Unix(),
-			IsRead:     false,
+		if ctx.Get("uid") != ctx.Get("member") {
+			message := models.Message{
+				MessageStr: "added_to_team",
+				TargetUid:  ctx.Get("member").(uint),
+				SourceUid:  ctx.Get("uid").(uint),
+				MeetingId:  0,
+				TeamId:     ctx.Get("tid").(uint),
+				CreateAt:   time.Now().Unix(),
+				IsRead:     false,
+			}
+			messages = append(messages, message)
 		}
-		messages = append(messages, message)
 
 	case models.SkillApproved:
 		message := models.Message{
@@ -501,19 +505,20 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 			messageStr += "_updated"
 		}
 
-		message := models.Message{
-			MessageStr:   messageStr,
-			TargetUid:    targetUid,
-			SourceUid:    sourceUid,
-			MeetingId:    0,
-			TournamentId: tournamentId,
-			TeamId:       teamId,
-			InviteState:  &inviteState,
-			CreateAt:     time.Now().Unix(),
-			IsRead:       false,
+		if targetUid != sourceUid {
+			message := models.Message{
+				MessageStr:   messageStr,
+				TargetUid:    targetUid,
+				SourceUid:    sourceUid,
+				MeetingId:    0,
+				TournamentId: tournamentId,
+				TeamId:       teamId,
+				InviteState:  &inviteState,
+				CreateAt:     time.Now().Unix(),
+				IsRead:       false,
+			}
+			messages = append(messages, message)
 		}
-		messages = append(messages, message)
-
 	}
 
 	return &messages
