@@ -16,7 +16,8 @@ type InviteUseCaseImpl struct {
 
 func CreateInviteUseCase(inviteRepo repositories.InviteRepository,
 	teamRepo repositories.TeamRepository,
-	tournamentRepo repositories.TournamentRepository) usecases.InviteUseCase {
+	tournamentRepo repositories.TournamentRepository,
+) usecases.InviteUseCase {
 	return &InviteUseCaseImpl{inviteRepo: inviteRepo, teamRepo: teamRepo, tournamentRepo: tournamentRepo}
 }
 

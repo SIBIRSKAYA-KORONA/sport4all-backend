@@ -22,7 +22,8 @@ type UserHandler struct {
 }
 
 func CreateUserHandler(settingsURL string, profileURL string, router *echo.Group, useCase usecases.UserUseCase,
-	mw Middleware) {
+	mw Middleware,
+) {
 	handler := &UserHandler{
 		UseCase:     useCase,
 		SettingsURL: settingsURL,

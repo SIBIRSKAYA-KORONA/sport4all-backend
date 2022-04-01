@@ -5,9 +5,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
+	"time"
+
 	"sport4all/pkg/sanitize"
 	"sport4all/pkg/serializer"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/streadway/amqp"
@@ -57,7 +58,8 @@ func CreateMiddleware(sessionUseCase useCases.SessionUseCase,
 	origins map[string]struct{},
 	attachURL string,
 	channel *amqp.Channel,
-	queue amqp.Queue) Middleware {
+	queue amqp.Queue,
+) Middleware {
 	return &MiddlewareImpl{
 		sessionUseCase:    sessionUseCase,
 		teamUseCase:       teamUseCase,
@@ -416,7 +418,7 @@ func (mw *MiddlewareImpl) fillMessageByType(ctx echo.Context, trigger models.Mes
 		}
 
 		messagesByUser := make(map[uint]bool)
-		for teamID, _ := range *teams {
+		for teamID := range *teams {
 			for _, player := range (*teams)[teamID].Players {
 				_, alreadySent := messagesByUser[player.ID]
 				if !alreadySent {

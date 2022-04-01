@@ -15,7 +15,8 @@ type SearchUseCaseImpl struct {
 
 func CreateSearchUseCase(teamRepo repositories.TeamRepository,
 	tournamentRepo repositories.TournamentRepository,
-	userRepo repositories.UserRepository) usecases.SearchUseCase {
+	userRepo repositories.UserRepository,
+) usecases.SearchUseCase {
 	return &SearchUseCaseImpl{teamRepo: teamRepo, tournamentRepo: tournamentRepo, userRepo: userRepo}
 }
 

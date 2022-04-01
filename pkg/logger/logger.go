@@ -32,7 +32,7 @@ func InitLogger(logFile string, logLevelStr string) {
 	if logFile != "stdout" {
 		logWriter = zapcore.AddSync(&lumberjack.Logger{
 			Filename:  logFile,
-			MaxSize:   1 << 30, //1G
+			MaxSize:   1 << 30, // 1G
 			LocalTime: true,
 			Compress:  true,
 		})

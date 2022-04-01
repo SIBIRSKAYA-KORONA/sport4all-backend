@@ -1,14 +1,15 @@
 package impl
 
 import (
+	"strconv"
+	"strings"
+
 	"sport4all/app/models"
 	"sport4all/app/repositories"
 	"sport4all/app/usecases"
 	"sport4all/pkg/errors"
 	"sport4all/pkg/logger"
 	"sport4all/pkg/math"
-	"strconv"
-	"strings"
 )
 
 type MeetingUseCaseImpl struct {
@@ -18,7 +19,8 @@ type MeetingUseCaseImpl struct {
 }
 
 func CreateMeetingUseCase(meetingRepo repositories.MeetingRepository,
-	tournamentRepo repositories.TournamentRepository, ocrRepo repositories.OcrRepository) usecases.MeetingUseCase {
+	tournamentRepo repositories.TournamentRepository, ocrRepo repositories.OcrRepository,
+) usecases.MeetingUseCase {
 	return &MeetingUseCaseImpl{meetingRepo: meetingRepo, tournamentRepo: tournamentRepo, ocrRepo: ocrRepo}
 }
 
@@ -202,8 +204,8 @@ func (meetingUseCase *MeetingUseCaseImpl) GetMeetingStat(mid uint) (*[]models.St
 }
 
 func (meetingUseCase *MeetingUseCaseImpl) GetStatsByImage(mid uint,
-	imagePath, protocolType string) (*[]models.Stats, error) {
-
+	imagePath, protocolType string,
+) (*[]models.Stats, error) {
 	protocolImage := models.ProtocolImage{Path: imagePath}
 
 	info, has := models.ProtocolTypes[protocolType]

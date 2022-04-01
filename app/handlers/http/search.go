@@ -2,9 +2,10 @@ package http
 
 import (
 	"net/http"
+	"strings"
+
 	"sport4all/pkg/logger"
 	"sport4all/pkg/serializer"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 
@@ -65,7 +66,7 @@ func (searchHandler *SearchHandler) parseEntities(str string) map[models.Entity]
 
 	entityMap := map[models.Entity]bool{}
 
-	for index, _ := range splited {
+	for index := range splited {
 		if entity, ok := models.StrToEntity[splited[index]]; ok {
 			entityMap[entity] = true
 		}
@@ -94,12 +95,14 @@ func (searchHandler *SearchHandler) parseUserQuery(ctx echo.Context, base *model
 		// Role
 	}
 }
+
 func (searchHandler *SearchHandler) parseTeamQuery(ctx echo.Context, base *models.SearchQueryBase) *models.TeamSearchQuery {
 	return &models.TeamSearchQuery{
 		Base: base,
 		// Location
 	}
 }
+
 func (searchHandler *SearchHandler) parseTournamentQuery(ctx echo.Context, base *models.SearchQueryBase) *models.TournamentSearchQuery {
 	return &models.TournamentSearchQuery{
 		Base:        base,

@@ -1,11 +1,12 @@
 package ws
 
 import (
+	"sync"
+
 	"github.com/labstack/echo/v4"
 	"sport4all/app/handlers/http"
 	"sport4all/pkg/logger"
 	"sport4all/pkg/webSocketPool"
-	"sync"
 )
 
 type Api interface {

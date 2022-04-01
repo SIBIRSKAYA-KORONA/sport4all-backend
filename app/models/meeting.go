@@ -12,7 +12,6 @@ const (
 
 // swagger:model Game
 type Meeting struct {
-
 	// example: 101
 	ID uint `json:"id" gorm:"primary_key"`
 

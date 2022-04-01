@@ -69,8 +69,7 @@ type GetMeetingStatsRequest struct {
 
 // 200, успешно выставили результат команды
 // swagger:response UpdateTeamStats200Response
-type UpdateTeamStats200Response struct {
-}
+type UpdateTeamStats200Response struct{}
 
 // swagger:parameters UpdateTeamStatsRequest
 type UpdateTeamStatsRequest struct {
@@ -110,8 +109,7 @@ type UpdateStatsBody struct {
 
 // 200, успешно выставили результат команды
 // swagger:response UpdatePlayerStats200Response
-type UpdatePlayerStats200Response struct {
-}
+type UpdatePlayerStats200Response struct{}
 
 // swagger:parameters UpdatePlayerStatsRequest
 type UpdatePlayerStatsRequest struct {

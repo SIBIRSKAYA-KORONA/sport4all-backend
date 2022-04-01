@@ -14,7 +14,6 @@ var StringToRole = map[string]Role{
 
 // swagger:model User
 type User struct {
-
 	// example: 10
 	ID uint `json:"id" gorm:"primary_key"`
 

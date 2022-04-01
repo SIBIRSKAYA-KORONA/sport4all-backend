@@ -69,7 +69,7 @@ func (teamStore *TeamStore) IsTeamPlayer(teamID uint, userID uint) (bool, error)
 	return false, nil
 }
 
-//func (teamStore *TeamStore)
+// func (teamStore *TeamStore)
 
 func (teamStore *TeamStore) GetTeamsByUser(uid uint, role models.Role) (*models.Teams, error) {
 	var userTeams models.Teams

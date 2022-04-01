@@ -1,13 +1,15 @@
 package http
 
 import (
-	"github.com/labstack/echo/v4"
 	"net/http"
+	"time"
+
+	"github.com/labstack/echo/v4"
+
 	useCases "sport4all/app/usecases"
 	"sport4all/pkg/common"
 	"sport4all/pkg/errors"
 	"sport4all/pkg/logger"
-	"time"
 )
 
 type MiddlewareMini interface {

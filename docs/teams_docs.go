@@ -19,8 +19,7 @@ import (
 
 // 200, успешно создали команду
 // swagger:response CreateTeam200Response
-type CreateTeam200Response struct {
-}
+type CreateTeam200Response struct{}
 
 // swagger:parameters CreateTeamRequest
 type CreateTeamRequest struct {
@@ -158,8 +157,7 @@ type FindUsersForInviteRequest struct {
 
 // 200, успешно пригласили пользователя
 // swagger:response InvitePlayer200Response
-type InvitePlayer200Response struct {
-}
+type InvitePlayer200Response struct{}
 
 // swagger:parameters InvitePlayerRequest
 type InvitePlayerRequest struct {
@@ -192,8 +190,7 @@ type InvitePlayerRequest struct {
 
 // 200, успешно исключили пользователя
 // swagger:response DeletePlayer200Response
-type DeletePlayer200Response struct {
-}
+type DeletePlayer200Response struct{}
 
 // swagger:parameters DeletePlayerRequest
 type DeletePlayerRequest struct {

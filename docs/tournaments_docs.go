@@ -125,8 +125,7 @@ type GetTournamentResponseBody struct {
 
 // 200, успешно обновили турнир
 // swagger:response UpdateTournamentByID200Response
-type UpdateTournamentByID200Response struct {
-}
+type UpdateTournamentByID200Response struct{}
 
 // swagger:parameters UpdateTournamentByID
 type UpdateTournamentByIDRequest struct {
@@ -241,8 +240,7 @@ type GetAllMeetingsRequest struct {
 
 // 200, успешно добавили команду в турнир
 // swagger:response AddTeam200Response
-type AddTeam200Response struct {
-}
+type AddTeam200Response struct{}
 
 // swagger:parameters AddTeam
 type AddTeamRequest struct {
@@ -282,8 +280,7 @@ type AddTeamRequest struct {
 
 // 200, успешно удалили команду из турнира
 // swagger:response DeleteTeam200Response
-type DeleteTeam200Response struct {
-}
+type DeleteTeam200Response struct{}
 
 // swagger:parameters DeleteTeam
 type DeleteTeamRequest AddTeamRequest

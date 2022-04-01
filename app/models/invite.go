@@ -1,7 +1,9 @@
 package models
 
-type InviteState uint
-type InviteType string
+type (
+	InviteState uint
+	InviteType  string
+)
 
 const (
 	Opened InviteState = iota

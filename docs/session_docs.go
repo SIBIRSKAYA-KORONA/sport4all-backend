@@ -15,8 +15,7 @@ package docs
 
 // 200, успешно авторизовались
 // swagger:response CreateSession200Response
-type CreateSession200Response struct {
-}
+type CreateSession200Response struct{}
 
 // swagger:parameters CreateSessionRequest
 type CreateSessionRequest struct {
@@ -48,8 +47,7 @@ type SessionRequestBody struct {
 
 // 200, успешно выполнили логаут
 // swagger:response DeleteSession200Response
-type DeleteSession200Response struct {
-}
+type DeleteSession200Response struct{}
 
 // swagger:parameters DeleteSessionRequest
 type DeleteSessionRequest struct {

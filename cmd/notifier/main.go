@@ -5,8 +5,9 @@ import (
 	"flag"
 	"os"
 	"os/signal"
-	"sport4all/pkg/logger"
 	"syscall"
+
+	"sport4all/pkg/logger"
 )
 
 var args struct {

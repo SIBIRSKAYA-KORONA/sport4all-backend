@@ -1,7 +1,9 @@
 package models
 
-type Entity uint
-type MessageTrigger uint
+type (
+	Entity         uint
+	MessageTrigger uint
+)
 
 const (
 	MeetingEntity Entity = iota

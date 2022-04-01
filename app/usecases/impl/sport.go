@@ -11,20 +11,18 @@ type SportUseCaseImpl struct {
 	sportRepo repositories.SportRepository
 }
 
-var (
-	baseSports = map[string]bool{
-		"Basketball":    true,
-		"Football":      true,
-		"Hockey":        true,
-		"Table tennis":  true,
-		"Tennis":        true,
-		"Billiards":     true,
-		"Chess":         true,
-		"Checkers":      true,
-		"Mini football": true,
-		"Curling":       true,
-	}
-)
+var baseSports = map[string]bool{
+	"Basketball":    true,
+	"Football":      true,
+	"Hockey":        true,
+	"Table tennis":  true,
+	"Tennis":        true,
+	"Billiards":     true,
+	"Chess":         true,
+	"Checkers":      true,
+	"Mini football": true,
+	"Curling":       true,
+}
 
 func CreateSportUseCase(sportRepo repositories.SportRepository) usecases.SportUseCase {
 	sportUseCase := SportUseCaseImpl{sportRepo: sportRepo}

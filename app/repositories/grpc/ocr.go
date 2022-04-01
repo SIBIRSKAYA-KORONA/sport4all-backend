@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+
 	"sport4all/app/models"
 	"sport4all/app/repositories"
 	"sport4all/app/repositories/grpc/proto"
@@ -27,7 +28,6 @@ func (ocrStore *OcrStore) GetStatsByImage(protocolImage *models.ProtocolImage) (
 			PlayerColumn: protocolImage.Info.PlayerColumn,
 			ScoreColumn:  protocolImage.Info.ScoreColumn,
 		})
-
 	if err != nil {
 		logger.Error(err)
 		return nil, errors.ErrOcrServiceUnavailable

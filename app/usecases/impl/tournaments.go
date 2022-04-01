@@ -19,8 +19,8 @@ type TournamentUseCaseImpl struct {
 }
 
 func CreateTournamentUseCase(userRepo repositories.UserRepository, tournamentRepo repositories.TournamentRepository,
-	teamRepo repositories.TeamRepository, meetingRepo repositories.MeetingRepository) usecases.TournamentUseCase {
-
+	teamRepo repositories.TeamRepository, meetingRepo repositories.MeetingRepository,
+) usecases.TournamentUseCase {
 	impl := &TournamentUseCaseImpl{
 		userRepo:       userRepo,
 		tournamentRepo: tournamentRepo,
@@ -111,8 +111,8 @@ func (tournamentUseCase *TournamentUseCaseImpl) GetTournamentsByNamePart(namePar
 }
 
 func (tournamentUseCase *TournamentUseCaseImpl) CheckUserForTournamentRole(tournamentId uint,
-	uid uint, role models.TournamentRole) (bool, error) {
-
+	uid uint, role models.TournamentRole,
+) (bool, error) {
 	switch role {
 	case models.TournamentOrganizer:
 		return tournamentUseCase.tournamentRepo.IsTournamentOrganizer(tournamentId, uid)

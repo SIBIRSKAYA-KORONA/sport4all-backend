@@ -2,6 +2,7 @@ package queue
 
 import (
 	"context"
+
 	"github.com/streadway/amqp"
 	"sport4all/app/models"
 	"sport4all/pkg/logger"
@@ -77,7 +78,7 @@ func (receiver *RabbitMQReceiver) Run(ctx context.Context) {
 		for d := range msgs {
 			var messages []models.Message
 			serializer.JSON().Unmarshal(d.Body, &messages)
-			for id, _ := range messages {
+			for id := range messages {
 				receiver.messageBuff <- &messages[id]
 			}
 			logger.Info("Received a message")

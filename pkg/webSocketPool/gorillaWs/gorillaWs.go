@@ -2,10 +2,12 @@ package gorillaWs
 
 import (
 	"errors"
-	"github.com/labstack/echo/v4"
 	"net/http"
-	"sport4all/pkg/logger"
 	"sync"
+
+	"github.com/labstack/echo/v4"
+
+	"sport4all/pkg/logger"
 
 	"github.com/gorilla/websocket"
 

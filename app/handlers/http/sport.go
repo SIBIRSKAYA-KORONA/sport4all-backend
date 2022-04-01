@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+
 	"sport4all/app/usecases"
 	"sport4all/pkg/errors"
 	"sport4all/pkg/logger"

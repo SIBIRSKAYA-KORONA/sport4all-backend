@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"errors"
+	"sync"
+
 	"github.com/gomodule/redigo/redis"
 	"github.com/jinzhu/gorm"
 	"sport4all/app/handlers/http"
@@ -13,8 +15,6 @@ import (
 	"sport4all/pkg/common"
 
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-
-	"sync"
 
 	"sport4all/app/handlers/queue"
 	"sport4all/app/workers"
